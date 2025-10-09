@@ -1,0 +1,14 @@
+{
+    "name": "dev.hai-vr.cross.ik",
+    "displayName": "HVR IK",
+    "version": "0.0.1",
+    "description": "",
+    "unity": "6000.0",
+    "author": "Haï~",
+    "vpmDependencies": {
+    },
+    "url": "https://docs.hai-vr.dev/docs/cross/ik",
+    "documentationUrl": "https://docs.hai-vr.dev/docs/cross/ik",
+    "changelogUrl": "https://docs.hai-vr.dev/docs/cross/ik",
+    "license": "Apache-2.0"
+}

@@ -1,0 +1,22 @@
+{
+    "name": "HVR.IK",
+    "rootNamespace": "",
+    "references": [
+        "BasisSDK",
+        "Unity.Mathematics",
+        "LiteNetLib",
+        "Basis Framework",
+        "BasisDebug",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
