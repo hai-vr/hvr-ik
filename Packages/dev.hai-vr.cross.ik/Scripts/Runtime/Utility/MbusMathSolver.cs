@@ -85,42 +85,6 @@ namespace HVR.IK.FullTiger
             return objective + math.normalize(point - objective) * distance;
         }
 
-        public static bool SolveTriangle(float3[] mutatedThreePointsIncludesRoot,
-            float3 targetPos,
-            float[] distances,
-            float3 rootPos,
-            ref int operationCounter,
-            int maxOperationCount)
-        {
-            // FIXME: This should be rewritten completely. Copied from an older project of mine.
-            
-            var first = mutatedThreePointsIncludesRoot[0];
-            var second = mutatedThreePointsIncludesRoot[1];
-            var third = mutatedThreePointsIncludesRoot[2];
-
-            var upperArmDistance = distances[0];
-
-            var totalArmDistance = upperArmDistance + distances[1];
-            var longshotDistance = math.distance(rootPos, targetPos);
-            var actualDistanceToReach = math.min(totalArmDistance, longshotDistance);
-
-            var realTargetPos = rootPos + math.normalize(targetPos - rootPos) * actualDistanceToReach;
-            var normalPlane = math.normalize(math.cross(first - second, third - second));
-            var tangentPlane = math.normalize(math.cross(normalPlane, realTargetPos - rootPos));
-            var ratio = upperArmDistance / totalArmDistance;
-            var midpoint = math.lerp(rootPos, realTargetPos, ratio);
-
-            var solveTri = ratio * actualDistanceToReach;
-            var solvedSecond = midpoint + (upperArmDistance > solveTri ? (tangentPlane * math.sqrt(upperArmDistance * upperArmDistance - solveTri * solveTri)) : float3.zero);
-
-            mutatedThreePointsIncludesRoot[0] = rootPos;
-            mutatedThreePointsIncludesRoot[1] = solvedSecond;
-            mutatedThreePointsIncludesRoot[2] = realTargetPos;
-
-            if (++operationCounter >= maxOperationCount) return false;
-            return true;
-        }
-
         public static bool SolveStraddling(float3[] mutatedThreePointsIncludesRoot,
             float3 targetPos,
             float[] distances,

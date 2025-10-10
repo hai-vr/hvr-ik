@@ -26,19 +26,17 @@ namespace HVR.IK.FullTiger
         private readonly HIKAvatarDefinition definition;
         private readonly HIKSnapshot ikSnapshot;
         private readonly quaternion _reorienter;
-        private readonly HIKSolver solver;
 
         private readonly float3[] _spineChain;
         private float[] _spineDistances;
 
-        public HIKSpineSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot, quaternion reorienter, HIKSolver solver)
+        public HIKSpineSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot, quaternion reorienter)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
             this.definition = definition;
             this.ikSnapshot = ikSnapshot;
             _reorienter = reorienter;
-            this.solver = solver;
 
             _spineChain = new float3[4];
             _spineDistances = new[]
@@ -92,54 +90,35 @@ namespace HVR.IK.FullTiger
                 }
             }
 
-            // Reset snapshot
+            // ## Prepare
             ikSnapshot.absolutePos[(int)Hips] = hipTargetPos;
-            for (var boneId = Hips; boneId <= LeftEye; boneId++)
-            {
-                solver.SetSnapshotToReferencePose(boneId == LeftEye ? UpperChest : boneId);
-            }
-
-            // Prepare
             ikSnapshot.absoluteRot[(int)Hips] = objective.hipTargetWorldRotation;
+            // The position of the spine is a direct consequence of the position and rotation of the hips, so we have this immediately,
+            // and it won't change as a result of IK calculations until we get to the head alignment.
             ikSnapshot.ReevaluatePosition(Spine, definition);
             var spinePos = ikSnapshot.absolutePos[(int)Spine];
-            
-            var spineToHead = headTargetPos - spinePos;
 
-            // Prime
+            // ## Prime
+            var spineToHead = headTargetPos - spinePos;
             var back = math.mul(objective.headTargetWorldRotation, math.down());
             var spintToHeadLen = math.length(spineToHead);
-            
+        
             // TODO: We should prime the spine based on what the reference pose already suggested.
             _spineChain[0] = spinePos; // Spine
             _spineChain[1] = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f; // Chest
             _spineChain[2] = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f; // Neck
             _spineChain[3] = headTargetPos; // Head
             
-            ikSnapshot.ReevaluatePosition(Chest, definition);
-            ikSnapshot.ReevaluatePosition(Neck, definition);
-            ikSnapshot.ReevaluatePosition(Head, definition);
-            
-            // Relax
+            // ## Relax
             var operationCounter = 0;
             for (var i = 0; i < Iterations; i++)
             {
-                // FIXME: This solver overextends beyond definition.refPoseHipToNeckLength. We should take that into account.
                 MbusMathSolver.Iterate(_spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue);
                 // var color = Color.Lerp(Color.black, Color.red, i / (Iterations - 1f));
                 // if (drawDebug) DataViz.Instance.DrawLine(spineBezier, color, color);
             }
 
-            // We don't need to run this because it's recalculated by ReevaluatePosition later.
-            if (false)
-            {
-                ikSnapshot.absolutePos[(int)Spine] = _spineChain[0];
-                ikSnapshot.absolutePos[(int)Chest] = _spineChain[1];
-                ikSnapshot.absolutePos[(int)Neck] = _spineChain[2];
-                ikSnapshot.absolutePos[(int)Head] = _spineChain[3];
-            }
-            
-            // Positions are solved. Now, solve the rotations.
+            // ## Positions are solved into _spineChain. Now, solve the rotations.
 
             // These attempt to provide a proper roll for the extreme case when you're overbending: The head is pointing in opposite direction to the hip, e.g. near or more than 180 degrees
             var hipVec = SolveLerpVec(math.normalize(headTargetPos - hipTargetPos), objective.hipTargetWorldRotation);

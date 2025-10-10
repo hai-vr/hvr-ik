@@ -196,37 +196,22 @@ namespace HVR.IK.FullTiger
 
     internal class HIKSolver
     {
-        private readonly HIKAvatarDefinition definition;
-        private readonly HIKSnapshot ikSnapshot;
-
         private readonly HIKSpineSolver _spineSolver;
         private readonly HIKArmSolver _armSolver;
 
         public HIKSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
-            
-            this.definition = definition;
-            this.ikSnapshot = ikSnapshot;
 
             var reorienter = MbusGeofunctions.FromToOrientation(Vector3.forward, Vector3.right, Vector3.up, -Vector3.up);
-            _spineSolver = new HIKSpineSolver(definition, ikSnapshot, reorienter, this);
-            _armSolver = new HIKArmSolver(definition, ikSnapshot, reorienter, this);
+            _spineSolver = new HIKSpineSolver(definition, ikSnapshot, reorienter);
+            _armSolver = new HIKArmSolver(definition, ikSnapshot, reorienter);
         }
 
         public void Solve(HIKObjective objective)
         {
             _spineSolver.Solve(objective);
             _armSolver.Solve(objective);
-        }
-
-        internal void SetSnapshotToReferencePose(HumanBodyBones boneId)
-        {
-            var index = (int)boneId;
-            if (definition.dataHasBone[index])
-            {
-                ikSnapshot.absoluteRot[index] = definition.refPoseHiplativeRot[index];
-            }
         }
     }
 }

@@ -10,16 +10,14 @@ namespace HVR.IK.FullTiger
         private readonly HIKAvatarDefinition definition;
         private readonly HIKSnapshot ikSnapshot;
         private readonly quaternion _reorienter;
-        private readonly HIKSolver solver;
         
-        public HIKArmSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot, quaternion reorienter, HIKSolver solver)
+        public HIKArmSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot, quaternion reorienter)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
             this.definition = definition;
             this.ikSnapshot = ikSnapshot;
             _reorienter = reorienter;
-            this.solver = solver;
         }
 
         public void Solve(HIKObjective objective)
@@ -91,7 +89,9 @@ namespace HVR.IK.FullTiger
                 var toTip = objectivePos - rootPos;
                 var toTipLength = math.length(toTip);
                 
+                // Law of cosines
                 var angleRad = math.acos((toTipLength * toTipLength + upperLength * upperLength - lowerLength * lowerLength) / (2 * toTipLength * upperLength));
+                // Ratio rule
                 var toMidpointLength = math.cos(angleRad) * upperLength;
                 var downDistance = math.sin(angleRad) * upperLength;
 
@@ -114,11 +114,9 @@ namespace HVR.IK.FullTiger
             Debug.DrawLine(rootPos, bendPointPos, Color.yellow, 0f, false);
             Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
 
-            // FIXME: Resolve twist for this. The twist is also a function of the hand rotation.
             var twistBase = math.mul(chestReference, math.left());
-            float3 twist = side == ArmSide.Right ? twistBase : -twistBase;
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
-                quaternion.LookRotationSafe(bendPointPos - rootPos, twist),
+                quaternion.LookRotationSafe(bendPointPos - rootPos, side == ArmSide.Right ? twistBase : -twistBase),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
