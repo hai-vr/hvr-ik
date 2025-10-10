@@ -32,7 +32,9 @@ namespace HVR.IK.FullTiger
             // LeftUpperLeg, LeftLowerLeg, LeftFoot, LeftToes,
             // RightUpperLeg, RightLowerLeg, RightFoot, RightToes,
         };
-        private static readonly HumanBodyBones[] SpineChain = { Spine, Chest, UpperChest, Neck, Head };
+        private static readonly HumanBodyBones[] SpineChain = { Hips, Spine, Chest, UpperChest, Neck, Head };
+        private static readonly HumanBodyBones[] LeftArmChain = { LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand };
+        private static readonly HumanBodyBones[] RightArmChain = { RightShoulder, RightUpperArm, RightLowerArm, RightHand };
         
         [SerializeField] internal Animator animator;
         [SerializeField] internal HIKEffectors effectors;
@@ -154,14 +156,22 @@ namespace HVR.IK.FullTiger
                     // _bones[index].position = ikSnapshot.absolutePos[index];
                 }
             }
-            prevPos = _bones[(int)Hips].position;
-            foreach (var boneId in SpineChain)
+            DrawArmChain(SpineChain);
+            DrawArmChain(LeftArmChain);
+            DrawArmChain(RightArmChain);
+        }
+
+        private void DrawArmChain(HumanBodyBones[] array)
+        {
+            float3 prevPos = _bones[(int)array[0]].position + Vector3.up * 0.001f;
+            for (var i = 1; i < array.Length; i++)
             {
+                var boneId = array[i];
                 var index = (int)boneId;
                 if (definition.dataHasBone[index])
                 {
-                    var newPos = _bones[index].position;
-                    Debug.DrawLine(prevPos, newPos, Color.green, 0f, false);
+                    var newPos = _bones[index].position + Vector3.up * 0.001f;
+                    Debug.DrawLine(prevPos, newPos, Color.blue, 0f, false);
                     prevPos = newPos;
                 }
             }

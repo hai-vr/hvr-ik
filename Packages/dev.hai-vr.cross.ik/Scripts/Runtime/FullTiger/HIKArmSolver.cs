@@ -89,9 +89,13 @@ namespace HVR.IK.FullTiger
             if (!isMaximumDistance)
             {
                 var toTip = objectivePos - rootPos;
-                var toMidpoint = toTip * upperLength / totalLength;
-                var toMidpointLength = math.length(toMidpoint);
-                var downDistance = math.sqrt(upperLength * upperLength - toMidpointLength * toMidpointLength);
+                var toTipLength = math.length(toTip);
+                
+                var angleRad = math.acos((toTipLength * toTipLength + upperLength * upperLength - lowerLength * lowerLength) / (2 * toTipLength * upperLength));
+                var toMidpointLength = math.cos(angleRad) * upperLength;
+                var downDistance = math.sin(angleRad) * upperLength;
+
+                var toMidpoint = math.normalize(toTip) * toMidpointLength;
                 var bendDirectionStraightened = MbusGeofunctions.Straighten(math.normalize(bendDirection), toTip);
                 bendPointPos = rootPos + toMidpoint + bendDirectionStraightened * downDistance;
 
