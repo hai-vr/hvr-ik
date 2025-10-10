@@ -1,5 +1,5 @@
 {
-    "name": "HVR.IK",
+    "name": "HVR.IK.Runtime",
     "rootNamespace": "",
     "references": [
         "BasisSDK",

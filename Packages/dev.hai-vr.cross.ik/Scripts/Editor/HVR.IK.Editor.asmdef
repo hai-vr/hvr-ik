@@ -1,0 +1,25 @@
+{
+    "name": "HVR.IK.Editor",
+    "rootNamespace": "",
+    "references": [
+        "BasisSDK",
+        "Unity.Mathematics",
+        "LiteNetLib",
+        "Basis Framework",
+        "BasisDebug",
+        "Unity.Addressables",
+        "Unity.ResourceManager",
+        "HVR.IK.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
