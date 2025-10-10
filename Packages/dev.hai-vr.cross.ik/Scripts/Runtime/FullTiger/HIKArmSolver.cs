@@ -109,7 +109,8 @@ namespace HVR.IK.FullTiger
             Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
 
             // FIXME: Resolve twist for this. The twist is also a function of the hand rotation.
-            float3 twist = side == ArmSide.Right ? bendDirection : -bendDirection;
+            var twistBase = math.mul(chestReference, math.left());
+            float3 twist = side == ArmSide.Right ? twistBase : -twistBase;
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
                 quaternion.LookRotationSafe(bendPointPos - rootPos, twist),
                 _reorienter
