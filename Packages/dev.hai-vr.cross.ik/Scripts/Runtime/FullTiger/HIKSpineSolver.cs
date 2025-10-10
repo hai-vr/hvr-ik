@@ -37,17 +37,11 @@ namespace HVR.IK.FullTiger
 
         public void Solve(HIKObjective objective)
         {
-            // _spineDistances = new[]
-            // {
-                // math.distance(definition.refPoseHiplativePos[(int)Spine], definition.refPoseHiplativePos[(int)Chest]), 
-                // math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]), 
-                // math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]), 
-            // };
-            
             var originalHipTargetPos = objective.hipTargetWorldPosition;
-            var headTargetPos = objective.headTargetWorldPosition;
+            var originalHeadTargetPos = objective.headTargetWorldPosition;
             
             var hipTargetPos = originalHipTargetPos;
+            var headTargetPos = originalHeadTargetPos;
             
             var headAndHipSameDirection01 = math.dot(math.mul(objective.headTargetWorldRotation, math.right()), math.mul(objective.hipTargetWorldRotation, math.right())) * 0.5f + 0.5f;
 
@@ -56,6 +50,24 @@ namespace HVR.IK.FullTiger
             {
                 hipTargetPos = headTargetPos - math.normalize(headTargetPos - originalHipTargetPos) * definition.refPoseHipToHeadLength * ff;
                 Debug.DrawLine(headTargetPos, hipTargetPos, Color.yellow, 0f, false);
+            }
+            
+            // If the distance between the head and the neck is larger than the length of the neck + refPoseHipToNeckLength
+            // (which is not equal to the sum of the bones of the hip-spine-chest-neck) chain, then either the head or the hips MUST be brought closer
+            // so that the solver doesn't overstretch the artists' spine.
+            var refHipToNeckAndThenToHeadLength = definition.refPoseHipToNeckLength + definition.refPoseNeckLength;
+            if (math.distance(hipTargetPos, headTargetPos) > refHipToNeckAndThenToHeadLength)
+            {
+                if (objective.headAlignmentMattersMore)
+                {
+                    var toHip = math.normalize(hipTargetPos - headTargetPos);
+                    hipTargetPos = headTargetPos + toHip * refHipToNeckAndThenToHeadLength;
+                }
+                else
+                {
+                    var toHead = math.normalize(headTargetPos - hipTargetPos);
+                    headTargetPos = hipTargetPos + toHead * refHipToNeckAndThenToHeadLength;
+                }
             }
 
             // Reset snapshot
@@ -75,6 +87,8 @@ namespace HVR.IK.FullTiger
             // Prime
             var back = math.mul(objective.headTargetWorldRotation, math.up());
             var spintToHeadLen = math.length(spineToHead);
+            
+            // TODO: We should prime the spine based on what the reference pose already suggested.
             _spineChain[0] = spinePos; // Spine
             _spineChain[1] = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.05f; // Chest
             _spineChain[2] = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.05f; // Neck
@@ -93,15 +107,18 @@ namespace HVR.IK.FullTiger
                 // var color = Color.Lerp(Color.black, Color.red, i / (Iterations - 1f));
                 // if (drawDebug) DataViz.Instance.DrawLine(spineBezier, color, color);
             }
-            
-            // ikSnapshot.absolutePos[(int)Spine] = _spineChain[0];
-            // ikSnapshot.absolutePos[(int)Chest] = _spineChain[1];
-            // ikSnapshot.absolutePos[(int)Neck] = _spineChain[2];
-            // ikSnapshot.absolutePos[(int)Head] = _spineChain[3];
+
+            // We don't need to run this because it's recalculated by ReevaluatePosition later.
+            if (false)
+            {
+                ikSnapshot.absolutePos[(int)Spine] = _spineChain[0];
+                ikSnapshot.absolutePos[(int)Chest] = _spineChain[1];
+                ikSnapshot.absolutePos[(int)Neck] = _spineChain[2];
+                ikSnapshot.absolutePos[(int)Head] = _spineChain[3];
+            }
             
             // Positions are solved. Now, solve the rotations.
             
-            // ikSnapshot.absolutePos[(int)Hips] = hipTargetPos;
             ikSnapshot.absoluteRot[(int)Hips] = objective.hipTargetWorldRotation;
             ikSnapshot.absoluteRot[(int)Spine] = math.mul(
                 quaternion.LookRotationSafe(_spineChain[1] - _spineChain[0], math.mul(objective.hipTargetWorldRotation, math.down())),
@@ -140,7 +157,6 @@ namespace HVR.IK.FullTiger
                 ikSnapshot.ReevaluatePosition(LeftShoulder, definition);
                 ikSnapshot.ReevaluatePosition(RightShoulder, definition);
                 
-                // TODO: We need to ORIENT THE SHOULDERS IN ABSOLUTE SPACE.
                 ikSnapshot.ApplyReferenceRotation(LeftShoulder, definition);
                 ikSnapshot.ApplyReferenceRotation(RightShoulder, definition);
                 

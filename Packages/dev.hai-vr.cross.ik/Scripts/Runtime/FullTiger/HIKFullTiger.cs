@@ -90,6 +90,7 @@ namespace HVR.IK.FullTiger
 
             definition.refPoseHipToNeckLength = math.distance(definition.refPoseHiplativePos[(int)Hips], definition.refPoseHiplativePos[(int)Neck]);
             definition.refPoseHipToHeadLength = math.distance(definition.refPoseHiplativePos[(int)Hips], definition.refPoseHiplativePos[(int)Head]);
+            definition.refPoseNeckLength = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
             definition.isInitialized = true;
             
             // ORDER MATTERS: This must be instantiated AFTER definition is initialized

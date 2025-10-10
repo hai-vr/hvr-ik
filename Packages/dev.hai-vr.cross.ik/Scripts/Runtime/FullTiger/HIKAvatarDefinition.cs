@@ -13,6 +13,7 @@ namespace HVR.IK.FullTiger
         internal readonly quaternion[] artistPoseRot = new quaternion[(int)LastBone];
         internal float refPoseHipToNeckLength;
         internal float refPoseHipToHeadLength;
+        internal float refPoseNeckLength;
         
         // Reference pose -- Relative to the parent bone. Model coordinates.
         internal readonly float3[] refPoseRelativePos = new float3[(int)LastBone];
