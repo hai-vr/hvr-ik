@@ -27,7 +27,7 @@ namespace HVR.IK.FullTiger
         private static readonly HumanBodyBones[] CopyOrder =
         {
             /*Hips,*/ Spine, Chest, UpperChest, Neck, Head,
-            LeftShoulder, // LeftUpperArm, LeftLowerArm, LeftHand,
+            LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand,
             RightShoulder, RightUpperArm, RightLowerArm, RightHand,
             // LeftUpperLeg, LeftLowerLeg, LeftFoot, LeftToes,
             // RightUpperLeg, RightLowerLeg, RightFoot, RightToes,
@@ -127,6 +127,8 @@ namespace HVR.IK.FullTiger
                 headTargetWorldPosition = effectors.headTarget.position,
                 headTargetWorldRotation = effectors.headTarget.rotation,
                 
+                leftHandTargetWorldPosition = effectors.leftHandTarget.position,
+                leftHandTargetWorldRotation = effectors.leftHandTarget.rotation,
                 rightHandTargetWorldPosition = effectors.rightHandTarget.position,
                 rightHandTargetWorldRotation = effectors.rightHandTarget.rotation,
                 
@@ -173,6 +175,8 @@ namespace HVR.IK.FullTiger
         internal float3 headTargetWorldPosition;
         internal quaternion headTargetWorldRotation;
         
+        internal float3 leftHandTargetWorldPosition;
+        internal quaternion leftHandTargetWorldRotation;
         internal float3 rightHandTargetWorldPosition;
         internal quaternion rightHandTargetWorldRotation;
         

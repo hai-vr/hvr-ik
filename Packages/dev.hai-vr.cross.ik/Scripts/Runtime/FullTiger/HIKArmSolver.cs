@@ -23,10 +23,11 @@ namespace HVR.IK.FullTiger
 
         public void Solve(HIKObjective objective)
         {
-            SolveRightArm(objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation);
+            SolveArm(objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation);
+            SolveArm(objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation);
         }
 
-        private void SolveRightArm(HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)
+        private void SolveArm(HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)
         {
             var objectivePos = originalObjectivePos;
             
@@ -86,13 +87,13 @@ namespace HVR.IK.FullTiger
             Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
 
             // FIXME: Resolve twist for this. The twist is also a function of the hand rotation.
-            float3 twist = bendDirection;
+            float3 twist = side == ArmSide.Right ? bendDirection : -bendDirection;
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
                 quaternion.LookRotationSafe(bendPointPos - rootPos, twist),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                quaternion.LookRotationSafe(objectivePos - bendPointPos, math.mul(originalObjectiveRot, math.forward())),
+                quaternion.LookRotationSafe(objectivePos - bendPointPos, math.mul(originalObjectiveRot, side == ArmSide.Right ? math.forward() : math.back())),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
