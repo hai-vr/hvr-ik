@@ -69,16 +69,17 @@ namespace HVR.IK.FullTiger
 
                 var isOutwards = math.dot(outwards, -handSource);
                 var isPalmUp = math.dot(chestUpwards, palmDirection);
-                var isInside = math.dot(-outwards, math.normalize(objectivePos - rootPos));
+                var isInside = math.clamp(math.dot(-outwards, math.normalize(objectivePos - rootPos) * 10), -1f, 1f);
                 
                 Debug.DrawLine(rootPos , rootPos + chestUpwards * isOutwards * 0.1f, Color.red, 0f, false);
                 Debug.DrawLine(rootPos + outwards * 0.01f, rootPos + outwards * 0.01f + chestUpwards * isPalmUp * 0.1f, Color.green, 0f, false);
                 Debug.DrawLine(rootPos + outwards * 0.02f, rootPos + outwards * 0.02f + chestUpwards * isInside * 0.1f, Color.blue, 0f, false);
                 
                 var chestSource = math.mul(chestReference, math.left());
-                var step2 = MbusUtil.LerpDot(handSource, handSource, chestSource, isPalmUp);
-                var step3 = MbusUtil.LerpDot(step2, step2, chestSource, isOutwards);
-                return MbusUtil.LerpDot(step3, step3, chestSource, isInside);
+                var chestSource2 = math.normalize(chestSource + outwards);
+                var step2 = MbusUtil.LerpDot(handSource, handSource, chestSource2, isPalmUp);
+                var step3 = MbusUtil.LerpDot(step2, step2, chestSource2, isOutwards);
+                return MbusUtil.LerpDot(step3, step3, chestSource2, isInside);
             }
             
             // Solve
