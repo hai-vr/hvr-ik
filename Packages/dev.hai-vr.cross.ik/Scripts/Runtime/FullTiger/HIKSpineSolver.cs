@@ -85,13 +85,13 @@ namespace HVR.IK.FullTiger
             var spineToHead = headTargetPos - spinePos;
 
             // Prime
-            var back = math.mul(objective.headTargetWorldRotation, math.up());
+            var back = math.mul(objective.headTargetWorldRotation, math.down());
             var spintToHeadLen = math.length(spineToHead);
             
             // TODO: We should prime the spine based on what the reference pose already suggested.
             _spineChain[0] = spinePos; // Spine
-            _spineChain[1] = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.05f; // Chest
-            _spineChain[2] = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.05f; // Neck
+            _spineChain[1] = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f; // Chest
+            _spineChain[2] = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f; // Neck
             _spineChain[3] = headTargetPos; // Head
             
             ikSnapshot.ReevaluatePosition(Chest, definition);
@@ -118,14 +118,20 @@ namespace HVR.IK.FullTiger
             }
             
             // Positions are solved. Now, solve the rotations.
-            
+
+            // These attempt to provide a proper roll for the extreme case when you're overbending: The head is pointing in opposite direction to the hip, e.g. near or more than 180 degrees
+            var hipVec = SolveLerpVec(math.normalize(headTargetPos - hipTargetPos), objective.hipTargetWorldRotation);
+            var headVec = SolveLerpVec(math.normalize(headTargetPos - hipTargetPos), objective.headTargetWorldRotation);
+            var spineLerpVec = SolveLerpVec(math.normalize(_spineChain[1] - _spineChain[0]), objective.hipTargetWorldRotation);
+
             ikSnapshot.absoluteRot[(int)Hips] = objective.hipTargetWorldRotation;
             ikSnapshot.absoluteRot[(int)Spine] = math.mul(
-                quaternion.LookRotationSafe(_spineChain[1] - _spineChain[0], math.mul(objective.hipTargetWorldRotation, math.down())),
+                quaternion.LookRotationSafe(_spineChain[1] - _spineChain[0], spineLerpVec),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)Chest] = math.mul(
-                quaternion.LookRotationSafe(_spineChain[2] - _spineChain[1], math.mul(math.slerp(objective.hipTargetWorldRotation, objective.headTargetWorldRotation, 0.75f), math.down())),
+                // FIXME: Vector3.Slerp doesn't use unity mathematics.
+                quaternion.LookRotationSafe(_spineChain[2] - _spineChain[1], math.normalize(Vector3.Slerp(hipVec, headVec, 0.75f))),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)Neck] = math.mul(
@@ -172,6 +178,29 @@ namespace HVR.IK.FullTiger
                 Debug.DrawLine(ikSnapshot.absolutePos[(int)RightShoulder], ikSnapshot.absolutePos[(int)RightUpperArm], Color.coral, 0f, false);
                 Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)LeftUpperLeg], Color.coral, 0f, false);
                 Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)RightUpperLeg], Color.coral, 0f, false);
+            }
+        }
+
+        private static float3 SolveLerpVec(float3 similarityVector, quaternion ikRot)
+        {
+            var regular = math.mul(ikRot, math.down());
+            var ifOne = math.mul(ikRot, math.left());
+            var ifMinusOne = math.mul(ikRot, math.right());
+
+            var dot = math.dot(similarityVector, regular);
+            
+            return LerpDot(ifMinusOne, regular, ifOne, dot);
+        }
+
+        private static float3 LerpDot(float3 whenMinusOne, float3 whenZero, float3 whenOne, float dot)
+        {
+            if (dot >= 0)
+            {
+                return math.lerp(whenZero, whenOne, dot);
+            }
+            else
+            {
+                return math.lerp(whenMinusOne, whenZero, dot + 1);
             }
         }
     }

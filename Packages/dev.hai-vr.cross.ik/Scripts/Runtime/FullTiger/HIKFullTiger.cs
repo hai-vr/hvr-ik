@@ -20,8 +20,8 @@ namespace HVR.IK.FullTiger
         };
         private static readonly HumanBodyBones[] SpineChain = { Spine, Chest, UpperChest, Neck, Head };
         
-        [SerializeField] private Animator animator;
-        [SerializeField] private HIKEffectors effectors;
+        [SerializeField] internal Animator animator;
+        [SerializeField] internal HIKEffectors effectors;
         
         private readonly HIKAvatarDefinition definition = new();
         private readonly HIKSnapshot ikSnapshot = new();
