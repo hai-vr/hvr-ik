@@ -6,6 +6,7 @@ namespace HVR.IK.FullTiger
 {
     internal class HIKArmSolver
     {
+        private const float InsideSwitchingMul = 2;
         private readonly HIKAvatarDefinition definition;
         private readonly HIKSnapshot ikSnapshot;
         private readonly quaternion _reorienter;
@@ -69,7 +70,7 @@ namespace HVR.IK.FullTiger
 
                 var isOutwards = math.dot(outwards, -handSource);
                 var isPalmUp = math.dot(chestUpwards, palmDirection);
-                var isInside = math.clamp(math.dot(-outwards, math.normalize(objectivePos - rootPos) * 10), -1f, 1f);
+                var isInside = math.clamp(math.smoothstep(0f, 1f, math.dot(-outwards, math.normalize(objectivePos - rootPos) * InsideSwitchingMul)), -1f, 1f);
                 
                 Debug.DrawLine(rootPos , rootPos + chestUpwards * isOutwards * 0.1f, Color.red, 0f, false);
                 Debug.DrawLine(rootPos + outwards * 0.01f, rootPos + outwards * 0.01f + chestUpwards * isPalmUp * 0.1f, Color.green, 0f, false);
