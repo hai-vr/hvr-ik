@@ -77,10 +77,10 @@ namespace HVR.IK.FullTiger
                 Debug.DrawLine(rootPos + outwards * 0.02f, rootPos + outwards * 0.02f + chestUpwards * isInside * 0.1f, Color.blue, 0f, false);
                 
                 var chestSource = math.mul(chestReference, math.left());
-                var chestSource2 = math.normalize(chestSource + outwards);
-                var step2 = MbusUtil.LerpDot(handSource, handSource, chestSource2, isPalmUp);
-                var step3 = MbusUtil.LerpDot(step2, step2, chestSource2, isOutwards);
-                return MbusUtil.LerpDot(step3, step3, chestSource2, isInside);
+                var chestSourceBendingOutwards = math.normalize(chestSource + outwards * math.clamp(isInside, 0f, 1f));
+                var step2 = MbusUtil.LerpDot(handSource, handSource, chestSourceBendingOutwards, isPalmUp);
+                var step3 = MbusUtil.LerpDot(step2, step2, chestSourceBendingOutwards, isOutwards);
+                return MbusUtil.LerpDot(step3, step3, chestSourceBendingOutwards, isInside);
             }
             
             // Solve
