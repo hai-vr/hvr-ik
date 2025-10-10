@@ -55,9 +55,11 @@ namespace HVR.IK.FullTiger
             
             // TODO: Build the bend direction heuristics
             // TODO: Handle HasUpperChest
-            var bendDirection = math.mul(ikSnapshot.absoluteRot[(int)HumanBodyBones.Chest], math.left());
+            var chestReference = ikSnapshot.absoluteRot[(int)HumanBodyBones.Chest];
+            var bendDirection = math.mul(chestReference, math.left());
             
             // Solve
+            bool isTooTight = false;
             float3 bendPointPos;
             if (!isMaximumDistance)
             {
@@ -65,8 +67,12 @@ namespace HVR.IK.FullTiger
                 var toMidpoint = toTip * upperLength / totalLength;
                 var toMidpointLength = math.length(toMidpoint);
                 var downDistance = math.sqrt(upperLength * upperLength - toMidpointLength * toMidpointLength);
-                var bendDirectionStraightened = MbusGeofunctions.Straighten(bendDirection, toTip);
+                var bendDirectionStraightened = MbusGeofunctions.Straighten(math.normalize(bendDirection), toTip);
                 bendPointPos = rootPos + toMidpoint + bendDirectionStraightened * downDistance;
+
+                var v0 = math.mul(originalObjectiveRot, math.right());
+                var v1 = math.normalize(bendPointPos - objectivePos);
+                isTooTight = math.dot(v0, v1) > 0.01f;
             }
             else
             {
@@ -77,7 +83,7 @@ namespace HVR.IK.FullTiger
 
             Debug.DrawLine(rootPos, objectivePos, Color.cyan, 0f, false);
             Debug.DrawLine(rootPos, bendPointPos, Color.yellow, 0f, false);
-            Debug.DrawLine(bendPointPos, objectivePos, Color.yellow, 0f, false);
+            Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
 
             // FIXME: Resolve twist for this. The twist is also a function of the hand rotation.
             float3 twist = bendDirection;
