@@ -85,7 +85,7 @@ namespace HVR.IK.FullTiger
         /**
          * Makes the vector to be straightened perpendicular to the axis.
          */
-        private static float3 Straighten(float3 toStraighten, float3 onAxis)
+        public static float3 Straighten(float3 toStraighten, float3 onAxis)
         {
             return math.normalize(math.cross(math.cross(onAxis, toStraighten), onAxis)) * math.length(toStraighten);
         }

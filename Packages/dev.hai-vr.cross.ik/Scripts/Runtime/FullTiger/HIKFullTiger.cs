@@ -28,7 +28,7 @@ namespace HVR.IK.FullTiger
         {
             /*Hips,*/ Spine, Chest, UpperChest, Neck, Head,
             LeftShoulder, // LeftUpperArm, LeftLowerArm, LeftHand,
-            RightShoulder, // RightUpperArm, RightLowerArm, RightHand,
+            RightShoulder, RightUpperArm, RightLowerArm, RightHand,
             // LeftUpperLeg, LeftLowerLeg, LeftFoot, LeftToes,
             // RightUpperLeg, RightLowerLeg, RightFoot, RightToes,
         };
@@ -127,6 +127,9 @@ namespace HVR.IK.FullTiger
                 headTargetWorldPosition = effectors.headTarget.position,
                 headTargetWorldRotation = effectors.headTarget.rotation,
                 
+                rightHandTargetWorldPosition = effectors.rightHandTarget.position,
+                rightHandTargetWorldRotation = effectors.rightHandTarget.rotation,
+                
                 headAlignmentMattersMore = true,
                 allowContortionist = false
             });
@@ -170,6 +173,9 @@ namespace HVR.IK.FullTiger
         internal float3 headTargetWorldPosition;
         internal quaternion headTargetWorldRotation;
         
+        internal float3 rightHandTargetWorldPosition;
+        internal quaternion rightHandTargetWorldRotation;
+        
         internal bool headAlignmentMattersMore;
         internal bool allowContortionist;
     }
@@ -180,6 +186,7 @@ namespace HVR.IK.FullTiger
         private readonly HIKSnapshot ikSnapshot;
 
         private readonly HIKSpineSolver _spineSolver;
+        private readonly HIKArmSolver _armSolver;
 
         public HIKSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot)
         {
@@ -190,12 +197,13 @@ namespace HVR.IK.FullTiger
 
             var reorienter = MbusGeofunctions.FromToOrientation(Vector3.forward, Vector3.right, Vector3.up, -Vector3.up);
             _spineSolver = new HIKSpineSolver(definition, ikSnapshot, reorienter, this);
-            
+            _armSolver = new HIKArmSolver(definition, ikSnapshot, reorienter, this);
         }
 
         public void Solve(HIKObjective objective)
         {
             _spineSolver.Solve(objective);
+            _armSolver.Solve(objective);
         }
 
         internal void SetSnapshotToReferencePose(HumanBodyBones boneId)
