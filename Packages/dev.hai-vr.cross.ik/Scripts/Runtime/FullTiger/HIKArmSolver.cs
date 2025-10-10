@@ -92,7 +92,7 @@ namespace HVR.IK.FullTiger
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                quaternion.LookRotationSafe(objectivePos - bendPointPos, twist),
+                quaternion.LookRotationSafe(objectivePos - bendPointPos, math.mul(originalObjectiveRot, math.forward())),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
