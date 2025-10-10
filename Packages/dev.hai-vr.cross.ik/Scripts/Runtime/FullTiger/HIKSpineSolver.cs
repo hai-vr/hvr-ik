@@ -211,19 +211,7 @@ namespace HVR.IK.FullTiger
 
             var dot = math.dot(similarityVector, regular);
             
-            return LerpDot(ifMinusOne, regular, ifOne, dot);
-        }
-
-        private static float3 LerpDot(float3 whenMinusOne, float3 whenZero, float3 whenOne, float dot)
-        {
-            if (dot >= 0)
-            {
-                return math.lerp(whenZero, whenOne, dot);
-            }
-            else
-            {
-                return math.lerp(whenMinusOne, whenZero, dot + 1);
-            }
+            return MbusUtil.LerpDot(ifMinusOne, regular, ifOne, dot);
         }
     }
 }

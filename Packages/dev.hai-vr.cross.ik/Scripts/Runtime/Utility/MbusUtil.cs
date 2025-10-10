@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace HVR.IK.FullTiger
@@ -60,6 +61,18 @@ namespace HVR.IK.FullTiger
             to.position = from.position;
             to.rotation = from.rotation * postRotation;
             to.localScale = from.localScale;
+        }
+
+        public static float3 LerpDot(float3 whenMinusOne, float3 whenZero, float3 whenOne, float dot)
+        {
+            if (dot >= 0)
+            {
+                return math.lerp(whenZero, whenOne, dot);
+            }
+            else
+            {
+                return math.lerp(whenMinusOne, whenZero, dot + 1);
+            }
         }
     }
 }

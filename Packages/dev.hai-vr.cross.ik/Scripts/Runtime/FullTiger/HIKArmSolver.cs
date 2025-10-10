@@ -57,7 +57,29 @@ namespace HVR.IK.FullTiger
             // TODO: Build the bend direction heuristics
             // TODO: Handle HasUpperChest
             var chestReference = ikSnapshot.absoluteRot[(int)HumanBodyBones.Chest];
-            var bendDirection = math.mul(chestReference, math.left());
+            var bendDirection = ArmBendHeuristics();
+
+            float3 ArmBendHeuristics()
+            {
+                var chestUpwards = math.mul(chestReference, math.right());
+                
+                var outwards = math.mul(chestReference, side == ArmSide.Right ? math.back() : math.forward());
+                var handSource = math.mul(originalObjectiveRot, math.left());
+                var palmDirection = math.mul(originalObjectiveRot, side == ArmSide.Right ? math.down() : math.up());
+
+                var isOutwards = math.dot(outwards, -handSource);
+                var isPalmUp = math.dot(chestUpwards, palmDirection);
+                var isInside = math.dot(-outwards, math.normalize(objectivePos - rootPos));
+                
+                Debug.DrawLine(rootPos , rootPos + chestUpwards * isOutwards * 0.1f, Color.red, 0f, false);
+                Debug.DrawLine(rootPos + outwards * 0.01f, rootPos + outwards * 0.01f + chestUpwards * isPalmUp * 0.1f, Color.green, 0f, false);
+                Debug.DrawLine(rootPos + outwards * 0.02f, rootPos + outwards * 0.02f + chestUpwards * isInside * 0.1f, Color.blue, 0f, false);
+                
+                var chestSource = math.mul(chestReference, math.left());
+                var step2 = MbusUtil.LerpDot(handSource, handSource, chestSource, isPalmUp);
+                var step3 = MbusUtil.LerpDot(step2, step2, chestSource, isOutwards);
+                return MbusUtil.LerpDot(step3, step3, chestSource, isInside);
+            }
             
             // Solve
             bool isTooTight = false;
