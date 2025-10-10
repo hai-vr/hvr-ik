@@ -5,6 +5,20 @@ An work-in-progress IK solver primarily designed for use in social VR applicatio
 
 This is the third IK solver that I'm writing, and I hope that it will become good enough to be the last of mine (it probably won't be).
 
+## Adding to the scene
+
+In Edit mode:
+
+- Have an avatar ready in the scene with an *Animator* component in it.
+- In a GameObject, create a **HIK Effectors** component.
+    - Set the *Animator* field to the avatar animator.
+    - None of the other fields matter, leave them empty.
+- In a GameObject, create a **HIK Full Tiger** component.
+    - Set the *Animator* field to the avatar animator.
+    - Set the *Effectors* field to the *HIK Effectors* component created above.
+
+Then start Play mode. The hierarchy under *HIK Effectors* will be filled with objects that represent the end effectors.
+
 ## How this solver will work
 
 Writing an IK solver for social VR has two parts:
