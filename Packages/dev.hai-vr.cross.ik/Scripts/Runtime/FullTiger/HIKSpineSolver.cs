@@ -59,16 +59,19 @@ namespace HVR.IK.FullTiger
             
             var headAndHipSameDirection01 = math.dot(math.mul(objective.headTargetWorldRotation, math.right()), math.mul(objective.hipTargetWorldRotation, math.right())) * 0.5f + 0.5f;
 
-            var ff = math.lerp(0.01f, definition.refPoseHipToNeckLength / definition.refPoseHipToHeadLength, headAndHipSameDirection01);
-            if (math.distance(originalHipTargetPos, headTargetPos) < definition.refPoseHipToHeadLength * ff) // TODO: Allow this to be closer if the head and hip are not in the same direction
+            if (!objective.allowContortionist)
             {
-                hipTargetPos = headTargetPos - math.normalize(headTargetPos - originalHipTargetPos) * definition.refPoseHipToHeadLength * ff;
-                Debug.DrawLine(headTargetPos, hipTargetPos, Color.red, 0f, false);
-            }
-            else
-            {
-                var kk = math.normalize(headTargetPos - hipTargetPos) * definition.refPoseHipToHeadLength * ff;
-                Debug.DrawLine(hipTargetPos, hipTargetPos + kk, Color.yellow, 0f, false);
+                var ff = math.lerp(0.01f, definition.refPoseHipToNeckLength / definition.refPoseHipToHeadLength, headAndHipSameDirection01);
+                if (math.distance(originalHipTargetPos, headTargetPos) < definition.refPoseHipToHeadLength * ff) // TODO: Allow this to be closer if the head and hip are not in the same direction
+                {
+                    hipTargetPos = headTargetPos - math.normalize(headTargetPos - originalHipTargetPos) * definition.refPoseHipToHeadLength * ff;
+                    Debug.DrawLine(headTargetPos, hipTargetPos, Color.red, 0f, false);
+                }
+                else
+                {
+                    var kk = math.normalize(headTargetPos - hipTargetPos) * definition.refPoseHipToHeadLength * ff;
+                    Debug.DrawLine(hipTargetPos, hipTargetPos + kk, Color.yellow, 0f, false);
+                }
             }
             
             // If the distance between the head and the neck is larger than the length of the neck + refPoseHipToNeckLength

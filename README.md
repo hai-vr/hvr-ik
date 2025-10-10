@@ -56,7 +56,7 @@ There are cases where we will give the solver a position that does not make sens
 There is a case where we will give the solver a position that is solvable, but would alter the artistic vision of the avatar.
 - Some avatars have a spine chain that is naturally curved by default in its rest pose. This causes the distance between the hip and the neck bone
   to be shorter than the sum of the bones between the hips-spine-chest-neck chain.
-- In that case, we should avoid straightening the spine chain, because it causes the avatar mesh to buckle outwards into an unnatural appearance.
+- In that case, we should avoid straightening the spine chain, because it causes the avatar mesh to buckle inwards or outwards into an unnatural appearance.
 
 #### Priming the solver
 

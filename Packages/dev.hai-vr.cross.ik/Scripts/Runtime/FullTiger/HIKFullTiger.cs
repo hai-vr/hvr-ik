@@ -127,7 +127,8 @@ namespace HVR.IK.FullTiger
                 headTargetWorldPosition = effectors.headTarget.position,
                 headTargetWorldRotation = effectors.headTarget.rotation,
                 
-                headAlignmentMattersMore = true
+                headAlignmentMattersMore = true,
+                allowContortionist = false
             });
 
             _bones[(int)Hips].position = ikSnapshot.absolutePos[(int)Hips];
@@ -170,6 +171,7 @@ namespace HVR.IK.FullTiger
         internal quaternion headTargetWorldRotation;
         
         internal bool headAlignmentMattersMore;
+        internal bool allowContortionist;
     }
 
     internal class HIKSolver
