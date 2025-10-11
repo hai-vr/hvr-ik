@@ -36,8 +36,8 @@ namespace HVR.IK.FullTiger
 
         public void Solve(HIKObjective objective)
         {
-            SolveArm(objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation);
-            SolveArm(objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation);
+            if (objective.solveRightArm) SolveArm(objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation);
+            if (objective.solveLeftArm) SolveArm(objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation);
         }
 
         private void SolveArm(HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)

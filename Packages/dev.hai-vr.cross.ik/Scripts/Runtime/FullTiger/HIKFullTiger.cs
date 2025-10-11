@@ -155,6 +155,12 @@ namespace HVR.IK.FullTiger
                 groundedStraddlingLeftLegWorldRotation = effectors.groundedStraddlingLeftLeg.rotation,
                 groundedStraddlingRightLegWorldPosition = effectors.groundedStraddlingRightLeg.position,
                 groundedStraddlingRightLegWorldRotation = effectors.groundedStraddlingRightLeg.rotation,
+                
+                solveSpine = true,
+                solveLeftLeg = true,
+                solveRightLeg = true,
+                solveLeftArm = true,
+                solveRightArm = true,
             });
         }
 
@@ -220,6 +226,12 @@ namespace HVR.IK.FullTiger
         internal quaternion groundedStraddlingLeftLegWorldRotation;
         internal float3 groundedStraddlingRightLegWorldPosition;
         internal quaternion groundedStraddlingRightLegWorldRotation;
+        
+        public bool solveSpine;
+        public bool solveLeftLeg;
+        public bool solveRightLeg;
+        public bool solveLeftArm;
+        public bool solveRightArm;
     }
 
     /// Solves given a definition and an objective, solves a pose into a snapshot.
@@ -243,7 +255,7 @@ namespace HVR.IK.FullTiger
 
         public void Solve(HIKObjective objective)
         {
-            _spineSolver.Solve(objective);
+            if (objective.solveSpine) _spineSolver.Solve(objective);
             _armSolver.Solve(objective);
             _legSolver.Solve(objective);
         }
