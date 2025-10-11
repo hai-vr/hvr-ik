@@ -1,5 +1,6 @@
 ﻿using System;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
@@ -11,10 +12,13 @@ namespace HVR.IK.FullTiger
         private readonly HIKSpineSolver _spineSolver;
         private readonly HIKArmSolver _armSolver;
         private readonly HIKLegSolver _legSolver;
+        
+        private readonly HIKSnapshot _ikSnapshot;
 
         public HIKSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
+            _ikSnapshot = ikSnapshot;
 
             var reorienter = MbusGeofunctions.FromToOrientation(math.forward(), math.right(), math.up(), -math.up());
             _spineSolver = new HIKSpineSolver(definition, ikSnapshot, reorienter);
@@ -25,8 +29,25 @@ namespace HVR.IK.FullTiger
         public void Solve(HIKObjective objective)
         {
             if (objective.solveSpine) _spineSolver.Solve(objective);
-            _armSolver.Solve(objective);
+            
+            // We need to solve the legs before the arms to support virtually parenting the hand effector to a bone of the leg.
             _legSolver.Solve(objective);
+            RewriteObjectiveToAccountForHandSelfParenting(objective);
+            _armSolver.Solve(objective);
+        }
+
+        private void RewriteObjectiveToAccountForHandSelfParenting(HIKObjective objective)
+        {
+            if (objective.selfParentRightHandNullable is { } parent && parent.use > 0f)
+            {
+                var parentBone = (int)parent.bone;
+                var trs = math.mul(
+                    float4x4.TRS(_ikSnapshot.absolutePos[parentBone], _ikSnapshot.absoluteRot[parentBone], new float3(1, 1, 1)),
+                    float4x4.TRS(parent.relPosition, parent.relRotation, new float3(1, 1, 1))
+                );
+                objective.rightHandTargetWorldPosition = math.lerp(objective.rightHandTargetWorldPosition, trs.c3.xyz, parent.use);
+                objective.rightHandTargetWorldRotation = math.slerp(objective.rightHandTargetWorldRotation, new quaternion(trs), parent.use);
+            }
         }
     }
     
@@ -67,5 +88,15 @@ namespace HVR.IK.FullTiger
         public bool solveRightLeg;
         public bool solveLeftArm;
         public bool solveRightArm;
+
+        public HIKSelfParenting selfParentRightHandNullable;
+    }
+
+    internal class HIKSelfParenting
+    {
+        public float use;
+        public HumanBodyBones bone;
+        public float3 relPosition;
+        public quaternion relRotation;
     }
 }

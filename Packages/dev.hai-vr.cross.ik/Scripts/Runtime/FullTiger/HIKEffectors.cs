@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System.Linq;
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace HVR.IK.FullTiger
@@ -44,6 +45,12 @@ namespace HVR.IK.FullTiger
         
         public bool useStraddlingLeftLeg;
         public bool useStraddlingRightLeg;
+        
+        [Range(0, 1)]
+        public float useSelfParentRightHand;
+        public HumanBodyBones selfParentRightHandBone;
+        public float3 selfParentRightHandRelativePosition;
+        public quaternion selfParentRightHandRelativeRotation;
 
         private Vector3[] _tPosePos;
         private Quaternion[] _tPoseRot;

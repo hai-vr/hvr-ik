@@ -123,6 +123,22 @@ namespace HVR.IK.FullTiger
 
         public void PerformRegularSolve()
         {
+            HIKSelfParenting selfParentRightHand;
+            if (effectors.useSelfParentRightHand > 0f)
+            {
+                selfParentRightHand = new HIKSelfParenting
+                {
+                    use = effectors.useSelfParentRightHand,
+                    bone = effectors.selfParentRightHandBone,
+                    relPosition = effectors.selfParentRightHandRelativePosition,
+                    relRotation = effectors.selfParentRightHandRelativeRotation,
+                };
+            }
+            else
+            {
+                selfParentRightHand = null;
+            }
+            
             _ikSolver.Solve(new HIKObjective
             {
                 hipTargetWorldPosition = effectors.hipTarget.position,
@@ -161,6 +177,8 @@ namespace HVR.IK.FullTiger
                 solveRightLeg = true,
                 solveLeftArm = true,
                 solveRightArm = true,
+                
+                selfParentRightHandNullable = selfParentRightHand
             });
         }
 
