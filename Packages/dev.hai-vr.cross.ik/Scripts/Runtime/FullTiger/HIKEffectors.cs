@@ -33,6 +33,10 @@ namespace HVR.IK.FullTiger
         /*[AutoOutput]*/ public Transform groundedStraddlingLeftLeg;
         /*[AutoOutput]*/ public Transform groundedStraddlingRightLeg;
 
+        [Range(0, 1)]
+        public float useChest;
+        public Transform chestTarget;
+
         public Vector3 metaHipToHeadVector;
         public float metaFeetSeparation;
         public float metaFeetHeightFromGround;
@@ -54,6 +58,8 @@ namespace HVR.IK.FullTiger
             rightFootTarget = CreateTarget(HumanBodyBones.RightFoot, "RightFootTarget");
             groundedStraddlingLeftLeg = CreateTarget(HumanBodyBones.LeftLowerLeg, "GroundedStraddlingLeftLeg");
             groundedStraddlingRightLeg = CreateTarget(HumanBodyBones.RightLowerLeg, "GroundedStraddlingRightLeg");
+            
+            chestTarget = CreateTarget(HumanBodyBones.Chest, "ChestTarget");
 
             _tPosePos = AllTargetsStartingWithHead().Select(t => t.position).ToArray();
             _tPoseRot = AllTargetsStartingWithHead().Select(t => t.rotation).ToArray();

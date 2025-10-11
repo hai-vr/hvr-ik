@@ -134,6 +134,10 @@ namespace HVR.IK.FullTiger
                 rightHandTargetWorldPosition = effectors.rightHandTarget.position,
                 rightHandTargetWorldRotation = effectors.rightHandTarget.rotation,
                 
+                useChest = effectors.useChest,
+                chestTargetWorldPosition = effectors.chestTarget.position,
+                chestTargetWorldRotation = effectors.chestTarget.rotation,
+                
                 headAlignmentMattersMore = true,
                 allowContortionist = false
             });
@@ -189,6 +193,10 @@ namespace HVR.IK.FullTiger
         internal quaternion leftHandTargetWorldRotation;
         internal float3 rightHandTargetWorldPosition;
         internal quaternion rightHandTargetWorldRotation;
+        
+        public float useChest;
+        internal Vector3 chestTargetWorldPosition;
+        internal Quaternion chestTargetWorldRotation;
         
         internal bool headAlignmentMattersMore;
         internal bool allowContortionist;

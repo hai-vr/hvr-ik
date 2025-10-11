@@ -105,7 +105,8 @@ namespace HVR.IK.FullTiger
         
             // TODO: We should prime the spine based on what the reference pose already suggested.
             _spineChain[0] = spinePos; // Spine
-            _spineChain[1] = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f; // Chest
+            var chestPosBase = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f;
+            _spineChain[1] = math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest); // Chest
             _spineChain[2] = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f; // Neck
             _spineChain[3] = headTargetPos; // Head
             
@@ -130,9 +131,10 @@ namespace HVR.IK.FullTiger
                 quaternion.LookRotationSafe(_spineChain[1] - _spineChain[0], spineLerpVec),
                 _reorienter
             );
+            var chestRotBase = math.normalize(Vector3.Slerp(hipVec, headVec, 0.75f));
             ikSnapshot.absoluteRot[(int)Chest] = math.mul(
                 // FIXME: Vector3.Slerp doesn't use unity mathematics.
-                quaternion.LookRotationSafe(_spineChain[2] - _spineChain[1], math.normalize(Vector3.Slerp(hipVec, headVec, 0.75f))),
+                quaternion.LookRotationSafe(_spineChain[2] - _spineChain[1], math.lerp(chestRotBase, math.mul(objective.chestTargetWorldRotation, math.down()), objective.useChest)),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)Neck] = math.mul(
