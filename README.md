@@ -33,8 +33,8 @@ We do not use the previous solve as an initial position, but in some cases we ma
 - A) Solve the position of the hips, spine, chest, neck, head, based solely on the hips, and head end effectors (with chest if available).
 - B) Solve the roll of the hips, spine, chest, neck, head.
 - C) Move the hips-spine-chest-neck-head by the difference between the solved head position and head effector.
-- D) Solve the position of the arms and legs. (**Not implemented**)
-- E) Solve the roll of the arms and legs. (**Not implemented**)
+- D) Solve the position of the arms and legs.
+- E) Solve the roll of the arms and legs.
 
 **A** is done using a combination of Fabrik (*"Andreas Aristidou, Joan Lasenby, FABRIK: A fast, iterative solver for the Inverse Kinematics
 problem, Graphical Models, 73 (2011)"*) and custom heuristrics; because the sum of the lengths of the bones on the hips-spine-chest-neck chain is
