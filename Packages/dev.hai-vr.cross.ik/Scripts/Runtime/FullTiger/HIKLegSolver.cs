@@ -36,11 +36,11 @@ namespace HVR.IK.FullTiger
 
         public void Solve(HIKObjective objective)
         {
-            SolveArm(objective, LegSide.Right, objective.rightFootTargetWorldPosition, objective.rightFootTargetWorldRotation);
-            SolveArm(objective, LegSide.Left, objective.leftFootTargetWorldPosition, objective.leftFootTargetWorldRotation);
+            SolveLeg(LegSide.Right, objective.rightFootTargetWorldPosition, objective.rightFootTargetWorldRotation, objective.useStraddlingRightLeg, objective.groundedStraddlingRightLegWorldPosition, objective.groundedStraddlingRightLegWorldRotation);
+            SolveLeg(LegSide.Left, objective.leftFootTargetWorldPosition, objective.leftFootTargetWorldRotation, objective.useStraddlingLeftLeg, objective.groundedStraddlingLeftLegWorldPosition, objective.groundedStraddlingLeftLegWorldRotation);
         }
 
-        private void SolveArm(HIKObjective objective, LegSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)
+        private void SolveLeg(LegSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, bool useStraddlingLeg, float3 groundedStraddlingLegWorldPosition, quaternion groundedStraddlingLegWorldRotation)
         {
             var objectivePos = originalObjectivePos;
             
@@ -56,7 +56,7 @@ namespace HVR.IK.FullTiger
             
             // Apply correction when the target is too far
             bool isMaximumDistance;
-            if (math.distance(rootPos, objectivePos) >= totalLength)
+            if (!useStraddlingLeg && math.distance(rootPos, objectivePos) >= totalLength)
             {
                 objectivePos = rootPos + math.normalize(objectivePos - rootPos) * totalLength;
                 Debug.DrawLine(objectivePos, originalObjectivePos, Color.magenta, 0f, false);
@@ -78,7 +78,16 @@ namespace HVR.IK.FullTiger
             // Solve
             bool isTooTight = false;
             float3 bendPointPos;
-            if (!isMaximumDistance)
+            if (useStraddlingLeg)
+            {
+                bendPointPos = rootPos + math.normalize(groundedStraddlingLegWorldPosition - rootPos) * upperLength;
+                var prevObjectivePos = objectivePos;
+                objectivePos = bendPointPos + math.normalize(objectivePos - bendPointPos) * lowerLength;
+                
+                Debug.DrawLine(bendPointPos, groundedStraddlingLegWorldPosition, Color.magenta, 0f, false);
+                Debug.DrawLine(prevObjectivePos, objectivePos, Color.magenta, 0f, false);
+            }
+            else if (!isMaximumDistance)
             {
                 var toTip = objectivePos - rootPos;
                 var toTipLength = math.length(toTip);

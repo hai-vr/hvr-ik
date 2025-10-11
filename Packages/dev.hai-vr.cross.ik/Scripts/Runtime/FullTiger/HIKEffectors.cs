@@ -43,6 +43,9 @@ namespace HVR.IK.FullTiger
         
         public bool hipPositionMattersMore;
         public bool contortionist;
+        
+        public bool useStraddlingLeftLeg;
+        public bool useStraddlingRightLeg;
 
         private Vector3[] _tPosePos;
         private Quaternion[] _tPoseRot;

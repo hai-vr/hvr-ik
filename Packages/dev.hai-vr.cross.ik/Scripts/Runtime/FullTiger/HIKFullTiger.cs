@@ -144,7 +144,14 @@ namespace HVR.IK.FullTiger
                 chestTargetWorldRotation = effectors.chestTarget.rotation,
                 
                 headAlignmentMattersMore = !effectors.hipPositionMattersMore,
-                allowContortionist = effectors.contortionist
+                allowContortionist = effectors.contortionist,
+                
+                useStraddlingLeftLeg = effectors.useStraddlingLeftLeg,
+                useStraddlingRightLeg = effectors.useStraddlingRightLeg,
+                groundedStraddlingLeftLegWorldPosition = effectors.groundedStraddlingLeftLeg.position,
+                groundedStraddlingLeftLegWorldRotation = effectors.groundedStraddlingLeftLeg.rotation,
+                groundedStraddlingRightLegWorldPosition = effectors.groundedStraddlingRightLeg.position,
+                groundedStraddlingRightLegWorldRotation = effectors.groundedStraddlingRightLeg.rotation,
             });
 
             _bones[(int)Hips].position = ikSnapshot.absolutePos[(int)Hips];
@@ -210,6 +217,13 @@ namespace HVR.IK.FullTiger
         
         internal bool headAlignmentMattersMore;
         internal bool allowContortionist;
+        
+        public bool useStraddlingLeftLeg;
+        public bool useStraddlingRightLeg;
+        internal float3 groundedStraddlingLeftLegWorldPosition;
+        internal quaternion groundedStraddlingLeftLegWorldRotation;
+        internal float3 groundedStraddlingRightLegWorldPosition;
+        internal quaternion groundedStraddlingRightLegWorldRotation;
     }
 
     internal class HIKSolver

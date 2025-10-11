@@ -84,25 +84,5 @@ namespace HVR.IK.FullTiger
         {
             return objective + math.normalize(point - objective) * distance;
         }
-
-        public static bool SolveStraddling(float3[] mutatedThreePointsIncludesRoot,
-            float3 targetPos,
-            float[] distances,
-            float3 rootPos,
-            ref int operationCounter,
-            int maxOperationCount,
-            float3 groundedStraddlingPos)
-        {
-            mutatedThreePointsIncludesRoot[0] = rootPos;
-            var rootToGrounded = math.normalize(groundedStraddlingPos - rootPos);
-            var middlePos = rootPos + rootToGrounded * distances[0];
-            var middleToTarget = math.normalize(targetPos - middlePos);
-            var realTargetPos = middlePos + middleToTarget * distances[1];
-            mutatedThreePointsIncludesRoot[1] = middlePos;
-            mutatedThreePointsIncludesRoot[2] = realTargetPos;
-
-            if (++operationCounter >= maxOperationCount) return false;
-            return true;
-        }
     }
 }
