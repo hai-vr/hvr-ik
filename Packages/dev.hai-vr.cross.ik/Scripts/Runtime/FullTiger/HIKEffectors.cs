@@ -53,17 +53,17 @@ namespace HVR.IK.FullTiger
 
         private void OnEnable()
         {
-            runtimeTargets = MbusUtil.NewTransform("RuntimeTargets", transform);
-            hipTarget = CreateTarget(HumanBodyBones.Hips, "HipTarget");
-            headTarget = CreateTarget(HumanBodyBones.Head, "HeadTarget");
-            leftHandTarget = CreateTarget(HumanBodyBones.LeftHand, "LeftHandTarget");
-            rightHandTarget = CreateTarget(HumanBodyBones.RightHand, "RightHandTarget");
-            leftFootTarget = CreateTarget(HumanBodyBones.LeftFoot, "LeftFootTarget");
-            rightFootTarget = CreateTarget(HumanBodyBones.RightFoot, "RightFootTarget");
-            groundedStraddlingLeftLeg = CreateTarget(HumanBodyBones.LeftLowerLeg, "GroundedStraddlingLeftLeg");
-            groundedStraddlingRightLeg = CreateTarget(HumanBodyBones.RightLowerLeg, "GroundedStraddlingRightLeg");
+            if (null == runtimeTargets) runtimeTargets = MbusUtil.NewTransform("RuntimeTargets", transform);
+            if (null == hipTarget) hipTarget = CreateTarget(HumanBodyBones.Hips, "HipTarget");
+            if (null == headTarget) headTarget = CreateTarget(HumanBodyBones.Head, "HeadTarget");
+            if (null == leftHandTarget) leftHandTarget = CreateTarget(HumanBodyBones.LeftHand, "LeftHandTarget");
+            if (null == rightHandTarget) rightHandTarget = CreateTarget(HumanBodyBones.RightHand, "RightHandTarget");
+            if (null == leftFootTarget) leftFootTarget = CreateTarget(HumanBodyBones.LeftFoot, "LeftFootTarget");
+            if (null == rightFootTarget) rightFootTarget = CreateTarget(HumanBodyBones.RightFoot, "RightFootTarget");
+            if (null == groundedStraddlingLeftLeg) groundedStraddlingLeftLeg = CreateTarget(HumanBodyBones.LeftLowerLeg, "GroundedStraddlingLeftLeg");
+            if (null == groundedStraddlingRightLeg) groundedStraddlingRightLeg = CreateTarget(HumanBodyBones.RightLowerLeg, "GroundedStraddlingRightLeg");
             
-            chestTarget = CreateTarget(HumanBodyBones.Chest, "ChestTarget");
+            if (null == chestTarget) chestTarget = CreateTarget(HumanBodyBones.Chest, "ChestTarget");
 
             _tPosePos = AllTargetsStartingWithHead().Select(t => t.position).ToArray();
             _tPoseRot = AllTargetsStartingWithHead().Select(t => t.rotation).ToArray();

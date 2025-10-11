@@ -1,6 +1,5 @@
 ﻿using System;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
@@ -17,7 +16,7 @@ namespace HVR.IK.FullTiger
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
 
-            var reorienter = MbusGeofunctions.FromToOrientation(Vector3.forward, Vector3.right, Vector3.up, -Vector3.up);
+            var reorienter = MbusGeofunctions.FromToOrientation(math.forward(), math.right(), math.up(), -math.up());
             _spineSolver = new HIKSpineSolver(definition, ikSnapshot, reorienter);
             _armSolver = new HIKArmSolver(definition, ikSnapshot, reorienter);
             _legSolver = new HIKLegSolver(definition, ikSnapshot, reorienter);
