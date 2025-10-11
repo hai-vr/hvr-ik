@@ -5,6 +5,8 @@ An work-in-progress IK solver primarily designed for use in social VR applicatio
 
 This is the third IK solver that I'm writing, and I hope that it will become good enough to be the last of mine (it probably won't be).
 
+https://github.com/user-attachments/assets/f4b17e25-f894-47cd-a856-1171d6773d23
+
 ## Adding to the scene
 
 In Edit mode:
