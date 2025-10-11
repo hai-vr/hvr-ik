@@ -1,7 +1,7 @@
 HVR IK
 ===
 
-An work-in-progress IK solver primarily designed for use in social VR applications, where the inputs of the system are imperfect.
+A work-in-progress IK solver primarily designed for use in social VR applications, where the inputs of the system are imperfect.
 
 This is the third IK solver that I'm writing, and I hope that it will become good enough to be the last of mine (it probably won't be).
 
@@ -34,7 +34,7 @@ The *HIK Effectors* component has options that can change the behavior of the so
     This is designed to avoid odd looking poses where the spine chain is crunched on itself.
 - **Use Straddling Left/Right Leg** (defaults to false):
   - When true, the upper leg will always point towards the lower leg effector, and the lower leg will point towards the foot effector; the foot position will no longer match.
-    This is designed to enable poses where grounding the knees matters more than accurately poisitioning the feet.
+    This is designed to enable poses where grounding the knees matters more than accurately positioning the feet.
   - When false, the lower leg effector only suggests the direction of the bend, and the foot position will match.
 - **Use Chest**:
   - When closest to 1, the chest position and rotation will be influenced by the chest effector.
@@ -62,7 +62,7 @@ We do not use the previous solve as an initial position, but in some cases we ma
 - E) Solve the roll of the arms and legs.
 
 **A** is done using a combination of Fabrik (*"Andreas Aristidou, Joan Lasenby, FABRIK: A fast, iterative solver for the Inverse Kinematics
-problem, Graphical Models, 73 (2011)"*) and custom heuristrics; because the sum of the lengths of the bones on the hips-spine-chest-neck chain is
+problem, Graphical Models, 73 (2011)"*) and custom heuristics; because the sum of the lengths of the bones on the hips-spine-chest-neck chain is
 not necessarily the desired maximum hips-neck distance.
 
 **C** needs to be done so that the HMD lines up with the avatar head. This also gives the initial conditions for solving the arms and legs.
@@ -77,7 +77,7 @@ so we just have to solve the roll of the bones, also known as twist.
 ### The hard part: Correction, priming, and bend direction
 
 Solving the position and rotation is the easy part because we don't have to deal with a constraint system with angle limits, and we don't have to
-satisfy multiple end effectors. The solver is one solve followed by four other separate solves that don't interfere wtih each other.
+satisfy multiple end effectors. The solver is one solve followed by four other separate solves that don't interfere with each other.
 
 The hard part is **making the IK feel good when worn in first person**, and this is completely subjective.
 
