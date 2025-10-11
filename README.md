@@ -38,7 +38,7 @@ The *HIK Effectors* component has options that can change the behavior of the so
   - When false, the lower leg effector only suggests the direction of the bend, and the foot position will match.
 - **Use Chest**:
   - When closest to 1, the chest position and rotation will be influenced by the chest effector.
-  - When closest to 0, the chest position and rotation will be chosed by default as if there was no chest effector.
+  - When closest to 0, the chest position and rotation will be chosen by default as if there was no chest effector.
 - **Also Use Chest to Move Neck**:
   - When this is closest to 1 *and Use Chest* is also closest to 1, the chest position and rotation will influence the position of the neck, which may tilt the upper body.
   - Otherwise, the neck position will be solved by default as if there was no chest effector.
@@ -53,7 +53,8 @@ Writing an IK solver for social VR has two parts:
 
 This does *not* use a complex IK solver algorithm with multi-effectors and angle limits and such.
 
-We do not use the previous solve as an initial position, but in some cases we may choose to carry some information from the previous solve.
+We do not use the previous solve as an initial position, but in some cases we may choose to carry some information from the previous solve
+(for example, the hand and arm angles so that we may guess much they could still twist).
 - A) Solve the position of the hips, spine, chest, neck, head, based solely on the hips, and head end effectors (with chest if available).
 - B) Solve the roll of the hips, spine, chest, neck, head.
 - C) Move the hips-spine-chest-neck-head by the difference between the solved head position and head effector.
