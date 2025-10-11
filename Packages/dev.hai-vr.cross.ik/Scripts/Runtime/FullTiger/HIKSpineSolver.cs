@@ -181,6 +181,11 @@ namespace HVR.IK.FullTiger
                 Debug.DrawLine(ikSnapshot.absolutePos[(int)RightShoulder], ikSnapshot.absolutePos[(int)RightUpperArm], Color.coral, 0f, false);
                 Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)LeftUpperLeg], Color.coral, 0f, false);
                 Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)RightUpperLeg], Color.coral, 0f, false);
+
+                if (objective.useChest > 0f)
+                {
+                    Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], objective.chestTargetWorldPosition, Color.mediumOrchid, 0f, false);
+                }
             }
         }
 
