@@ -29,8 +29,8 @@ namespace HVR.IK.FullTiger
             /*Hips,*/ Spine, Chest, UpperChest, Neck, Head,
             LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand,
             RightShoulder, RightUpperArm, RightLowerArm, RightHand,
-            // LeftUpperLeg, LeftLowerLeg, LeftFoot, LeftToes,
-            // RightUpperLeg, RightLowerLeg, RightFoot, RightToes,
+            LeftUpperLeg, LeftLowerLeg, LeftFoot, //LeftToes,
+            RightUpperLeg, RightLowerLeg, RightFoot, //RightToes,
         };
         private static readonly HumanBodyBones[] SpineChain = { Hips, Spine, Chest, UpperChest, Neck, Head };
         private static readonly HumanBodyBones[] LeftArmChain = { LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand };
@@ -134,6 +134,11 @@ namespace HVR.IK.FullTiger
                 rightHandTargetWorldPosition = effectors.rightHandTarget.position,
                 rightHandTargetWorldRotation = effectors.rightHandTarget.rotation,
                 
+                leftFootTargetWorldPosition = effectors.leftFootTarget.position,
+                leftFootTargetWorldRotation = effectors.leftFootTarget.rotation,
+                rightFootTargetWorldPosition = effectors.rightFootTarget.position,
+                rightFootTargetWorldRotation = effectors.rightFootTarget.rotation,
+                
                 useChest = effectors.useChest,
                 chestTargetWorldPosition = effectors.chestTarget.position,
                 chestTargetWorldRotation = effectors.chestTarget.rotation,
@@ -194,6 +199,11 @@ namespace HVR.IK.FullTiger
         internal float3 rightHandTargetWorldPosition;
         internal quaternion rightHandTargetWorldRotation;
         
+        internal float3 leftFootTargetWorldPosition;
+        internal quaternion leftFootTargetWorldRotation;
+        internal float3 rightFootTargetWorldPosition;
+        internal quaternion rightFootTargetWorldRotation;
+        
         public float useChest;
         internal Vector3 chestTargetWorldPosition;
         internal Quaternion chestTargetWorldRotation;
@@ -206,6 +216,7 @@ namespace HVR.IK.FullTiger
     {
         private readonly HIKSpineSolver _spineSolver;
         private readonly HIKArmSolver _armSolver;
+        private readonly HIKLegSolver _legSolver;
 
         public HIKSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot)
         {
@@ -214,12 +225,14 @@ namespace HVR.IK.FullTiger
             var reorienter = MbusGeofunctions.FromToOrientation(Vector3.forward, Vector3.right, Vector3.up, -Vector3.up);
             _spineSolver = new HIKSpineSolver(definition, ikSnapshot, reorienter);
             _armSolver = new HIKArmSolver(definition, ikSnapshot, reorienter);
+            _legSolver = new HIKLegSolver(definition, ikSnapshot, reorienter);
         }
 
         public void Solve(HIKObjective objective)
         {
             _spineSolver.Solve(objective);
             _armSolver.Solve(objective);
+            _legSolver.Solve(objective);
         }
     }
 }

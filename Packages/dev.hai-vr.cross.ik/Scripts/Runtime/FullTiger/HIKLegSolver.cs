@@ -18,14 +18,14 @@ using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
-    internal class HIKArmSolver
+    internal class HIKLegSolver
     {
         private const float InsideSwitchingMul = 2;
         private readonly HIKAvatarDefinition definition;
         private readonly HIKSnapshot ikSnapshot;
         private readonly quaternion _reorienter;
         
-        public HIKArmSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot, quaternion reorienter)
+        public HIKLegSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot, quaternion reorienter)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
@@ -36,17 +36,17 @@ namespace HVR.IK.FullTiger
 
         public void Solve(HIKObjective objective)
         {
-            SolveArm(objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation);
-            SolveArm(objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation);
+            SolveArm(objective, LegSide.Right, objective.rightFootTargetWorldPosition, objective.rightFootTargetWorldRotation);
+            SolveArm(objective, LegSide.Left, objective.leftFootTargetWorldPosition, objective.leftFootTargetWorldRotation);
         }
 
-        private void SolveArm(HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)
+        private void SolveArm(HIKObjective objective, LegSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)
         {
             var objectivePos = originalObjectivePos;
             
-            var rootBone = side == ArmSide.Right ? HumanBodyBones.RightUpperArm : HumanBodyBones.LeftUpperArm;
-            var midBone = side == ArmSide.Right ? HumanBodyBones.RightLowerArm : HumanBodyBones.LeftLowerArm;
-            var tipBone = side == ArmSide.Right ? HumanBodyBones.RightHand : HumanBodyBones.LeftHand;
+            var rootBone = side == LegSide.Right ? HumanBodyBones.RightUpperLeg : HumanBodyBones.LeftUpperLeg;
+            var midBone = side == LegSide.Right ? HumanBodyBones.RightLowerLeg : HumanBodyBones.LeftLowerLeg;
+            var tipBone = side == LegSide.Right ? HumanBodyBones.RightFoot : HumanBodyBones.LeftFoot;
             
             var rootPos = ikSnapshot.absolutePos[(int)rootBone];
 
@@ -67,31 +67,32 @@ namespace HVR.IK.FullTiger
                 isMaximumDistance = false;
             }
             
-            // TODO: Handle HasUpperChest
-            var chestReference = ikSnapshot.absoluteRot[(int)HumanBodyBones.Chest];
-            var bendDirection = ArmBendHeuristics();
+            var hipReference = ikSnapshot.absoluteRot[(int)HumanBodyBones.Hips];
+            var bendDirection = LegBendHeuristics();
 
-            float3 ArmBendHeuristics()
+            float3 LegBendHeuristics()
             {
-                var chestUpwards = math.mul(chestReference, math.right());
+                var hipSource = math.mul(hipReference, math.down());
+                return hipSource;
                 
-                var outwards = math.mul(chestReference, side == ArmSide.Right ? math.back() : math.forward());
+                var hipUpwards = math.mul(hipReference, math.right());
+                
+                var outwards = math.mul(hipReference, side == LegSide.Right ? math.back() : math.forward());
                 var handSource = math.mul(originalObjectiveRot, math.left());
-                var palmDirection = math.mul(originalObjectiveRot, side == ArmSide.Right ? math.down() : math.up());
+                var palmDirection = math.mul(originalObjectiveRot, side == LegSide.Right ? math.down() : math.up());
 
                 var isOutwards = math.dot(outwards, -handSource);
-                var isPalmUp = math.dot(chestUpwards, palmDirection);
+                var isPalmUp = math.dot(hipUpwards, palmDirection);
                 var isInside = math.clamp(math.smoothstep(0f, 1f, math.dot(-outwards, math.normalize(objectivePos - rootPos) * InsideSwitchingMul)), -1f, 1f);
                 
-                Debug.DrawLine(rootPos , rootPos + chestUpwards * isOutwards * 0.1f, Color.red, 0f, false);
-                Debug.DrawLine(rootPos + outwards * 0.01f, rootPos + outwards * 0.01f + chestUpwards * isPalmUp * 0.1f, Color.green, 0f, false);
-                Debug.DrawLine(rootPos + outwards * 0.02f, rootPos + outwards * 0.02f + chestUpwards * isInside * 0.1f, Color.blue, 0f, false);
+                Debug.DrawLine(rootPos , rootPos + hipUpwards * isOutwards * 0.1f, Color.red, 0f, false);
+                Debug.DrawLine(rootPos + outwards * 0.01f, rootPos + outwards * 0.01f + hipUpwards * isPalmUp * 0.1f, Color.green, 0f, false);
+                Debug.DrawLine(rootPos + outwards * 0.02f, rootPos + outwards * 0.02f + hipUpwards * isInside * 0.1f, Color.blue, 0f, false);
                 
-                var chestSource = math.mul(chestReference, math.left());
-                var chestSourceBendingOutwards = math.normalize(chestSource + outwards * math.clamp(isInside, 0f, 1f));
-                var step2 = MbusUtil.LerpDot(handSource, handSource, chestSourceBendingOutwards, isPalmUp);
-                var step3 = MbusUtil.LerpDot(step2, step2, chestSourceBendingOutwards, isOutwards);
-                return MbusUtil.LerpDot(step3, step3, chestSourceBendingOutwards, isInside);
+                var hipSourceBendingOutwards = math.normalize(hipSource + outwards * math.clamp(isInside, 0f, 1f));
+                var step2 = MbusUtil.LerpDot(handSource, handSource, hipSourceBendingOutwards, isPalmUp);
+                var step3 = MbusUtil.LerpDot(step2, step2, hipSourceBendingOutwards, isOutwards);
+                return MbusUtil.LerpDot(step3, step3, hipSourceBendingOutwards, isInside);
             }
             
             // Solve
@@ -127,13 +128,13 @@ namespace HVR.IK.FullTiger
             Debug.DrawLine(rootPos, bendPointPos, Color.yellow, 0f, false);
             Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
 
-            var twistBase = math.mul(chestReference, math.left());
+            var twistBase = math.mul(hipReference, math.down());
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
-                quaternion.LookRotationSafe(bendPointPos - rootPos, side == ArmSide.Right ? twistBase : -twistBase),
+                quaternion.LookRotationSafe(bendPointPos - rootPos, twistBase),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                quaternion.LookRotationSafe(objectivePos - bendPointPos, math.mul(originalObjectiveRot, side == ArmSide.Right ? math.forward() : math.back())),
+                quaternion.LookRotationSafe(objectivePos - bendPointPos, twistBase),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
@@ -142,7 +143,7 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(tipBone, definition);
         }
 
-        private enum ArmSide
+        private enum LegSide
         {
             Left,
             Right,
