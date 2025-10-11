@@ -19,6 +19,25 @@ In Edit mode:
 
 Then start Play mode. The hierarchy under *HIK Effectors* will be filled with objects that represent the end effectors.
 
+## Options
+
+The *HIK Effectors* component has options that can change the behavior of the solver:
+- **Hip Position Matters More** (defaults to false):
+  - When true, ensures that the hip position is always reached. The head may not longer be aligned with the HMD when it is too far from it.
+  - When false, ensures that the head position is always reached, even if it means moving the hips away from its effector.
+    This is designed to make sure that the head is always attached to the HMD.
+- **Contortionist** (defaults to false):
+  - When true, removes the minimum distance limit between the head and the hips.
+  - When false, there is a minimum distance between the head and the hips, which depends on the head angle.
+    This is designed to avoid odd looking poses where the spine chain is crunched on itself.
+- **Straddle Left/Right Leg** (defaults to false):
+  - When true, the upper leg will always point towards the lower leg effector, and the lower leg will point towards the foot effector; the foot position will no longer match.
+    This is designed to enable poses where grounding the knees matters more than accurately poisitioning the feet.
+  - When false, the lower leg effector only suggests the direction of the bend, and the foot position will match.
+- **Use Chest**:
+  - When closest to 1, the chest position and rotation will be influenced by the chest effector.
+  - When closest to 0, the chest position and rotation will be chosed by default as if there was no chest effector.
+
 ## How this solver will work
 
 Writing an IK solver for social VR has two parts:

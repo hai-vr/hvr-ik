@@ -40,6 +40,9 @@ namespace HVR.IK.FullTiger
         public Vector3 metaHipToHeadVector;
         public float metaFeetSeparation;
         public float metaFeetHeightFromGround;
+        
+        public bool hipPositionMattersMore;
+        public bool contortionist;
 
         private Vector3[] _tPosePos;
         private Quaternion[] _tPoseRot;

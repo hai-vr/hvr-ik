@@ -143,8 +143,8 @@ namespace HVR.IK.FullTiger
                 chestTargetWorldPosition = effectors.chestTarget.position,
                 chestTargetWorldRotation = effectors.chestTarget.rotation,
                 
-                headAlignmentMattersMore = true,
-                allowContortionist = false
+                headAlignmentMattersMore = !effectors.hipPositionMattersMore,
+                allowContortionist = effectors.contortionist
             });
 
             _bones[(int)Hips].position = ikSnapshot.absolutePos[(int)Hips];
