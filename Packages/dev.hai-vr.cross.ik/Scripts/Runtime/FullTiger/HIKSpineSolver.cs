@@ -104,12 +104,16 @@ namespace HVR.IK.FullTiger
             var spintToHeadLen = math.length(spineToHead);
         
             // TODO: We should prime the spine based on what the reference pose already suggested.
-            _spineChain[0] = spinePos; // Spine
             var chestPosBase = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f;
-            _spineChain[1] = math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest); // Chest
             var neckPosBase = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f;
-            _spineChain[2] = math.lerp(neckPosBase, objective.chestTargetWorldPosition + math.mul(objective.chestTargetWorldRotation, math.right() * spintToHeadLen * 0.4f), objective.useChest * objective.alsoUseChestToMoveNeck); // Neck
-            _spineChain[3] = headTargetPos; // Head
+            var primingSpine = spinePos;
+            var primingChest = math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest);
+            var primingNeck = math.lerp(neckPosBase, objective.chestTargetWorldPosition + math.mul(objective.chestTargetWorldRotation, math.right() * definition.refPoseChestLength), objective.useChest * objective.alsoUseChestToMoveNeck);
+            var primingHead = headTargetPos;
+            _spineChain[0] = primingSpine; // Spine
+            _spineChain[1] = primingChest; // Chest
+            _spineChain[2] = primingNeck; // Neck
+            _spineChain[3] = primingHead; // Head
             
             // ## Relax
             var operationCounter = 0;
@@ -119,6 +123,11 @@ namespace HVR.IK.FullTiger
                 // var color = Color.Lerp(Color.black, Color.red, i / (Iterations - 1f));
                 // if (drawDebug) DataViz.Instance.DrawLine(spineBezier, color, color);
             }
+            
+            Debug.DrawLine(primingSpine, _spineChain[0], Color.lawnGreen, 0f, false);
+            Debug.DrawLine(primingChest, _spineChain[1], Color.lawnGreen, 0f, false);
+            Debug.DrawLine(primingNeck, _spineChain[2], Color.lawnGreen, 0f, false);
+            Debug.DrawLine(primingHead, _spineChain[3], Color.lawnGreen, 0f, false);
 
             // ## Positions are solved into _spineChain. Now, solve the rotations.
 
