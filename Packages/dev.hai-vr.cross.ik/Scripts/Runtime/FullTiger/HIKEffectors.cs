@@ -50,7 +50,13 @@ namespace HVR.IK.FullTiger
         public float useSelfParentRightHand;
         public HumanBodyBones selfParentRightHandBone;
         public float3 selfParentRightHandRelativePosition;
-        public quaternion selfParentRightHandRelativeRotation;
+        public float3 selfParentRightHandRelativeRotationEuler;
+        
+        [Range(0, 1)]
+        public float useSelfParentLeftHand;
+        public HumanBodyBones selfParentLeftHandBone;
+        public float3 selfParentLeftHandRelativePosition;
+        public float3 selfParentLeftHandRelativeRotationEuler;
 
         private Vector3[] _tPosePos;
         private Quaternion[] _tPoseRot;

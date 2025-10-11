@@ -123,6 +123,21 @@ namespace HVR.IK.FullTiger
 
         public void PerformRegularSolve()
         {
+            HIKSelfParenting selfParentLeftHand;
+            if (effectors.useSelfParentLeftHand > 0f)
+            {
+                selfParentLeftHand = new HIKSelfParenting
+                {
+                    use = effectors.useSelfParentLeftHand,
+                    bone = effectors.selfParentLeftHandBone,
+                    relPosition = effectors.selfParentLeftHandRelativePosition,
+                    relRotation = quaternion.Euler(effectors.selfParentLeftHandRelativeRotationEuler),
+                };
+            }
+            else
+            {
+                selfParentLeftHand = null;
+            }
             HIKSelfParenting selfParentRightHand;
             if (effectors.useSelfParentRightHand > 0f)
             {
@@ -131,7 +146,7 @@ namespace HVR.IK.FullTiger
                     use = effectors.useSelfParentRightHand,
                     bone = effectors.selfParentRightHandBone,
                     relPosition = effectors.selfParentRightHandRelativePosition,
-                    relRotation = effectors.selfParentRightHandRelativeRotation,
+                    relRotation = quaternion.Euler(effectors.selfParentRightHandRelativeRotationEuler),
                 };
             }
             else
@@ -178,7 +193,8 @@ namespace HVR.IK.FullTiger
                 solveLeftArm = true,
                 solveRightArm = true,
                 
-                selfParentRightHandNullable = selfParentRightHand
+                selfParentLeftHandNullable = selfParentLeftHand,
+                selfParentRightHandNullable = selfParentRightHand,
             });
         }
 

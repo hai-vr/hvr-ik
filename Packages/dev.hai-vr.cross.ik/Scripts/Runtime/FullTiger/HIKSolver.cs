@@ -32,21 +32,22 @@ namespace HVR.IK.FullTiger
             
             // We need to solve the legs before the arms to support virtually parenting the hand effector to a bone of the leg.
             _legSolver.Solve(objective);
-            RewriteObjectiveToAccountForHandSelfParenting(objective);
+            RewriteObjectiveToAccountForHandSelfParenting(objective.selfParentRightHandNullable, ref objective.rightHandTargetWorldPosition, ref objective.rightHandTargetWorldRotation);
+            RewriteObjectiveToAccountForHandSelfParenting(objective.selfParentLeftHandNullable, ref objective.leftHandTargetWorldPosition, ref objective.leftHandTargetWorldRotation);
             _armSolver.Solve(objective);
         }
 
-        private void RewriteObjectiveToAccountForHandSelfParenting(HIKObjective objective)
+        private void RewriteObjectiveToAccountForHandSelfParenting(HIKSelfParenting objectiveSelfParentHandNullable, ref float3 pos, ref quaternion rot)
         {
-            if (objective.selfParentRightHandNullable is { } parent && parent.use > 0f)
+            if (objectiveSelfParentHandNullable is { } parent && parent.use > 0f)
             {
                 var parentBone = (int)parent.bone;
                 var trs = math.mul(
                     float4x4.TRS(_ikSnapshot.absolutePos[parentBone], _ikSnapshot.absoluteRot[parentBone], new float3(1, 1, 1)),
                     float4x4.TRS(parent.relPosition, parent.relRotation, new float3(1, 1, 1))
                 );
-                objective.rightHandTargetWorldPosition = math.lerp(objective.rightHandTargetWorldPosition, trs.c3.xyz, parent.use);
-                objective.rightHandTargetWorldRotation = math.slerp(objective.rightHandTargetWorldRotation, new quaternion(trs), parent.use);
+                pos = math.lerp(pos, trs.c3.xyz, parent.use);
+                rot = math.slerp(rot, new quaternion(trs), parent.use);
             }
         }
     }
@@ -89,6 +90,7 @@ namespace HVR.IK.FullTiger
         public bool solveLeftArm;
         public bool solveRightArm;
 
+        public HIKSelfParenting selfParentLeftHandNullable;
         public HIKSelfParenting selfParentRightHandNullable;
     }
 
