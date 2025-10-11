@@ -89,9 +89,9 @@ namespace HVR.IK.FullTiger
                 
                 var chestSource = math.mul(chestReference, math.left());
                 var chestSourceBendingOutwards = math.normalize(chestSource + outwards * math.clamp(isInside, 0f, 1f));
-                var step2 = MbusUtil.LerpDot(handSource, handSource, chestSourceBendingOutwards, isPalmUp);
-                var step3 = MbusUtil.LerpDot(step2, step2, chestSourceBendingOutwards, isOutwards);
-                return MbusUtil.LerpDot(step3, step3, chestSourceBendingOutwards, isInside);
+                var step2 = MbusGeofunctions.LerpDot(handSource, handSource, chestSourceBendingOutwards, isPalmUp);
+                var step3 = MbusGeofunctions.LerpDot(step2, step2, chestSourceBendingOutwards, isOutwards);
+                return MbusGeofunctions.LerpDot(step3, step3, chestSourceBendingOutwards, isInside);
             }
             
             // Solve

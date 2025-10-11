@@ -132,9 +132,8 @@ namespace HVR.IK.FullTiger
                 quaternion.LookRotationSafe(_spineChain[1] - _spineChain[0], spineLerpVec),
                 _reorienter
             );
-            var chestRotBase = math.normalize(Vector3.Slerp(hipVec, headVec, 0.75f));
+            var chestRotBase = math.normalize(MbusGeofunctions.Slerp(hipVec, headVec, 0.75f));
             ikSnapshot.absoluteRot[(int)Chest] = math.mul(
-                // FIXME: Vector3.Slerp doesn't use unity mathematics.
                 quaternion.LookRotationSafe(_spineChain[2] - _spineChain[1], math.lerp(chestRotBase, math.mul(objective.chestTargetWorldRotation, math.down()), objective.useChest)),
                 _reorienter
             );
@@ -198,7 +197,7 @@ namespace HVR.IK.FullTiger
 
             var dot = math.dot(similarityVector, regular);
             
-            return MbusUtil.LerpDot(ifMinusOne, regular, ifOne, dot);
+            return MbusGeofunctions.LerpDot(ifMinusOne, regular, ifOne, dot);
         }
     }
 }

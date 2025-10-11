@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {

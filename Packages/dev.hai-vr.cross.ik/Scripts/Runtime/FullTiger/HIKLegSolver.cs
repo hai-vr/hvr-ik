@@ -20,7 +20,6 @@ namespace HVR.IK.FullTiger
 {
     internal class HIKLegSolver
     {
-        private const float InsideSwitchingMul = 2;
         private readonly HIKAvatarDefinition definition;
         private readonly HIKSnapshot ikSnapshot;
         private readonly quaternion _reorienter;
@@ -119,7 +118,7 @@ namespace HVR.IK.FullTiger
 
             var hipDown = math.mul(hipReference, math.down());
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
-                quaternion.LookRotationSafe(bendPointPos - rootPos, MbusUtil.LerpDot(hipDown, hipDown, math.mul(hipReference, math.right()), math.dot(hipDown, math.normalize(bendPointPos - rootPos)))),
+                quaternion.LookRotationSafe(bendPointPos - rootPos, MbusGeofunctions.LerpDot(hipDown, hipDown, math.mul(hipReference, math.right()), math.dot(hipDown, math.normalize(bendPointPos - rootPos)))),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(

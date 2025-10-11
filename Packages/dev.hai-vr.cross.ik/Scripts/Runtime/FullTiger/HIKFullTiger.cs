@@ -44,33 +44,30 @@ namespace HVR.IK.FullTiger
         private HIKSolver _ikSolver;
         
         private readonly Transform[] _bones = new Transform[(int)LastBone];
-        // private readonly Transform[] _standins = new Transform[(int)LastBone];
 
         public bool updateEveryFrame = true;
 
         private void Awake()
         {
+            SolveDefinition(animator, definition, _bones);
+            
+            // Order matters: This must be instantiated AFTER definition is initialized
+            _ikSolver = new HIKSolver(definition, ikSnapshot);
+        }
+
+        private static void SolveDefinition(Animator animator, HIKAvatarDefinition definition, Transform[] bones)
+        {
+            // TODO: We should T-Pose the avatar before sampling the hiplative positions
             var hips = animator.GetBoneTransform(Hips);
             for (var boneId = Hips; boneId < LastBone; boneId++)
             {
                 var i = (int)boneId;
                 var boneNullable = animator.GetBoneTransform(boneId);
-                _bones[i] = boneNullable;
+                bones[i] = boneNullable;
                 if (boneNullable != null)
                 {
                     var bone = boneNullable;
                     var postRot = MbusAnimatorUtil.ReflectiveGetPostRotation(animator.avatar, boneId);
-                    // var standin = new GameObject($"Standin{Enum.GetName(typeof(HumanBodyBones), boneId)}")
-                    // {
-                    //     transform =
-                    //     {
-                    //         parent = transform,
-                    //         position = bone.position,
-                    //         rotation = bone.rotation * postRot
-                    //     }
-                    // };
-                    // standin.SetActive(false);
-                    // _standins[i] = standin.transform;
                     
                     definition.artistPosePos[i] = bone.localPosition;
                     definition.artistPoseRot[i] = bone.localRotation;
@@ -108,9 +105,6 @@ namespace HVR.IK.FullTiger
             definition.refPoseHipToHeadLength = math.distance(definition.refPoseHiplativePos[(int)Hips], definition.refPoseHiplativePos[(int)Head]);
             definition.refPoseNeckLength = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
             definition.isInitialized = true;
-            
-            // ORDER MATTERS: This must be instantiated AFTER definition is initialized
-            _ikSolver = new HIKSolver(definition, ikSnapshot);
         }
 
         private void Update()
@@ -119,8 +113,16 @@ namespace HVR.IK.FullTiger
             if (!effectors.IsInitialized()) return;
             if (!updateEveryFrame) return;
 
-            // We want all bones from "Hips" = 0 to "RightToes" = 20, plus "UpperChest" = 54.
+            PerformRegularSolve();
+            ApplySnapshot();
 
+            DrawArmChain(SpineChain);
+            DrawArmChain(LeftArmChain);
+            DrawArmChain(RightArmChain);
+        }
+
+        public void PerformRegularSolve()
+        {
             _ikSolver.Solve(new HIKObjective
             {
                 hipTargetWorldPosition = effectors.hipTarget.position,
@@ -154,28 +156,20 @@ namespace HVR.IK.FullTiger
                 groundedStraddlingRightLegWorldPosition = effectors.groundedStraddlingRightLeg.position,
                 groundedStraddlingRightLegWorldRotation = effectors.groundedStraddlingRightLeg.rotation,
             });
+        }
 
+        public void ApplySnapshot()
+        {
             _bones[(int)Hips].position = ikSnapshot.absolutePos[(int)Hips];
             _bones[(int)Hips].rotation = math.mul(ikSnapshot.absoluteRot[(int)Hips], definition.dataInversePostRot[(int)Hips]);
-            var prevPos = ikSnapshot.absolutePos[(int)Hips];
             foreach (var boneId in CopyOrder)
             {
                 var index = (int)boneId;
                 if (definition.dataHasBone[index])
                 {
                     _bones[index].rotation = math.mul(ikSnapshot.absoluteRot[index], definition.dataInversePostRot[index]);
-
-                    // var newPos = ikSnapshot.absolutePos[index];
-                    // Debug.DrawLine(prevPos, newPos, boneId == Spine ? Color.red : Color.cyan, 0f, false);
-                    // prevPos = newPos;
-
-                    // FIXME: This is just for debugging
-                    // _bones[index].position = ikSnapshot.absolutePos[index];
                 }
             }
-            DrawArmChain(SpineChain);
-            DrawArmChain(LeftArmChain);
-            DrawArmChain(RightArmChain);
         }
 
         private void DrawArmChain(HumanBodyBones[] array)
@@ -228,6 +222,9 @@ namespace HVR.IK.FullTiger
         internal quaternion groundedStraddlingRightLegWorldRotation;
     }
 
+    /// Solves given a definition and an objective, solves a pose into a snapshot.
+    /// There is no dependency on the transform system beyond this point.
+    /// Use Unity.Mathematics wherever applicable.
     internal class HIKSolver
     {
         private readonly HIKSpineSolver _spineSolver;
