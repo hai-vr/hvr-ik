@@ -108,7 +108,7 @@ namespace HVR.IK.FullTiger
             var chestPosBase = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f;
             _spineChain[1] = math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest); // Chest
             var neckPosBase = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f;
-            _spineChain[2] = math.lerp(neckPosBase, objective.chestTargetWorldPosition + math.mul(objective.chestTargetWorldRotation, math.right() * spintToHeadLen * 0.4f), objective.useChest * objective.alsoUseChestRoll); // Neck
+            _spineChain[2] = math.lerp(neckPosBase, objective.chestTargetWorldPosition + math.mul(objective.chestTargetWorldRotation, math.right() * spintToHeadLen * 0.4f), objective.useChest * objective.alsoUseChestToMoveNeck); // Neck
             _spineChain[3] = headTargetPos; // Head
             
             // ## Relax

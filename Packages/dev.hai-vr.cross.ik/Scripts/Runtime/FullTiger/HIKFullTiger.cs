@@ -142,7 +142,7 @@ namespace HVR.IK.FullTiger
                 useChest = effectors.useChest,
                 chestTargetWorldPosition = effectors.chestTarget.position,
                 chestTargetWorldRotation = effectors.chestTarget.rotation,
-                alsoUseChestRoll = effectors.alsoUseChestRoll,
+                alsoUseChestToMoveNeck = effectors.alsoUseChestToMoveNeck,
                 
                 headAlignmentMattersMore = !effectors.hipPositionMattersMore,
                 allowContortionist = effectors.contortionist,
@@ -215,7 +215,7 @@ namespace HVR.IK.FullTiger
         public float useChest;
         internal float3 chestTargetWorldPosition;
         internal quaternion chestTargetWorldRotation;
-        internal float alsoUseChestRoll;
+        internal float alsoUseChestToMoveNeck;
         
         internal bool headAlignmentMattersMore;
         internal bool allowContortionist;

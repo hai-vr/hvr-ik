@@ -30,13 +30,16 @@ The *HIK Effectors* component has options that can change the behavior of the so
   - When true, removes the minimum distance limit between the head and the hips.
   - When false, there is a minimum distance between the head and the hips, which depends on the head angle.
     This is designed to avoid odd looking poses where the spine chain is crunched on itself.
-- **Straddle Left/Right Leg** (defaults to false):
+- **Use Straddling Left/Right Leg** (defaults to false):
   - When true, the upper leg will always point towards the lower leg effector, and the lower leg will point towards the foot effector; the foot position will no longer match.
     This is designed to enable poses where grounding the knees matters more than accurately poisitioning the feet.
   - When false, the lower leg effector only suggests the direction of the bend, and the foot position will match.
 - **Use Chest**:
   - When closest to 1, the chest position and rotation will be influenced by the chest effector.
   - When closest to 0, the chest position and rotation will be chosed by default as if there was no chest effector.
+- **Also Use Chest to Move Neck**:
+  - When this is closest to 1 *and Use Chest* is also closest to 1, the chest position and rotation will influence the position of the neck, which may tilt the upper body.
+  - Otherwise, the neck position will be solved by default as if there was no chest effector.
 
 ## How this solver will work
 

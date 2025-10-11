@@ -37,7 +37,7 @@ namespace HVR.IK.FullTiger
         public float useChest;
         public Transform chestTarget;
         [Range(0, 1)]
-        public float alsoUseChestRoll;
+        public float alsoUseChestToMoveNeck;
 
         public Vector3 metaHipToHeadVector;
         public float metaFeetSeparation;
