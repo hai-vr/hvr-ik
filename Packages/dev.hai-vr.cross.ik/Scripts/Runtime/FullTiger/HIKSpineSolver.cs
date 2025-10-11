@@ -59,7 +59,7 @@ namespace HVR.IK.FullTiger
 
             if (!objective.allowContortionist)
             {
-                var ff = math.lerp(0.01f, definition.refPoseHipToNeckLength / definition.refPoseHipToHeadLength, headAndHipSameDirection01);
+                var ff = math.lerp(0.01f, (definition.refPoseHipToNeckLength + definition.refPoseNeckLength * 0.75f) / definition.refPoseHipToHeadLength, headAndHipSameDirection01);
                 if (math.distance(originalHipTargetPos, headTargetPos) < definition.refPoseHipToHeadLength * ff) // TODO: Allow this to be closer if the head and hip are not in the same direction
                 {
                     hipTargetPos = headTargetPos - math.normalize(headTargetPos - originalHipTargetPos) * definition.refPoseHipToHeadLength * ff;
