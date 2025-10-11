@@ -23,25 +23,21 @@ namespace HVR.IK.FullTiger
     {
         [SerializeField] private Animator animator;
 
-        /*[AutoOutput]*/ public Transform runtimeTargets;
-        /*[AutoOutput]*/ public Transform hipTarget;
-        /*[AutoOutput]*/ public Transform headTarget;
-        /*[AutoOutput]*/ public Transform leftHandTarget;
-        /*[AutoOutput]*/ public Transform rightHandTarget;
-        /*[AutoOutput]*/ public Transform leftFootTarget;
-        /*[AutoOutput]*/ public Transform rightFootTarget;
-        /*[AutoOutput]*/ public Transform groundedStraddlingLeftLeg;
-        /*[AutoOutput]*/ public Transform groundedStraddlingRightLeg;
+        public Transform runtimeTargets;
+        public Transform hipTarget;
+        public Transform headTarget;
+        public Transform leftHandTarget;
+        public Transform rightHandTarget;
+        public Transform leftFootTarget;
+        public Transform rightFootTarget;
+        public Transform groundedStraddlingLeftLeg;
+        public Transform groundedStraddlingRightLeg;
 
         [Range(0, 1)]
         public float useChest;
         public Transform chestTarget;
         [Range(0, 1)]
         public float alsoUseChestToMoveNeck;
-
-        public Vector3 metaHipToHeadVector;
-        public float metaFeetSeparation;
-        public float metaFeetHeightFromGround;
         
         public bool hipPositionMattersMore;
         public bool contortionist;
