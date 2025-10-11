@@ -72,27 +72,7 @@ namespace HVR.IK.FullTiger
 
             float3 LegBendHeuristics()
             {
-                var hipSource = math.mul(hipReference, math.down());
-                return hipSource;
-                
-                var hipUpwards = math.mul(hipReference, math.right());
-                
-                var outwards = math.mul(hipReference, side == LegSide.Right ? math.back() : math.forward());
-                var handSource = math.mul(originalObjectiveRot, math.left());
-                var palmDirection = math.mul(originalObjectiveRot, side == LegSide.Right ? math.down() : math.up());
-
-                var isOutwards = math.dot(outwards, -handSource);
-                var isPalmUp = math.dot(hipUpwards, palmDirection);
-                var isInside = math.clamp(math.smoothstep(0f, 1f, math.dot(-outwards, math.normalize(objectivePos - rootPos) * InsideSwitchingMul)), -1f, 1f);
-                
-                Debug.DrawLine(rootPos , rootPos + hipUpwards * isOutwards * 0.1f, Color.red, 0f, false);
-                Debug.DrawLine(rootPos + outwards * 0.01f, rootPos + outwards * 0.01f + hipUpwards * isPalmUp * 0.1f, Color.green, 0f, false);
-                Debug.DrawLine(rootPos + outwards * 0.02f, rootPos + outwards * 0.02f + hipUpwards * isInside * 0.1f, Color.blue, 0f, false);
-                
-                var hipSourceBendingOutwards = math.normalize(hipSource + outwards * math.clamp(isInside, 0f, 1f));
-                var step2 = MbusUtil.LerpDot(handSource, handSource, hipSourceBendingOutwards, isPalmUp);
-                var step3 = MbusUtil.LerpDot(step2, step2, hipSourceBendingOutwards, isOutwards);
-                return MbusUtil.LerpDot(step3, step3, hipSourceBendingOutwards, isInside);
+                return math.normalize(math.mul(originalObjectiveRot, math.down() + math.left()));
             }
             
             // Solve
