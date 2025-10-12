@@ -26,6 +26,11 @@ Then start Play mode. The hierarchy under *HIK Effectors* will be filled with ob
 During Play mode, you can copy the modified GameObject hierarchy containing the *HIK* components and paste it back in Edit mode,
 so that you can replay the same pose.
 
+As an extra, you can convert a pose to an animation clip. First, open the animation clip editor in a visible tab. Then, in the inspector,
+select the *HIK Full Tiger* component, and click the *Create animation clip from pose* button. You can then copy the keyframes.
+
+The animation clip may not be a faithful 1:1 copy of the pose as it may handle twist differently, but I am not entirely sure where the discrepancy comes from.
+
 ## Options
 
 The *HIK Effectors* component has options that can change the behavior of the solver:
@@ -147,7 +152,7 @@ There is a case where we will give the solver a position that is solvable, but w
 
 #### Priming the solver
 
-IK solvers for non-triangles are not great at converging to a solution if the initial position is made of colinear points.
+IK solvers for more than 4 points are not great at converging to a solution if the initial state of the solver has positions that are colinear to the target effector.
 
 We need to prime the initial position of the solver with an estimation of how the spine will be shaped like, before we give it to the solver.
 
