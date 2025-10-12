@@ -43,6 +43,19 @@ The *HIK Effectors* component has options that can change the behavior of the so
   - When this is closest to 1 *and Use Chest* is also closest to 1, the chest position and rotation will influence the position of the neck, which may tilt the upper body.
   - Otherwise, the neck position will be solved by default as if there was no chest effector.
 
+### Parenting the hand effectors to the avatar using self-parenting
+
+The left hand effector and the right hand effector can be virtually parented to the avatar's primary bones, using the **self-parenting** function.
+This differs from moving the effectors to the avatar's bones prior to solving.
+
+The main use case for this is to enable the ability to grab your own hip or grab your own leg. Grabbing your own arm is much more complicated;
+you are strongly discouraged from enabling the ability to do this using this version of the solver.
+
+- *Use Self Parent Hand*: When closest to 1, the hand effector will be virtually moved to the bone specified in *Self Parent Hand Bone*.
+- *Self Parent Hand Bone*: Defines the bones to parent to.
+- *Self Parent Relative Position*: The relative position between that bone and the effector.
+- *Self Parent Relative Rotation*: The relative rotation between that bone and the effector.
+
 ## How this solver will work
 
 Writing an IK solver for social VR has two parts:
