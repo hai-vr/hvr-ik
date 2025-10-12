@@ -36,6 +36,9 @@ namespace HVR.IK.FullTiger
 
         public void Solve(HIKObjective objective)
         {
+            // TODO: Add the ability for the solver to derive a lower arm sub-effector based on (the lower arm effector????? and) a L/R plane effector,
+            // describing the intersection of two planes (a line) where the elbow joint could rest on. If the hand is at a fixed position, then the solution is the intersection between
+            // a circle and the plane. The circle is described by the bend point rotating around the axis defined by the root pos and the objective pos.
             if (objective.solveRightArm) SolveArm(objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation);
             if (objective.solveLeftArm) SolveArm(objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation);
         }

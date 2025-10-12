@@ -132,6 +132,7 @@ namespace HVR.IK.FullTiger
             // ## Positions are solved into _spineChain. Now, solve the rotations.
 
             // These attempt to provide a proper roll for the extreme case when you're overbending: The head is pointing in opposite direction to the hip, e.g. near or more than 180 degrees
+            // TODO: Replace this with a cross product
             var hipVec = SolveLerpVec(math.normalize(headTargetPos - hipTargetPos), objective.hipTargetWorldRotation);
             var headVec = SolveLerpVec(math.normalize(headTargetPos - hipTargetPos), objective.headTargetWorldRotation);
             var spineLerpVec = SolveLerpVec(math.normalize(_spineChain[1] - _spineChain[0]), objective.hipTargetWorldRotation);
@@ -152,49 +153,46 @@ namespace HVR.IK.FullTiger
             );
             ikSnapshot.absoluteRot[(int)Head] = objective.headTargetWorldRotation;
 
-            if (true)
+            // Recalculate the real position of the head, so that we may realign it.
+            ikSnapshot.ReevaluatePosition(Spine, definition);
+            ikSnapshot.ReevaluatePosition(Chest, definition);
+            ikSnapshot.ReevaluatePosition(Neck, definition);
+            ikSnapshot.ReevaluatePosition(Head, definition);
+            
+            // Realign the head, if applicable.
+            if (objective.headAlignmentMattersMore)
             {
-                // Recalculate the real position of the head, so that we may realign it.
+                var headMismatch2 = headTargetPos - ikSnapshot.absolutePos[(int)Head];
+                ikSnapshot.absolutePos[(int)Hips] += headMismatch2;
                 ikSnapshot.ReevaluatePosition(Spine, definition);
                 ikSnapshot.ReevaluatePosition(Chest, definition);
                 ikSnapshot.ReevaluatePosition(Neck, definition);
                 ikSnapshot.ReevaluatePosition(Head, definition);
-                
-                // Realign the head, if applicable.
-                if (objective.headAlignmentMattersMore)
-                {
-                    var headMismatch2 = headTargetPos - ikSnapshot.absolutePos[(int)Head];
-                    ikSnapshot.absolutePos[(int)Hips] += headMismatch2;
-                    ikSnapshot.ReevaluatePosition(Spine, definition);
-                    ikSnapshot.ReevaluatePosition(Chest, definition);
-                    ikSnapshot.ReevaluatePosition(Neck, definition);
-                    ikSnapshot.ReevaluatePosition(Head, definition);
-                }
-                
-                // Recalculate the shoulders, arms and legs, so that we may calculate the arms next
-                ikSnapshot.ReevaluatePosition(LeftShoulder, definition);
-                ikSnapshot.ReevaluatePosition(RightShoulder, definition);
-                
-                ikSnapshot.ApplyReferenceRotation(LeftShoulder, definition);
-                ikSnapshot.ApplyReferenceRotation(RightShoulder, definition);
-                
-                ikSnapshot.ReevaluatePosition(LeftUpperArm, definition);
-                ikSnapshot.ReevaluatePosition(RightUpperArm, definition);
-                ikSnapshot.ReevaluatePosition(LeftUpperLeg, definition);
-                ikSnapshot.ReevaluatePosition(RightUpperLeg, definition);
-                Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], hipTargetPos, Color.magenta, 0f, false);
-                
-                Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)LeftShoulder], Color.coral, 0f, false);
-                Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)RightShoulder], Color.coral, 0f, false);
-                Debug.DrawLine(ikSnapshot.absolutePos[(int)LeftShoulder], ikSnapshot.absolutePos[(int)LeftUpperArm], Color.coral, 0f, false);
-                Debug.DrawLine(ikSnapshot.absolutePos[(int)RightShoulder], ikSnapshot.absolutePos[(int)RightUpperArm], Color.coral, 0f, false);
-                Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)LeftUpperLeg], Color.coral, 0f, false);
-                Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)RightUpperLeg], Color.coral, 0f, false);
+            }
+            
+            // Recalculate the shoulders, arms and legs, so that we may calculate the arms next
+            ikSnapshot.ReevaluatePosition(LeftShoulder, definition);
+            ikSnapshot.ReevaluatePosition(RightShoulder, definition);
+            
+            ikSnapshot.ApplyReferenceRotation(LeftShoulder, definition);
+            ikSnapshot.ApplyReferenceRotation(RightShoulder, definition);
+            
+            ikSnapshot.ReevaluatePosition(LeftUpperArm, definition);
+            ikSnapshot.ReevaluatePosition(RightUpperArm, definition);
+            ikSnapshot.ReevaluatePosition(LeftUpperLeg, definition);
+            ikSnapshot.ReevaluatePosition(RightUpperLeg, definition);
+            Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], hipTargetPos, Color.magenta, 0f, false);
+            
+            Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)LeftShoulder], Color.coral, 0f, false);
+            Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)RightShoulder], Color.coral, 0f, false);
+            Debug.DrawLine(ikSnapshot.absolutePos[(int)LeftShoulder], ikSnapshot.absolutePos[(int)LeftUpperArm], Color.coral, 0f, false);
+            Debug.DrawLine(ikSnapshot.absolutePos[(int)RightShoulder], ikSnapshot.absolutePos[(int)RightUpperArm], Color.coral, 0f, false);
+            Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)LeftUpperLeg], Color.coral, 0f, false);
+            Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)RightUpperLeg], Color.coral, 0f, false);
 
-                if (objective.useChest > 0f)
-                {
-                    Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], objective.chestTargetWorldPosition, Color.mediumOrchid, 0f, false);
-                }
+            if (objective.useChest > 0f)
+            {
+                Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], objective.chestTargetWorldPosition, Color.mediumOrchid, 0f, false);
             }
         }
 

@@ -24,6 +24,7 @@ namespace HVR.IK.FullTiger
     {
         [SerializeField] internal Animator animator;
 
+        [Header("Classic effectors")]
         public Transform runtimeTargets;
         public Transform hipTarget;
         public Transform headTarget;
@@ -31,15 +32,19 @@ namespace HVR.IK.FullTiger
         public Transform rightHandTarget;
         public Transform leftFootTarget;
         public Transform rightFootTarget;
-        public Transform groundedStraddlingLeftLeg;
-        public Transform groundedStraddlingRightLeg;
+        
+        [Header("Rules")]
+        public bool hipPositionMattersMore;
+        public bool contortionist;
 
+        [Header("Chest effector")]
         [Range(0, 1)]
         public float useChest;
         public Transform chestTarget;
         [Range(0, 1)]
         public float alsoUseChestToMoveNeck;
         
+        [Header("Arm bend")]
         [Range(0, 1)]
         public float useLeftLowerArm;
         public Transform leftLowerArmTarget;
@@ -47,18 +52,20 @@ namespace HVR.IK.FullTiger
         public float useRightLowerArm;
         public Transform rightLowerArmTarget;
         
-        public bool hipPositionMattersMore;
-        public bool contortionist;
-        
+        [Header("Straddling")]
         public bool useStraddlingLeftLeg;
+        public Transform groundedStraddlingLeftLeg;
         public bool useStraddlingRightLeg;
+        public Transform groundedStraddlingRightLeg;
         
+        [Header("Self-parenting, Left Hand")]
         [Range(0, 1)]
         public float useSelfParentLeftHand;
         public HumanBodyBones selfParentLeftHandBone;
         public float3 selfParentLeftHandRelativePosition;
         public float3 selfParentLeftHandRelativeRotationEuler;
         
+        [Header("Self-parenting, Right Hand")]
         [Range(0, 1)]
         public float useSelfParentRightHand;
         public HumanBodyBones selfParentRightHandBone;

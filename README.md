@@ -67,6 +67,22 @@ of the humanoid bone in question.
 - *Self Parent Relative Position*: The relative position between that bone and the effector.
 - *Self Parent Relative Rotation*: The relative rotation between that bone and the effector.
 
+## Solving without Transforms
+
+The IK solver was designed to run without any access to Transform, GameObject, nor Component hierarchy during the solve.
+
+The *HIK Effectors* and *HIK Full Tiger* components are just convenient accessors for the actual solver functionnality, but they don't contain
+critical logic in them.
+
+If you instantiate the following classes directly, you can request a solve without needing Components nor Transforms:
+- **HIKAvatarDefinition** contains a dump of all the avatar-specific data.
+  - You can learn how to fill this by looking at the implementation of *HIK Full Tiger*'s `SolveDefinition` static function.
+- **HIKSnapshot** will contain the result of the solve.
+  - You can learn how to read data out of it by looking at the implementation of *HIK Full Tiger*'s `ApplySnapshot` function.
+- **HIKObjective** contains the parameters of the solver (effectors, options, etc.).
+  - You can learn how to fill this by looking at the implementation of *HIK Effectors* `CreateTarget` function, and *HIK Full Tiger*'s `PerformRegularSolve` function.
+- **HIKSolver** is the solver you need to instantiate using all the aforementioned classes.
+
 ## How this solver will work
 
 Writing an IK solver for social VR has two parts:
