@@ -9,6 +9,8 @@ https://github.com/user-attachments/assets/f4b17e25-f894-47cd-a856-1171d6773d23
 
 ## Adding to the scene
 
+*Note: This solver has only been tested in Unity 6.2, but it may be modified to become compatible with Unity 2022 in the future.*
+
 In Edit mode:
 
 - Have an avatar ready in the scene with an *Animator* component in it.
