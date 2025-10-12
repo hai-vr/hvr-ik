@@ -73,6 +73,14 @@ namespace HVR.IK.FullTiger
 
             float3 ArmBendHeuristics()
             {
+                var useBend = side == ArmSide.Right ? objective.useRightLowerArm : objective.useLeftLowerArm;
+                var midPoint = (objectivePos + rootPos) * 0.5f;
+                var directedBend = math.normalize((side == ArmSide.Right ? objective.rightLowerArmWorldPosition : objective.leftLowerArmWorldPosition) - midPoint);
+                if (useBend >= 1f)
+                {
+                    return directedBend;
+                }
+                
                 var chestUpwards = math.mul(chestReference, math.right());
                 
                 var outwards = math.mul(chestReference, side == ArmSide.Right ? math.back() : math.forward());
@@ -91,7 +99,9 @@ namespace HVR.IK.FullTiger
                 var chestSourceBendingOutwards = math.normalize(chestSource + outwards * math.clamp(isInside, 0f, 1f));
                 var step2 = MbusGeofunctions.LerpDot(handSource, handSource, chestSourceBendingOutwards, isPalmUp);
                 var step3 = MbusGeofunctions.LerpDot(step2, step2, chestSourceBendingOutwards, isOutwards);
-                return MbusGeofunctions.LerpDot(step3, step3, chestSourceBendingOutwards, isInside);
+                var regular = MbusGeofunctions.LerpDot(step3, step3, chestSourceBendingOutwards, isInside);
+                
+                return useBend <= 0 ? regular : math.lerp(regular, directedBend, useBend);
             }
             
             // Solve

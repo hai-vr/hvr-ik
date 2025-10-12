@@ -69,29 +69,36 @@ namespace HVR.IK.FullTiger
         internal float3 rightFootTargetWorldPosition;
         internal quaternion rightFootTargetWorldRotation;
         
-        public float useChest;
+        internal float useChest;
         internal float3 chestTargetWorldPosition;
         internal quaternion chestTargetWorldRotation;
         internal float alsoUseChestToMoveNeck;
         
+        internal float useLeftLowerArm;
+        internal float3 leftLowerArmWorldPosition;
+        internal quaternion leftLowerArmWorldRotation; // TODO: We may have to play with the rotation to solve the "straight arm twist" problem.
+        internal float useRightLowerArm;
+        internal float3 rightLowerArmWorldPosition;
+        internal quaternion rightLowerArmWorldRotation; // TODO: We may have to play with the rotation to solve the "straight arm twist" problem.
+        
         internal bool headAlignmentMattersMore;
         internal bool allowContortionist;
         
-        public bool useStraddlingLeftLeg;
-        public bool useStraddlingRightLeg;
+        internal bool useStraddlingLeftLeg;
+        internal bool useStraddlingRightLeg;
         internal float3 groundedStraddlingLeftLegWorldPosition;
         internal quaternion groundedStraddlingLeftLegWorldRotation;
         internal float3 groundedStraddlingRightLegWorldPosition;
         internal quaternion groundedStraddlingRightLegWorldRotation;
         
-        public bool solveSpine;
-        public bool solveLeftLeg;
-        public bool solveRightLeg;
-        public bool solveLeftArm;
-        public bool solveRightArm;
+        internal bool solveSpine;
+        internal bool solveLeftLeg;
+        internal bool solveRightLeg;
+        internal bool solveLeftArm;
+        internal bool solveRightArm;
 
-        public HIKSelfParenting selfParentLeftHandNullable;
-        public HIKSelfParenting selfParentRightHandNullable;
+        internal HIKSelfParenting selfParentLeftHandNullable;
+        internal HIKSelfParenting selfParentRightHandNullable;
     }
 
     internal class HIKSelfParenting

@@ -42,6 +42,9 @@ The *HIK Effectors* component has options that can change the behavior of the so
 - **Also Use Chest to Move Neck**:
   - When this is closest to 1 *and Use Chest* is also closest to 1, the chest position and rotation will influence the position of the neck, which may tilt the upper body.
   - Otherwise, the neck position will be solved by default as if there was no chest effector.
+- **Use L/R Lower Arm**:
+  - When closest to 1, the arm will bend towards the lower arm effector.
+  - When closest to 0, the arm will bend using the default arm bend direction heuristics.
 
 ### Parenting the hand effectors to the avatar using self-parenting
 

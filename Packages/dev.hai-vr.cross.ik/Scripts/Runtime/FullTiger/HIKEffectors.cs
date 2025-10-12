@@ -22,7 +22,7 @@ namespace HVR.IK.FullTiger
     /// The end effectors placements should be modified by external modules before the IK solver runs.
     public class HIKEffectors : MonoBehaviour
     {
-        [SerializeField] private Animator animator;
+        [SerializeField] internal Animator animator;
 
         public Transform runtimeTargets;
         public Transform hipTarget;
@@ -40,6 +40,13 @@ namespace HVR.IK.FullTiger
         [Range(0, 1)]
         public float alsoUseChestToMoveNeck;
         
+        [Range(0, 1)]
+        public float useLeftLowerArm;
+        public Transform leftLowerArmTarget;
+        [Range(0, 1)]
+        public float useRightLowerArm;
+        public Transform rightLowerArmTarget;
+        
         public bool hipPositionMattersMore;
         public bool contortionist;
         
@@ -47,16 +54,16 @@ namespace HVR.IK.FullTiger
         public bool useStraddlingRightLeg;
         
         [Range(0, 1)]
-        public float useSelfParentRightHand;
-        public HumanBodyBones selfParentRightHandBone;
-        public float3 selfParentRightHandRelativePosition;
-        public float3 selfParentRightHandRelativeRotationEuler;
-        
-        [Range(0, 1)]
         public float useSelfParentLeftHand;
         public HumanBodyBones selfParentLeftHandBone;
         public float3 selfParentLeftHandRelativePosition;
         public float3 selfParentLeftHandRelativeRotationEuler;
+        
+        [Range(0, 1)]
+        public float useSelfParentRightHand;
+        public HumanBodyBones selfParentRightHandBone;
+        public float3 selfParentRightHandRelativePosition;
+        public float3 selfParentRightHandRelativeRotationEuler;
 
         private Vector3[] _tPosePos;
         private Quaternion[] _tPoseRot;
@@ -77,6 +84,8 @@ namespace HVR.IK.FullTiger
             if (null == groundedStraddlingRightLeg) groundedStraddlingRightLeg = CreateTarget(HumanBodyBones.RightLowerLeg, "GroundedStraddlingRightLeg");
             
             if (null == chestTarget) chestTarget = CreateTarget(HumanBodyBones.Chest, "ChestTarget");
+            if (null == leftLowerArmTarget) leftLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "LeftLowerArmTarget");
+            if (null == rightLowerArmTarget) rightLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "RightLowerArmTarget");
 
             _tPosePos = AllTargetsStartingWithHead().Select(t => t.position).ToArray();
             _tPoseRot = AllTargetsStartingWithHead().Select(t => t.rotation).ToArray();
