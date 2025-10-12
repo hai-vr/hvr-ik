@@ -54,5 +54,48 @@ namespace HVR.IK.Editor
                 }
             }
         }
+
+        public override void OnInspectorGUI()
+        {
+            DrawDefaultInspector();
+
+            if (GUILayout.Button("Create animation clip from pose"))
+            {
+                var clip = CreateAnimationClipFromPose(((HIKFullTiger)target).animator);
+                Selection.activeObject = clip;
+                EditorGUIUtility.PingObject(clip);
+            }
+        }
+
+        private AnimationClip CreateAnimationClipFromPose(Animator animator)
+        {
+            var clip = new AnimationClip();
+            
+            var poseHandler = new HumanPoseHandler(animator.avatar, animator.transform);
+            var humanPose = new HumanPose();
+            poseHandler.GetHumanPose(ref humanPose);
+
+            clip.SetCurve("", typeof(Animator), "RootT.x", AnimationCurve.Constant(0, 0, humanPose.bodyPosition.x));
+            clip.SetCurve("", typeof(Animator), "RootT.y", AnimationCurve.Constant(0, 0, humanPose.bodyPosition.y));
+            clip.SetCurve("", typeof(Animator), "RootT.z", AnimationCurve.Constant(0, 0, humanPose.bodyPosition.z));
+            
+            clip.SetCurve("", typeof(Animator), "RootQ.x", AnimationCurve.Constant(0, 0, humanPose.bodyRotation.x));
+            clip.SetCurve("", typeof(Animator), "RootQ.y", AnimationCurve.Constant(0, 0, humanPose.bodyRotation.y));
+            clip.SetCurve("", typeof(Animator), "RootQ.z", AnimationCurve.Constant(0, 0, humanPose.bodyRotation.z));
+            clip.SetCurve("", typeof(Animator), "RootQ.w", AnimationCurve.Constant(0, 0, humanPose.bodyRotation.w));
+
+            for (var i = 0; i < humanPose.muscles.Length && i < HumanTrait.MuscleCount; i++)
+            {
+                var muscleName = HumanTrait.MuscleName[i];
+                var muscleValue = humanPose.muscles[i];
+
+                var binding = EditorCurveBinding.FloatCurve("", typeof(Animator), muscleName);
+                var curve = AnimationCurve.Constant(0, 0, muscleValue);
+                
+                AnimationUtility.SetEditorCurve(clip, binding, curve);
+            }
+
+            return clip;
+        }
     }
 }
