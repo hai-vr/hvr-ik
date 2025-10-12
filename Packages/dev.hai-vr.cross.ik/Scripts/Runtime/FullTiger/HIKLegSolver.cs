@@ -52,6 +52,7 @@ namespace HVR.IK.FullTiger
             var upperLength = math.distance(definition.refPoseHiplativePos[(int)rootBone], definition.refPoseHiplativePos[(int)midBone]);
             var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]);
             var totalLength = upperLength + lowerLength;
+            var minimumDistance = math.abs(upperLength - lowerLength);
             
             // Apply correction when the target is too far
             bool isMaximumDistance;
@@ -64,6 +65,20 @@ namespace HVR.IK.FullTiger
             else
             {
                 isMaximumDistance = false;
+            }
+            
+            // Apply correction when the target is practically unreachable
+            bool isMinimumDistance;
+            if (!useStraddlingLeg && math.distance(rootPos, objectivePos) < minimumDistance)
+            {
+                objectivePos = rootPos + math.normalize(objectivePos - rootPos) * minimumDistance;
+                Debug.DrawLine(originalObjectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
+                Debug.DrawLine(objectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
+                isMinimumDistance = true;
+            }
+            else
+            {
+                isMinimumDistance = false;
             }
             
             var hipReference = ikSnapshot.absoluteRot[(int)HumanBodyBones.Hips];
@@ -86,7 +101,7 @@ namespace HVR.IK.FullTiger
                 Debug.DrawLine(bendPointPos, groundedStraddlingLegWorldPosition, Color.magenta, 0f, false);
                 Debug.DrawLine(prevObjectivePos, objectivePos, Color.magenta, 0f, false);
             }
-            else if (!isMaximumDistance)
+            else if (!isMaximumDistance && !isMinimumDistance)
             {
                 var toTip = objectivePos - rootPos;
                 var toTipLength = math.length(toTip);
@@ -107,9 +122,16 @@ namespace HVR.IK.FullTiger
             }
             else
             {
-                var toTip = objectivePos - rootPos;
-                var toMidpoint = toTip * upperLength / totalLength;
-                bendPointPos = rootPos + toMidpoint;
+                if (isMinimumDistance)
+                {
+                    bendPointPos = rootPos + math.normalize(objectivePos - rootPos) * lowerLength;
+                }
+                else
+                {
+                    var toTip = objectivePos - rootPos;
+                    var toMidpoint = toTip * upperLength / totalLength;
+                    bendPointPos = rootPos + toMidpoint;
+                }
             }
 
             Debug.DrawLine(rootPos, objectivePos, Color.cyan, 0f, false);
