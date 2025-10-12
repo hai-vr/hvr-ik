@@ -56,6 +56,7 @@ namespace HVR.IK.FullTiger
             var upperLength = math.distance(definition.refPoseHiplativePos[(int)rootBone], definition.refPoseHiplativePos[(int)midBone]);
             var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]);
             var totalLength = upperLength + lowerLength;
+            var minimumDistance = math.abs(upperLength - lowerLength);
             
             // Apply correction when the target is too far
             bool isMaximumDistance;
@@ -68,6 +69,20 @@ namespace HVR.IK.FullTiger
             else
             {
                 isMaximumDistance = false;
+            }
+            
+            // Apply correction when the target is practically unreachable
+            bool isMinimumDistance;
+            if (math.distance(rootPos, objectivePos) < minimumDistance)
+            {
+                objectivePos = rootPos + math.normalize(objectivePos - rootPos) * minimumDistance;
+                Debug.DrawLine(originalObjectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
+                Debug.DrawLine(objectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
+                isMinimumDistance = true;
+            }
+            else
+            {
+                isMinimumDistance = false;
             }
             
             // TODO: Handle HasUpperChest
@@ -110,7 +125,7 @@ namespace HVR.IK.FullTiger
             // Solve
             bool isTooTight = false;
             float3 bendPointPos;
-            if (!isMaximumDistance)
+            if (!isMaximumDistance && !isMinimumDistance)
             {
                 var toTip = objectivePos - rootPos;
                 var toTipLength = math.length(toTip);
@@ -128,6 +143,10 @@ namespace HVR.IK.FullTiger
                 var v0 = math.mul(originalObjectiveRot, math.right());
                 var v1 = math.normalize(bendPointPos - objectivePos);
                 isTooTight = math.dot(v0, v1) > 0.01f;
+            }
+            else if (isMinimumDistance)
+            {
+                bendPointPos = rootPos + math.normalize(objectivePos - rootPos) * lowerLength;
             }
             else
             {
