@@ -87,6 +87,7 @@ namespace HVR.IK.FullTiger
         
         internal bool headAlignmentMattersMore;
         internal bool allowContortionist;
+        internal bool doNotPreserveHipsToNeckCurvatureLimit;
         
         internal bool useStraddlingLeftLeg;
         internal bool useStraddlingRightLeg;

@@ -71,22 +71,25 @@ namespace HVR.IK.FullTiger
                     Debug.DrawLine(hipTargetPos, hipTargetPos + kk, Color.yellow, 0f, false);
                 }
             }
-            
-            // If the distance between the head and the neck is larger than the length of the neck + refPoseHipToNeckLength
-            // (which is not equal to the sum of the bones of the hip-spine-chest-neck) chain, then either the head or the hips MUST be brought closer
-            // so that the solver doesn't overstretch the artists' spine.
-            var refHipToNeckAndThenToHeadLength = definition.refPoseHipToNeckLength + definition.refPoseNeckLength;
-            if (math.distance(hipTargetPos, headTargetPos) > refHipToNeckAndThenToHeadLength)
+
+            if (!objective.doNotPreserveHipsToNeckCurvatureLimit)
             {
-                if (objective.headAlignmentMattersMore)
+                // If the distance between the head and the neck is larger than the length of the neck + refPoseHipToNeckLength
+                // (which is not equal to the sum of the bones of the hip-spine-chest-neck) chain, then either the head or the hips MUST be brought closer
+                // so that the solver doesn't overstretch the artists' spine.
+                var refHipToNeckAndThenToHeadLength = definition.refPoseHipToNeckLength + definition.refPoseNeckLength;
+                if (math.distance(hipTargetPos, headTargetPos) > refHipToNeckAndThenToHeadLength)
                 {
-                    var toHip = math.normalize(hipTargetPos - headTargetPos);
-                    hipTargetPos = headTargetPos + toHip * refHipToNeckAndThenToHeadLength;
-                }
-                else
-                {
-                    var toHead = math.normalize(headTargetPos - hipTargetPos);
-                    headTargetPos = hipTargetPos + toHead * refHipToNeckAndThenToHeadLength;
+                    if (objective.headAlignmentMattersMore)
+                    {
+                        var toHip = math.normalize(hipTargetPos - headTargetPos);
+                        hipTargetPos = headTargetPos + toHip * refHipToNeckAndThenToHeadLength;
+                    }
+                    else
+                    {
+                        var toHead = math.normalize(headTargetPos - hipTargetPos);
+                        headTargetPos = hipTargetPos + toHead * refHipToNeckAndThenToHeadLength;
+                    }
                 }
             }
 

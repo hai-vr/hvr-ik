@@ -186,6 +186,7 @@ namespace HVR.IK.FullTiger
                 
                 headAlignmentMattersMore = !effectors.hipPositionMattersMore,
                 allowContortionist = effectors.contortionist,
+                doNotPreserveHipsToNeckCurvatureLimit = effectors.doNotPreserveHipsToNeckCurvatureLimit,
                 
                 useStraddlingLeftLeg = effectors.useStraddlingLeftLeg,
                 useStraddlingRightLeg = effectors.useStraddlingRightLeg,

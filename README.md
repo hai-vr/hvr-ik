@@ -51,6 +51,14 @@ The *HIK Effectors* component has options that can change the behavior of the so
   - When closest to 1, the arm will bend towards the lower arm effector.
   - When closest to 0, the arm will bend using the default arm bend direction heuristics.
 
+*Not recommended:*
+- **Do Not Preserve Hips To Neck Curvature Limit** (defaults to false):
+  - Many avatars are designed with a spine that is naturally curved. By default (when this option is false), the solver will do its best to preserve that curve.
+    That means that, if the head effector target is further away than the hips, we try to avoid making all the bones of the spine (hips-neck chain) point to it as a straight line.
+    This option overrides this behaviour so that the spine can become straight, but this is likely to negatively affect the appearance of the avatar mesh. 
+  - When true, we do not preserve the spine curvature by not imposing any maximum distance between the hips and the neck; the maximum distance is effectively the sum of the length of the bones.
+  - When false, we preserve the spine curvature by limiting the maximum distance between the hips and the neck to be smaller than the hips-to-neck length + the neck-to-head length (which is not equal to the sum of the length of the bones).
+
 ### Parenting the hand effectors to the avatar using self-parenting
 
 The left hand effector and the right hand effector can be virtually parented to the avatar's humanoid bones, using the **self-parenting** function.

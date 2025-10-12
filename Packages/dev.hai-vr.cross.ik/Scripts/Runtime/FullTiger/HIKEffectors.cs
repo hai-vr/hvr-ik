@@ -36,6 +36,7 @@ namespace HVR.IK.FullTiger
         [Header("Rules")]
         public bool hipPositionMattersMore;
         public bool contortionist;
+        public bool doNotPreserveHipsToNeckCurvatureLimit;
 
         [Header("Chest effector")]
         [Range(0, 1)]
