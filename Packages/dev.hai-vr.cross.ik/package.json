@@ -7,8 +7,8 @@
     "author": "Haï~",
     "vpmDependencies": {
     },
-    "url": "https://docs.hai-vr.dev/docs/cross/ik",
-    "documentationUrl": "https://docs.hai-vr.dev/docs/cross/ik",
-    "changelogUrl": "https://docs.hai-vr.dev/docs/cross/ik",
+    "url": "https://docs.hai-vr.dev/docs/hvr/ik",
+    "documentationUrl": "https://docs.hai-vr.dev/docs/hvr/ik",
+    "changelogUrl": "https://docs.hai-vr.dev/docs/hvr/ik",
     "license": "Apache-2.0"
 }

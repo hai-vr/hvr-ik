@@ -23,6 +23,9 @@ In Edit mode:
 
 Then start Play mode. The hierarchy under *HIK Effectors* will be filled with objects that represent the end effectors.
 
+During Play mode, you can copy the modified GameObject hierarchy containing the *HIK* components and paste it back in Edit mode,
+so that you can replay the same pose.
+
 ## Options
 
 The *HIK Effectors* component has options that can change the behavior of the solver:
@@ -50,11 +53,14 @@ The *HIK Effectors* component has options that can change the behavior of the so
 
 ### Parenting the hand effectors to the avatar using self-parenting
 
-The left hand effector and the right hand effector can be virtually parented to the avatar's primary bones, using the **self-parenting** function.
+The left hand effector and the right hand effector can be virtually parented to the avatar's humanoid bones, using the **self-parenting** function.
 This differs from moving the effectors to the avatar's bones prior to solving.
 
 The main use case for this is to enable the ability to grab your own hip or grab your own leg. Grabbing your own arm is much more complicated;
 you are strongly discouraged from enabling the ability to do this using this version of the solver.
+
+By modifying the relative position and rotation dynamically prior to solving, it may be possible to virtually parent to child transforms located within the hierarchy
+of the humanoid bone in question.
 
 - *Use Self Parent Hand*: When closest to 1, the hand effector will be virtually moved to the bone specified in *Self Parent Hand Bone*.
 - *Self Parent Hand Bone*: Defines the bones to parent to.
