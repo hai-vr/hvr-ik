@@ -67,15 +67,16 @@ namespace HVR.IK.FullTiger
                 isMaximumDistance = false;
             }
             
+            var useBend = side == ArmSide.Right ? objective.useRightLowerArm : objective.useLeftLowerArm;
+            var midPoint = (objectivePos + rootPos) * 0.5f;
+            var directedBend = math.normalize((side == ArmSide.Right ? objective.rightLowerArmWorldPosition : objective.leftLowerArmWorldPosition) - midPoint);
+            
             // TODO: Handle HasUpperChest
             var chestReference = ikSnapshot.absoluteRot[(int)HumanBodyBones.Chest];
             var bendDirection = ArmBendHeuristics();
 
             float3 ArmBendHeuristics()
             {
-                var useBend = side == ArmSide.Right ? objective.useRightLowerArm : objective.useLeftLowerArm;
-                var midPoint = (objectivePos + rootPos) * 0.5f;
-                var directedBend = math.normalize((side == ArmSide.Right ? objective.rightLowerArmWorldPosition : objective.leftLowerArmWorldPosition) - midPoint);
                 if (useBend >= 1f)
                 {
                     return directedBend;
@@ -142,8 +143,12 @@ namespace HVR.IK.FullTiger
                 quaternion.LookRotationSafe(bendPointPos - rootPos, side == ArmSide.Right ? twistBase : -twistBase),
                 _reorienter
             );
+            
+            var maximality = math.unlerp(0.98f, 1f, math.dot(math.normalize(bendPointPos - rootPos), math.normalize(objectivePos - bendPointPos)));
+            var regularLowerBend = math.mul(originalObjectiveRot, side == ArmSide.Right ? math.forward() : math.back());
+            var lowerBend = maximality <= 0f || useBend <= 0 ? regularLowerBend : math.lerp(regularLowerBend, side == ArmSide.Right ? -directedBend : directedBend, maximality * useBend);
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                quaternion.LookRotationSafe(objectivePos - bendPointPos, math.mul(originalObjectiveRot, side == ArmSide.Right ? math.forward() : math.back())),
+                quaternion.LookRotationSafe(objectivePos - bendPointPos, lowerBend),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
