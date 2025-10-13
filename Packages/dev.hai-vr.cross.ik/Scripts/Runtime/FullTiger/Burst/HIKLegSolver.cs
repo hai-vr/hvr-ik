@@ -147,13 +147,12 @@ namespace HVR.IK.FullTiger
             Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
 #endif
 
-            var hipDown = math.mul(hipReference, math.down());
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
-                quaternion.LookRotationSafe(bendPointPos - rootPos, MbusGeofunctions.LerpDot(hipDown, hipDown, math.mul(hipReference, math.right()), math.dot(hipDown, math.normalize(bendPointPos - rootPos)))),
+                quaternion.LookRotationSafe(bendPointPos - rootPos, math.normalize(math.cross(math.mul(hipReference, math.forward()), bendPointPos - rootPos))),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                quaternion.LookRotationSafe(objectivePos - bendPointPos, math.mul(originalObjectiveRot, math.down())),
+                quaternion.LookRotationSafe(objectivePos - bendPointPos, math.normalize(math.cross(math.mul(originalObjectiveRot, math.back()), objectivePos - bendPointPos))),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
