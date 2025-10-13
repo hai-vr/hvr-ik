@@ -253,8 +253,8 @@ namespace HVR.IK.FullTiger
                 solveLeftArm = _solveLeftArm,
                 solveRightArm = _solveRightArm,
                 
-                legStruggleStart = HIKObjective.StruggleStart,
-                legStruggleEnd = HIKObjective.StruggleEnd,
+                legStruggleStart = effectors.legStruggleStart,
+                legStruggleEnd = effectors.legStruggleEnd,
                 
                 selfParentLeftHandNullable = selfParentLeftHand,
                 selfParentRightHandNullable = selfParentRightHand,

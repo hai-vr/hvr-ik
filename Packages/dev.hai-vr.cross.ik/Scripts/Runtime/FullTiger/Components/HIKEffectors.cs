@@ -53,6 +53,10 @@ namespace HVR.IK.FullTiger
         public float useRightLowerArm;
         public Transform rightLowerArmTarget;
         
+        [Header("Struggle")]
+        public float legStruggleStart = HIKObjective.StruggleStart;
+        public float legStruggleEnd = HIKObjective.StruggleEnd;
+        
         [Header("Straddling")]
         public bool useStraddlingLeftLeg;
         public Transform groundedStraddlingLeftLeg;
