@@ -54,6 +54,9 @@ namespace HVR.IK.FullTiger
     [BurstCompile]
     internal struct HIKObjective
     {
+        public const float StruggleStart = 0.99f;
+        public const float StruggleEnd = 1.04f;
+        
         internal float3 hipTargetWorldPosition;
         internal quaternion hipTargetWorldRotation;
         internal float3 headTargetWorldPosition;
@@ -88,6 +91,8 @@ namespace HVR.IK.FullTiger
         internal bool headAlignmentMattersMore;
         internal bool allowContortionist;
         internal bool doNotPreserveHipsToNeckCurvatureLimit;
+        internal float legStruggleStart;
+        internal float legStruggleEnd;
         
         internal bool useStraddlingLeftLeg;
         internal bool useStraddlingRightLeg;

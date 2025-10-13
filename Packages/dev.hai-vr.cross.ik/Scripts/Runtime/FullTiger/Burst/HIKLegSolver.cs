@@ -24,13 +24,20 @@ namespace HVR.IK.FullTiger
     {
         private readonly HIKAvatarDefinition definition;
         private readonly quaternion _reorienter;
-        
+        private readonly AnimationCurve _curve;
+
         public HIKLegSolver(HIKAvatarDefinition definition, quaternion reorienter)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
             this.definition = definition;
             _reorienter = reorienter;
+            _curve = new AnimationCurve(
+                new Keyframe(0f, 0f, 0f, 2f),
+                new Keyframe(0.2f, 0.63f, 1f, 1f),
+                new Keyframe(0.5f, 0.86f, 0.5f, 0.5f),
+                new Keyframe(1f, 1f, 0f, 0f)
+            );
         }
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
@@ -57,13 +64,16 @@ namespace HVR.IK.FullTiger
             
             // Apply correction when the target is too far
             bool isMaximumDistance;
-            if (!useStraddlingLeg && math.distance(rootPos, objectivePos) >= totalLength)
+            var distance = math.distance(rootPos, objectivePos);
+            if (!useStraddlingLeg && distance >= totalLength * objective.legStruggleStart)
             {
-                objectivePos = rootPos + math.normalize(objectivePos - rootPos) * totalLength;
+                var lerpAmount = math.clamp(math.unlerp(totalLength * objective.legStruggleStart, totalLength * objective.legStruggleEnd, distance), 0f, 1f);
+                var calculatedLength = math.lerp(totalLength * objective.legStruggleStart, totalLength, lerpAmount);
+                objectivePos = rootPos + math.normalize(objectivePos - rootPos) * calculatedLength;
 #if UNITY_EDITOR && true
                 Debug.DrawLine(objectivePos, originalObjectivePos, Color.magenta, 0f, false);
 #endif
-                isMaximumDistance = true;
+                isMaximumDistance = calculatedLength >= totalLength;
             }
             else
             {
@@ -72,7 +82,7 @@ namespace HVR.IK.FullTiger
             
             // Apply correction when the target is practically unreachable
             bool isMinimumDistance;
-            if (!useStraddlingLeg && math.distance(rootPos, objectivePos) < minimumDistance)
+            if (!useStraddlingLeg && distance < minimumDistance)
             {
                 objectivePos = rootPos + math.normalize(objectivePos - rootPos) * minimumDistance;
 #if UNITY_EDITOR && true
