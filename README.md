@@ -177,3 +177,8 @@ The solver is here to ensure that the lengths between the bones are correct, but
 #### Choosing a bend direction
 
 This section is not described yet.
+
+The bend direction of the arms is a particularly annoying part and I still have a lot to figure out with this.
+
+In a future version I would like to try using [Motion Matching](https://www.youtube.com/watch?v=KSTn3ePDt50) ([2](https://www.youtube.com/watch?v=RCu-NzH4zrs)) with some arm motion capture
+to see if the bend direction could be solved using this technique.
