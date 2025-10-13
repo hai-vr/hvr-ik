@@ -13,45 +13,50 @@
 // limitations under the License.
 
 using System;
+using Unity.Burst;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
-using static UnityEngine.HumanBodyBones;
+using static HVR.IK.FullTiger.HIKBodyBones;
 
 namespace HVR.IK.FullTiger
 {
-    internal class HIKSpineSolver
+    [BurstCompile]
+    internal struct HIKSpineSolver : IDisposable
     {
         private const int Iterations = 10;
         
         private readonly HIKAvatarDefinition definition;
-        private readonly HIKSnapshot ikSnapshot;
         private readonly quaternion _reorienter;
 
-        private readonly float3[] _spineChain;
-        private float[] _spineDistances;
+        private NativeArray<float3> _spineChain;
+        private NativeArray<float> _spineDistances;
         
-        private readonly Color lawnGreen = new Color(0.4862745f, 0.9882354f, 0.0f, 1f);
-        private readonly Color coral = new Color(1f, 0.4980392f, 0.3137255f, 1f);
-        private readonly Color mediumOrchid = new Color(0.7294118f, 0.3333333f, 0.8274511f, 1f);
+        private static readonly Color lawnGreen = new Color(0.4862745f, 0.9882354f, 0.0f, 1f);
+        private static readonly Color coral = new Color(1f, 0.4980392f, 0.3137255f, 1f);
+        private static readonly Color mediumOrchid = new Color(0.7294118f, 0.3333333f, 0.8274511f, 1f);
 
-        public HIKSpineSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot, quaternion reorienter)
+        public HIKSpineSolver(HIKAvatarDefinition definition, quaternion reorienter)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
             this.definition = definition;
-            this.ikSnapshot = ikSnapshot;
             _reorienter = reorienter;
 
-            _spineChain = new float3[4];
-            _spineDistances = new[]
-            {
-                math.distance(definition.refPoseHiplativePos[(int)Spine], definition.refPoseHiplativePos[(int)Chest]), 
-                math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]), 
-                math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]), 
-            };
+            _spineChain = new NativeArray<float3>(4, Allocator.Persistent);
+            _spineDistances = new NativeArray<float>(3, Allocator.Persistent);
+            _spineDistances[0] = math.distance(definition.refPoseHiplativePos[(int)Spine], definition.refPoseHiplativePos[(int)Chest]);
+            _spineDistances[1] = math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]);
+            _spineDistances[2] = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
         }
 
-        public void Solve(HIKObjective objective)
+        public void Dispose()
+        {
+            if (_spineChain.IsCreated) _spineChain.Dispose();
+            if (_spineDistances.IsCreated) _spineDistances.Dispose();
+        }
+
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
         {
             var originalHipTargetPos = objective.hipTargetWorldPosition;
             var originalHeadTargetPos = objective.headTargetWorldPosition;
@@ -68,12 +73,16 @@ namespace HVR.IK.FullTiger
                 if (math.distance(originalHipTargetPos, headTargetPos) < definition.refPoseHipToHeadLength * ff) // TODO: Allow this to be closer if the head and hip are not in the same direction
                 {
                     hipTargetPos = headTargetPos - math.normalize(headTargetPos - originalHipTargetPos) * definition.refPoseHipToHeadLength * ff;
+#if UNITY_EDITOR && true
                     Debug.DrawLine(headTargetPos, hipTargetPos, Color.red, 0f, false);
+#endif
                 }
                 else
                 {
                     var kk = math.normalize(headTargetPos - hipTargetPos) * definition.refPoseHipToHeadLength * ff;
+#if UNITY_EDITOR && true
                     Debug.DrawLine(hipTargetPos, hipTargetPos + kk, Color.yellow, 0f, false);
+#endif
                 }
             }
 
@@ -131,11 +140,13 @@ namespace HVR.IK.FullTiger
                 // var color = Color.Lerp(Color.black, Color.red, i / (Iterations - 1f));
                 // if (drawDebug) DataViz.Instance.DrawLine(spineBezier, color, color);
             }
-            
+
+#if UNITY_EDITOR && true
             Debug.DrawLine(primingSpine, _spineChain[0], lawnGreen, 0f, false);
             Debug.DrawLine(primingChest, _spineChain[1], lawnGreen, 0f, false);
             Debug.DrawLine(primingNeck, _spineChain[2], lawnGreen, 0f, false);
             Debug.DrawLine(primingHead, _spineChain[3], lawnGreen, 0f, false);
+#endif
 
             // ## Positions are solved into _spineChain. Now, solve the rotations.
 
@@ -189,6 +200,8 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(RightUpperArm, definition);
             ikSnapshot.ReevaluatePosition(LeftUpperLeg, definition);
             ikSnapshot.ReevaluatePosition(RightUpperLeg, definition);
+            
+#if UNITY_EDITOR && true
             Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], hipTargetPos, Color.magenta, 0f, false);
             
             Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)LeftShoulder], coral, 0f, false);
@@ -202,6 +215,9 @@ namespace HVR.IK.FullTiger
             {
                 Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], objective.chestTargetWorldPosition, mediumOrchid, 0f, false);
             }
+#endif
+
+            return ikSnapshot;
         }
 
         private static float3 SolveLerpVec(float3 similarityVector, quaternion ikRot)

@@ -1,49 +1,48 @@
 ﻿using System;
+using Unity.Burst;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
     /// Given a definition and an objective, solves a pose into a snapshot.
     /// There is no dependency on the transform system beyond this point.
     /// Use Unity.Mathematics wherever applicable.
-    internal class HIKSolver
+    [BurstCompile]
+    internal struct HIKSolver
     {
         private readonly HIKSpineSolver _spineSolver;
         private readonly HIKArmSolver _armSolver;
         private readonly HIKLegSolver _legSolver;
         
-        private readonly HIKSnapshot _ikSnapshot;
-
-        public HIKSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot)
+        public HIKSolver(HIKAvatarDefinition definition)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
-            _ikSnapshot = ikSnapshot;
 
             var reorienter = MbusGeofunctions.FromToOrientation(math.forward(), math.right(), math.up(), -math.up());
-            _spineSolver = new HIKSpineSolver(definition, ikSnapshot, reorienter);
-            _armSolver = new HIKArmSolver(definition, ikSnapshot, reorienter);
-            _legSolver = new HIKLegSolver(definition, ikSnapshot, reorienter);
+            _spineSolver = new HIKSpineSolver(definition, reorienter);
+            _armSolver = new HIKArmSolver(definition, reorienter);
+            _legSolver = new HIKLegSolver(definition, reorienter);
         }
 
-        public void Solve(HIKObjective objective)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
         {
-            if (objective.solveSpine) _spineSolver.Solve(objective);
+            if (objective.solveSpine) ikSnapshot = _spineSolver.Solve(objective, ikSnapshot);
             
             // We need to solve the legs before the arms to support virtually parenting the hand effector to a bone of the leg.
-            _legSolver.Solve(objective);
-            RewriteObjectiveToAccountForHandSelfParenting(objective.selfParentRightHandNullable, ref objective.rightHandTargetWorldPosition, ref objective.rightHandTargetWorldRotation);
-            RewriteObjectiveToAccountForHandSelfParenting(objective.selfParentLeftHandNullable, ref objective.leftHandTargetWorldPosition, ref objective.leftHandTargetWorldRotation);
-            _armSolver.Solve(objective);
+            ikSnapshot = _legSolver.Solve(objective, ikSnapshot);
+            RewriteObjectiveToAccountForHandSelfParenting(ikSnapshot, objective.selfParentRightHandNullable, ref objective.rightHandTargetWorldPosition, ref objective.rightHandTargetWorldRotation);
+            RewriteObjectiveToAccountForHandSelfParenting(ikSnapshot, objective.selfParentLeftHandNullable, ref objective.leftHandTargetWorldPosition, ref objective.leftHandTargetWorldRotation);
+            ikSnapshot = _armSolver.Solve(objective, ikSnapshot);
+            return ikSnapshot;
         }
 
-        private void RewriteObjectiveToAccountForHandSelfParenting(HIKSelfParenting objectiveSelfParentHandNullable, ref float3 pos, ref quaternion rot)
+        private void RewriteObjectiveToAccountForHandSelfParenting(HIKSnapshot ikSnapshot, HIKSelfParenting objectiveSelfParentHandNullable, ref float3 pos, ref quaternion rot)
         {
             if (objectiveSelfParentHandNullable is { } parent && parent.use > 0f)
             {
                 var parentBone = (int)parent.bone;
                 var trs = math.mul(
-                    float4x4.TRS(_ikSnapshot.absolutePos[parentBone], _ikSnapshot.absoluteRot[parentBone], new float3(1, 1, 1)),
+                    float4x4.TRS(ikSnapshot.absolutePos[parentBone], ikSnapshot.absoluteRot[parentBone], new float3(1, 1, 1)),
                     float4x4.TRS(parent.relPosition, parent.relRotation, new float3(1, 1, 1))
                 );
                 pos = math.lerp(pos, trs.c3.xyz, parent.use);
@@ -52,7 +51,8 @@ namespace HVR.IK.FullTiger
         }
     }
     
-    internal class HIKObjective
+    [BurstCompile]
+    internal struct HIKObjective
     {
         internal float3 hipTargetWorldPosition;
         internal quaternion hipTargetWorldRotation;
@@ -102,14 +102,16 @@ namespace HVR.IK.FullTiger
         internal bool solveLeftArm;
         internal bool solveRightArm;
 
+        // FIXME: Switching to structs for burst makes these no longer nullable
         internal HIKSelfParenting selfParentLeftHandNullable;
         internal HIKSelfParenting selfParentRightHandNullable;
     }
 
-    internal class HIKSelfParenting
+    [BurstCompile]
+    internal struct HIKSelfParenting
     {
         public float use;
-        public HumanBodyBones bone;
+        public HIKBodyBones bone;
         public float3 relPosition;
         public quaternion relRotation;
     }

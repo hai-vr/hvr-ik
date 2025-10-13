@@ -12,12 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Unity.Burst;
 using Unity.Mathematics;
-using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
     /// Contains any general purpose functions to facilitate geometric operations.
+    [BurstCompile]
     internal static class MbusGeofunctions
     {
         /**
@@ -123,7 +124,10 @@ namespace HVR.IK.FullTiger
 
         public static float3 Slerp(float3 a, float3 b, float t)
         {
-            return Vector3.Slerp(a, b, t); // FIXME: Vector3.Slerp doesn't use unity mathematics.
+            var aa = quaternion.LookRotationSafe(a, math.up());
+            var bb = quaternion.LookRotationSafe(b, math.up());
+            return math.mul(math.slerp(aa, bb, t), math.forward());
+            // return Vector3.Slerp(a, b, t);
         }
 
         public static float3 LerpDot(float3 whenMinusOne, float3 whenZero, float3 whenOne, float dot)

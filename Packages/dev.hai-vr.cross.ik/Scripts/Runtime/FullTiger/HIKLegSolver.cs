@@ -13,39 +13,40 @@
 // limitations under the License.
 
 using System;
+using Unity.Burst;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
-    internal class HIKLegSolver
+    [BurstCompile]
+    internal struct HIKLegSolver
     {
         private readonly HIKAvatarDefinition definition;
-        private readonly HIKSnapshot ikSnapshot;
         private readonly quaternion _reorienter;
         
-        public HIKLegSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot, quaternion reorienter)
+        public HIKLegSolver(HIKAvatarDefinition definition, quaternion reorienter)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
             this.definition = definition;
-            this.ikSnapshot = ikSnapshot;
             _reorienter = reorienter;
         }
 
-        public void Solve(HIKObjective objective)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
         {
-            if (objective.solveRightLeg) SolveLeg(LegSide.Right, objective.rightFootTargetWorldPosition, objective.rightFootTargetWorldRotation, objective.useStraddlingRightLeg, objective.groundedStraddlingRightLegWorldPosition, objective.groundedStraddlingRightLegWorldRotation);
-            if (objective.solveLeftLeg) SolveLeg(LegSide.Left, objective.leftFootTargetWorldPosition, objective.leftFootTargetWorldRotation, objective.useStraddlingLeftLeg, objective.groundedStraddlingLeftLegWorldPosition, objective.groundedStraddlingLeftLegWorldRotation);
+            if (objective.solveRightLeg) ikSnapshot = SolveLeg(ikSnapshot, LegSide.Right, objective.rightFootTargetWorldPosition, objective.rightFootTargetWorldRotation, objective.useStraddlingRightLeg, objective.groundedStraddlingRightLegWorldPosition, objective.groundedStraddlingRightLegWorldRotation);
+            if (objective.solveLeftLeg) ikSnapshot = SolveLeg(ikSnapshot, LegSide.Left, objective.leftFootTargetWorldPosition, objective.leftFootTargetWorldRotation, objective.useStraddlingLeftLeg, objective.groundedStraddlingLeftLegWorldPosition, objective.groundedStraddlingLeftLegWorldRotation);
+            return ikSnapshot;
         }
 
-        private void SolveLeg(LegSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, bool useStraddlingLeg, float3 groundedStraddlingLegWorldPosition, quaternion groundedStraddlingLegWorldRotation)
+        private HIKSnapshot SolveLeg(HIKSnapshot ikSnapshot, LegSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, bool useStraddlingLeg, float3 groundedStraddlingLegWorldPosition, quaternion groundedStraddlingLegWorldRotation)
         {
             var objectivePos = originalObjectivePos;
             
-            var rootBone = side == LegSide.Right ? HumanBodyBones.RightUpperLeg : HumanBodyBones.LeftUpperLeg;
-            var midBone = side == LegSide.Right ? HumanBodyBones.RightLowerLeg : HumanBodyBones.LeftLowerLeg;
-            var tipBone = side == LegSide.Right ? HumanBodyBones.RightFoot : HumanBodyBones.LeftFoot;
+            var rootBone = side == LegSide.Right ? HIKBodyBones.RightUpperLeg : HIKBodyBones.LeftUpperLeg;
+            var midBone = side == LegSide.Right ? HIKBodyBones.RightLowerLeg : HIKBodyBones.LeftLowerLeg;
+            var tipBone = side == LegSide.Right ? HIKBodyBones.RightFoot : HIKBodyBones.LeftFoot;
             
             var rootPos = ikSnapshot.absolutePos[(int)rootBone];
 
@@ -59,7 +60,9 @@ namespace HVR.IK.FullTiger
             if (!useStraddlingLeg && math.distance(rootPos, objectivePos) >= totalLength)
             {
                 objectivePos = rootPos + math.normalize(objectivePos - rootPos) * totalLength;
+#if UNITY_EDITOR && true
                 Debug.DrawLine(objectivePos, originalObjectivePos, Color.magenta, 0f, false);
+#endif
                 isMaximumDistance = true;
             }
             else
@@ -72,8 +75,10 @@ namespace HVR.IK.FullTiger
             if (!useStraddlingLeg && math.distance(rootPos, objectivePos) < minimumDistance)
             {
                 objectivePos = rootPos + math.normalize(objectivePos - rootPos) * minimumDistance;
+#if UNITY_EDITOR && true
                 Debug.DrawLine(originalObjectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
                 Debug.DrawLine(objectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
+#endif
                 isMinimumDistance = true;
             }
             else
@@ -81,7 +86,7 @@ namespace HVR.IK.FullTiger
                 isMinimumDistance = false;
             }
             
-            var hipReference = ikSnapshot.absoluteRot[(int)HumanBodyBones.Hips];
+            var hipReference = ikSnapshot.absoluteRot[(int)HIKBodyBones.Hips];
             var bendDirection = LegBendHeuristics();
 
             float3 LegBendHeuristics()
@@ -97,9 +102,11 @@ namespace HVR.IK.FullTiger
                 bendPointPos = rootPos + math.normalize(groundedStraddlingLegWorldPosition - rootPos) * upperLength;
                 var prevObjectivePos = objectivePos;
                 objectivePos = bendPointPos + math.normalize(objectivePos - bendPointPos) * lowerLength;
-                
+
+#if UNITY_EDITOR && true
                 Debug.DrawLine(bendPointPos, groundedStraddlingLegWorldPosition, Color.magenta, 0f, false);
                 Debug.DrawLine(prevObjectivePos, objectivePos, Color.magenta, 0f, false);
+#endif
             }
             else if (!isMaximumDistance && !isMinimumDistance)
             {
@@ -134,9 +141,11 @@ namespace HVR.IK.FullTiger
                 }
             }
 
+#if UNITY_EDITOR && true
             Debug.DrawLine(rootPos, objectivePos, Color.cyan, 0f, false);
             Debug.DrawLine(rootPos, bendPointPos, Color.yellow, 0f, false);
             Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
+#endif
 
             var hipDown = math.mul(hipReference, math.down());
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
@@ -151,6 +160,8 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(rootBone, definition);
             ikSnapshot.ReevaluatePosition(midBone, definition);
             ikSnapshot.ReevaluatePosition(tipBone, definition);
+
+            return ikSnapshot;
         }
 
         private enum LegSide

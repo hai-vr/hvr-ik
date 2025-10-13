@@ -31,6 +31,29 @@ namespace HVR.IK.FullTiger
             LeftUpperLeg, LeftLowerLeg, LeftFoot, //LeftToes,
             RightUpperLeg, RightLowerLeg, RightFoot, //RightToes,
         };
+        private static readonly HumanBodyBones[] CopyOrderSpineAndShoulders =
+        {
+            /*Hips,*/ Spine, Chest, UpperChest, Neck, Head,
+            LeftShoulder,
+            RightShoulder
+        };
+        private static readonly HumanBodyBones[] CopyOrderLeftArm =
+        {
+            LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand,
+        };
+        private static readonly HumanBodyBones[] CopyOrderRightArm =
+        {
+            RightShoulder, RightUpperArm, RightLowerArm, RightHand,
+        };
+        private static readonly HumanBodyBones[] CopyOrderLeftLeg =
+        {
+            LeftUpperLeg, LeftLowerLeg, LeftFoot, //LeftToes,
+        };
+        private static readonly HumanBodyBones[] CopyOrderRightLeg =
+        {
+            RightUpperLeg, RightLowerLeg, RightFoot, //RightToes,
+        };
+        
         private static readonly HumanBodyBones[] SpineChain = { Hips, Spine, Chest, UpperChest, Neck, Head };
         private static readonly HumanBodyBones[] LeftArmChain = { LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand };
         private static readonly HumanBodyBones[] RightArmChain = { RightShoulder, RightUpperArm, RightLowerArm, RightHand };
@@ -38,8 +61,7 @@ namespace HVR.IK.FullTiger
         [SerializeField] internal Animator animator;
         [SerializeField] internal HIKEffectors effectors;
         
-        private readonly HIKAvatarDefinition definition = new();
-        private readonly HIKSnapshot ikSnapshot = new();
+        private HIKAvatarDefinition definition = default;
         private HIKSolver _ikSolver;
         
         private readonly Transform[] _bones = new Transform[(int)LastBone];
@@ -47,16 +69,26 @@ namespace HVR.IK.FullTiger
         [Header("Solver Settings")]
         public bool updateInLateUpdate = false;
         public bool updateEveryFrame = true;
+        private HIKSnapshot _ikSnapshot = default;
+        
+        private bool _solveSpine = true;
+        private bool _solveLeftLeg = true;
+        private bool _solveRightLeg = true;
+        private bool _solveLeftArm = true;
+        private bool _solveRightArm = true;
 
         private void Awake()
         {
-            SolveDefinition(animator, definition, _bones);
+            definition.init();
+            definition = SolveDefinition(animator, definition, _bones);
+            
+            _ikSnapshot.init();
             
             // Order matters: This must be instantiated AFTER definition is initialized
-            _ikSolver = new HIKSolver(definition, ikSnapshot);
+            _ikSolver = new HIKSolver(definition);
         }
 
-        private static void SolveDefinition(Animator animator, HIKAvatarDefinition definition, Transform[] bones)
+        internal static HIKAvatarDefinition SolveDefinition(Animator animator, HIKAvatarDefinition definition, Transform[] bones)
         {
             // TODO: We should T-Pose the avatar before sampling the hiplative positions
             var hips = animator.GetBoneTransform(Hips);
@@ -107,6 +139,8 @@ namespace HVR.IK.FullTiger
             definition.refPoseChestLength = math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]);
             definition.refPoseNeckLength = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
             definition.isInitialized = true;
+
+            return definition;
         }
 
         private void Update()
@@ -147,14 +181,14 @@ namespace HVR.IK.FullTiger
                 selfParentLeftHand = new HIKSelfParenting
                 {
                     use = effectors.useSelfParentLeftHand,
-                    bone = effectors.selfParentLeftHandBone,
+                    bone = (HIKBodyBones)(int)effectors.selfParentLeftHandBone,
                     relPosition = effectors.selfParentLeftHandRelativePosition,
                     relRotation = quaternion.Euler(effectors.selfParentLeftHandRelativeRotationEuler),
                 };
             }
             else
             {
-                selfParentLeftHand = null;
+                selfParentLeftHand = default;
             }
             HIKSelfParenting selfParentRightHand;
             if (effectors.useSelfParentRightHand > 0f)
@@ -162,17 +196,17 @@ namespace HVR.IK.FullTiger
                 selfParentRightHand = new HIKSelfParenting
                 {
                     use = effectors.useSelfParentRightHand,
-                    bone = effectors.selfParentRightHandBone,
+                    bone = (HIKBodyBones)(int)effectors.selfParentRightHandBone,
                     relPosition = effectors.selfParentRightHandRelativePosition,
                     relRotation = quaternion.Euler(effectors.selfParentRightHandRelativeRotationEuler),
                 };
             }
             else
             {
-                selfParentRightHand = null;
+                selfParentRightHand = default;
             }
             
-            _ikSolver.Solve(new HIKObjective
+            _ikSnapshot = _ikSolver.Solve(new HIKObjective
             {
                 hipTargetWorldPosition = effectors.hipTarget.position,
                 hipTargetWorldRotation = effectors.hipTarget.rotation,
@@ -213,27 +247,36 @@ namespace HVR.IK.FullTiger
                 groundedStraddlingRightLegWorldPosition = effectors.groundedStraddlingRightLeg.position,
                 groundedStraddlingRightLegWorldRotation = effectors.groundedStraddlingRightLeg.rotation,
                 
-                solveSpine = true,
-                solveLeftLeg = true,
-                solveRightLeg = true,
-                solveLeftArm = true,
-                solveRightArm = true,
+                solveSpine = _solveSpine,
+                solveLeftLeg = _solveLeftLeg,
+                solveRightLeg = _solveRightLeg,
+                solveLeftArm = _solveLeftArm,
+                solveRightArm = _solveRightArm,
                 
                 selfParentLeftHandNullable = selfParentLeftHand,
                 selfParentRightHandNullable = selfParentRightHand,
-            });
+            }, _ikSnapshot);
         }
 
         public void ApplySnapshot()
         {
-            _bones[(int)Hips].position = ikSnapshot.absolutePos[(int)Hips];
-            _bones[(int)Hips].rotation = ConvertSnapshotRotationToBoneRotation(ikSnapshot, definition, Hips);
-            foreach (var boneId in CopyOrder)
+            _bones[(int)Hips].position = _ikSnapshot.absolutePos[(int)Hips];
+            _bones[(int)Hips].rotation = ConvertSnapshotRotationToBoneRotation(_ikSnapshot, definition, Hips);
+            if (_solveSpine) Apply(CopyOrderSpineAndShoulders);
+            if (_solveLeftLeg) Apply(CopyOrderLeftLeg);
+            if (_solveRightLeg) Apply(CopyOrderRightLeg);
+            if (_solveLeftArm) Apply(CopyOrderLeftArm);
+            if (_solveRightArm) Apply(CopyOrderRightArm);
+        }
+
+        private void Apply(HumanBodyBones[] bones)
+        {
+            foreach (var boneId in bones)
             {
                 var index = (int)boneId;
                 if (definition.dataHasBone[index])
                 {
-                    _bones[index].rotation = ConvertSnapshotRotationToBoneRotation(ikSnapshot, definition, boneId);
+                    _bones[index].rotation = ConvertSnapshotRotationToBoneRotation(_ikSnapshot, definition, boneId);
                 }
             }
         }

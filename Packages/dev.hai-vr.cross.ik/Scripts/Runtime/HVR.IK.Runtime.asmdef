@@ -8,7 +8,9 @@
         "Basis Framework",
         "BasisDebug",
         "Unity.Addressables",
-        "Unity.ResourceManager"
+        "Unity.ResourceManager",
+        "Unity.Animation.Rigging",
+        "Unity.Burst"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -17,6 +19,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.animation.rigging",
+            "expression": "1.3.0",
+            "define": "HVR_IK_HAS_ANIMATION_RIGGING"
+        }
+    ],
     "noEngineReferences": false
 }

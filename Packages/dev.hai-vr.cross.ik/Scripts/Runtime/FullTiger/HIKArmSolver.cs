@@ -13,43 +13,44 @@
 // limitations under the License.
 
 using System;
+using Unity.Burst;
 using Unity.Mathematics;
 using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
-    internal class HIKArmSolver
+    [BurstCompile]
+    internal struct HIKArmSolver
     {
         private const float InsideSwitchingMul = 2;
         private readonly HIKAvatarDefinition definition;
-        private readonly HIKSnapshot ikSnapshot;
         private readonly quaternion _reorienter;
         
-        public HIKArmSolver(HIKAvatarDefinition definition, HIKSnapshot ikSnapshot, quaternion reorienter)
+        public HIKArmSolver(HIKAvatarDefinition definition, quaternion reorienter)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
             this.definition = definition;
-            this.ikSnapshot = ikSnapshot;
             _reorienter = reorienter;
         }
 
-        public void Solve(HIKObjective objective)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
         {
             // TODO: Add the ability for the solver to derive a lower arm sub-effector based on (the lower arm effector????? and) a L/R plane effector,
             // describing the intersection of two planes (a line) where the elbow joint could rest on. If the hand is at a fixed position, then the solution is the intersection between
             // a circle and the plane. The circle is described by the bend point rotating around the axis defined by the root pos and the objective pos.
-            if (objective.solveRightArm) SolveArm(objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation);
-            if (objective.solveLeftArm) SolveArm(objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation);
+            if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation);
+            if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation);
+            return ikSnapshot;
         }
 
-        private void SolveArm(HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)
+        private HIKSnapshot SolveArm(HIKSnapshot ikSnapshot, HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)
         {
             var objectivePos = originalObjectivePos;
             
-            var rootBone = side == ArmSide.Right ? HumanBodyBones.RightUpperArm : HumanBodyBones.LeftUpperArm;
-            var midBone = side == ArmSide.Right ? HumanBodyBones.RightLowerArm : HumanBodyBones.LeftLowerArm;
-            var tipBone = side == ArmSide.Right ? HumanBodyBones.RightHand : HumanBodyBones.LeftHand;
+            var rootBone = side == ArmSide.Right ? HIKBodyBones.RightUpperArm : HIKBodyBones.LeftUpperArm;
+            var midBone = side == ArmSide.Right ? HIKBodyBones.RightLowerArm : HIKBodyBones.LeftLowerArm;
+            var tipBone = side == ArmSide.Right ? HIKBodyBones.RightHand : HIKBodyBones.LeftHand;
             
             var rootPos = ikSnapshot.absolutePos[(int)rootBone];
 
@@ -63,7 +64,9 @@ namespace HVR.IK.FullTiger
             if (math.distance(rootPos, objectivePos) >= totalLength)
             {
                 objectivePos = rootPos + math.normalize(objectivePos - rootPos) * totalLength;
+#if UNITY_EDITOR && true
                 Debug.DrawLine(objectivePos, originalObjectivePos, Color.magenta, 0f, false);
+#endif
                 isMaximumDistance = true;
             }
             else
@@ -76,8 +79,10 @@ namespace HVR.IK.FullTiger
             if (math.distance(rootPos, objectivePos) < minimumDistance)
             {
                 objectivePos = rootPos + math.normalize(objectivePos - rootPos) * minimumDistance;
+#if UNITY_EDITOR && true
                 Debug.DrawLine(originalObjectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
                 Debug.DrawLine(objectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
+#endif
                 isMinimumDistance = true;
             }
             else
@@ -86,7 +91,7 @@ namespace HVR.IK.FullTiger
             }
             
             // TODO: Handle HasUpperChest
-            var chestReference = ikSnapshot.absoluteRot[(int)HumanBodyBones.Chest];
+            var chestReference = ikSnapshot.absoluteRot[(int)HIKBodyBones.Chest];
             var bendDirection = ArmBendHeuristics();
 
             float3 ArmBendHeuristics()
@@ -108,10 +113,12 @@ namespace HVR.IK.FullTiger
                 var isOutwards = math.dot(outwards, -handSource);
                 var isPalmUp = math.dot(chestUpwards, palmDirection);
                 var isInside = math.clamp(math.smoothstep(0f, 1f, math.dot(-outwards, math.normalize(objectivePos - rootPos) * InsideSwitchingMul)), -1f, 1f);
-                
+
+#if UNITY_EDITOR && true
                 Debug.DrawLine(rootPos , rootPos + chestUpwards * isOutwards * 0.1f, Color.red, 0f, false);
                 Debug.DrawLine(rootPos + outwards * 0.01f, rootPos + outwards * 0.01f + chestUpwards * isPalmUp * 0.1f, Color.green, 0f, false);
                 Debug.DrawLine(rootPos + outwards * 0.02f, rootPos + outwards * 0.02f + chestUpwards * isInside * 0.1f, Color.blue, 0f, false);
+#endif
                 
                 var chestSource = math.mul(chestReference, math.left());
                 var chestSourceBendingOutwards = math.normalize(chestSource + outwards * math.clamp(isInside, 0f, 1f));
@@ -155,9 +162,11 @@ namespace HVR.IK.FullTiger
                 bendPointPos = rootPos + toMidpoint;
             }
 
+#if UNITY_EDITOR && true
             Debug.DrawLine(rootPos, objectivePos, Color.cyan, 0f, false);
             Debug.DrawLine(rootPos, bendPointPos, Color.yellow, 0f, false);
             Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
+#endif
 
             var twistBase = math.mul(chestReference, math.left());
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
@@ -172,6 +181,8 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(rootBone, definition);
             ikSnapshot.ReevaluatePosition(midBone, definition);
             ikSnapshot.ReevaluatePosition(tipBone, definition);
+
+            return ikSnapshot;
         }
 
         private enum ArmSide

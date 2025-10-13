@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Unity.Collections;
 using Unity.Mathematics;
 
 namespace HVR.IK.FullTiger
@@ -24,27 +25,27 @@ namespace HVR.IK.FullTiger
         /// When a new operation is about to start but the operation counter has already reached the maximum value,
         /// further operations are not executed and this returns false.
         /// Returns true when the iteration has fully completed.
-        public static bool Iterate(float3[] mutatedPointsIncludesRoot,
+        public static bool Iterate(NativeArray<float3> mutatedPointsIncludesRoot,
             float3 targetPos,
-            float[] distances,
+            NativeArray<float> distances,
             float3 rootPos,
             ref int operationCounter,
             int maxOperationCount)
         {
-            return Iterate(mutatedPointsIncludesRoot, targetPos, distances, rootPos, ref operationCounter, maxOperationCount, false, null);
+            return Iterate(mutatedPointsIncludesRoot, targetPos, distances, rootPos, ref operationCounter, maxOperationCount, false, default);
         }
 
         /// Algorithm is based on:
         /// "Andreas Aristidou, Joan Lasenby, FABRIK: A fast, iterative solver for the Inverse Kinematics problem, Graphical Models, 73 (2011)"
         /// Some sections are not part of the original algorithm.
-        public static bool Iterate(float3[] mutatedPointsIncludesRoot,
+        public static bool Iterate(NativeArray<float3> mutatedPointsIncludesRoot,
             float3 targetPos,
-            float[] distances,
+            NativeArray<float> distances,
             float3 rootPos,
             ref int operationCounter,
             int maxOperationCount,
             bool supportsRepulsors,
-            float3[] repulsorsNullable)
+            NativeArray<float3> repulsorsNullable)
         {
             mutatedPointsIncludesRoot[mutatedPointsIncludesRoot.Length - 1] = targetPos;
             if (++operationCounter >= maxOperationCount) return false;
