@@ -82,7 +82,7 @@ namespace HVR.IK.FullTiger
             definition.init();
             definition = SolveDefinition(animator, definition, _bones);
             
-            _ikSnapshot.init();
+            _ikSnapshot.initPersistent();
             
             // Order matters: This must be instantiated AFTER definition is initialized
             _ikSolver = new HIKSolver(definition);

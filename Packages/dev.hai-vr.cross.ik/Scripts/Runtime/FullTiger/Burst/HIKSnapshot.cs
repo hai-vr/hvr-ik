@@ -24,6 +24,11 @@ namespace HVR.IK.FullTiger
     {
         public void init()
         {
+            absolutePos = new NativeArray<float3>((int)HIKBodyBones.LastBone, Allocator.Temp);
+            absoluteRot = new NativeArray<quaternion>((int)HIKBodyBones.LastBone, Allocator.Temp);
+        }
+        public void initPersistent()
+        {
             absolutePos = new NativeArray<float3>((int)HIKBodyBones.LastBone, Allocator.Persistent);
             absoluteRot = new NativeArray<quaternion>((int)HIKBodyBones.LastBone, Allocator.Persistent);
         }

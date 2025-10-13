@@ -9,7 +9,11 @@ https://github.com/user-attachments/assets/f4b17e25-f894-47cd-a856-1171d6773d23
 
 ## Adding to the scene
 
-*Note: This solver has only been tested in Unity 6.2, but it may be modified to ensure compatibility with Unity 2022 in the future.*
+> [!NOTE]  
+> This solver has only been tested in Unity 6.2, but it may be modified to ensure compatibility with Unity 2022 in the future.
+> 
+> At this time of writing, this project is primarily intended for use by **software developers**, not end users. If you are a user, you
+> can still try the steps below, but it may be a poor experience. Please check back another time.
 
 In Edit mode:
 
@@ -30,6 +34,12 @@ As an extra, you can convert a pose to an animation clip. First, open the animat
 select the *HIK Full Tiger* component, and click the *Create animation clip from pose* button. You can then copy the keyframes.
 
 The animation clip may not be a faithful 1:1 copy of the pose as it may handle twist differently, but I am not entirely sure where the discrepancy comes from.
+
+### Animation Rigging
+
+The project currently contains a RigConstraint behaviour called **HVR Full Tiger Animation Rigging**, meant to be used with [Unity's Animation Rigging package](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.3/manual/index.html).
+
+This class is **not ready** for use, as in it won't work at all; this part is under active development. Please check back another time.
 
 ## Options
 
@@ -62,7 +72,7 @@ The *HIK Effectors* component has options that can change the behavior of the so
     That means that, if the head effector target is further away than the hips, we try to avoid making all the bones of the spine (hips-neck chain) point to it as a straight line.
     This option overrides this behaviour so that the spine can become straight, but this is likely to negatively affect the appearance of the avatar mesh. 
   - When true, we do not preserve the spine curvature by not imposing any maximum distance between the hips and the neck; the maximum distance is effectively the sum of the length of the bones.
-  - When false, we preserve the spine curvature by limiting the maximum distance between the hips and the neck to be smaller than the hips-to-neck length + the neck-to-head length (which is not equal to the sum of the length of the bones).
+  - When false, we preserve the spine curvature by limiting the maximum distance between the hips and the head to be smaller than the hips-to-neck length + the neck-to-head length (which is not equal to the sum of the length of the bones).
 
 ### Parenting the hand effectors to the avatar using self-parenting
 
@@ -81,6 +91,12 @@ of the humanoid bone in question.
 - *Self Parent Relative Rotation*: The relative rotation between that bone and the effector.
 
 ## Solving without Transforms
+
+> [!WARNING]  
+> This project is under active development and has no stable release at this time of writing. Any class will be subject to breaking changes without any notice,
+> no matter whether something is marked as public, internal, or private.
+> 
+> Current work towards using the Unity Job system and towards compatibility with the Animation Rigging package will particularly influence the instability of the API.
 
 The IK solver was designed to run without any access to Transform, GameObject, nor Component hierarchy during the solve.
 
