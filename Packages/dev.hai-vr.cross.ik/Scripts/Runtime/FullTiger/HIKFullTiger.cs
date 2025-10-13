@@ -44,6 +44,8 @@ namespace HVR.IK.FullTiger
         
         private readonly Transform[] _bones = new Transform[(int)LastBone];
 
+        [Header("Solver Settings")]
+        public bool updateInLateUpdate = false;
         public bool updateEveryFrame = true;
 
         private void Awake()
@@ -108,6 +110,22 @@ namespace HVR.IK.FullTiger
         }
 
         private void Update()
+        {
+            if (!updateInLateUpdate)
+            {
+                ExecuteSolver();
+            }
+        }
+        
+        private void LateUpdate()
+        {
+            if (updateInLateUpdate)
+            {
+                ExecuteSolver();
+            }
+        }
+
+        private void ExecuteSolver() 
         {
             if (!effectors.isActiveAndEnabled) return;
             if (!effectors.IsInitialized()) return;
