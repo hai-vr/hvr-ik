@@ -90,6 +90,14 @@ of the humanoid bone in question.
 - *Self Parent Relative Position*: The relative position between that bone and the effector.
 - *Self Parent Relative Rotation*: The relative rotation between that bone and the effector.
 
+## Controlling execution order
+
+This component has an option called **updateEveryFrame**, which defaults to true.
+
+When you set this to false, you can manually control the execution order by invoking the `(HIKFullTiger).PerformRegularSolve()` and the `(HIKFullTiger).ApplySnapshot()` functions from your own code.
+
+The solver can also be used without even using *HIK Full Tiger* nor *HIK Effectors*, please [read the section below about solving without transforms](#solving-without-transforms).
+
 ## Solving without Transforms
 
 > [!WARNING]  
