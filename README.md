@@ -96,7 +96,7 @@ The struggle parameter is an attempt to help alleviate the following issue with 
 
 When the end effector is very close to the maximum distance, the last few percent lead to an acceleration in the change of the angle of the joint.
 
-The *struggle* parameters try to alleviate this by changing the behaviour so that when the end effector is located between 99% and 104% of the total leg length,
+The *struggle* parameters try to alleviate this by changing the behaviour so that when the end effector is located between 99% and 104% of the total arm or leg length,
 it gets remapped from 99% to 100% following the curve of a charging capacitor.
 
 The default values are 0.99 and 1.04, corresponding to 99% and 104%. To disable this behaviour, use a value of 1 and 1.
