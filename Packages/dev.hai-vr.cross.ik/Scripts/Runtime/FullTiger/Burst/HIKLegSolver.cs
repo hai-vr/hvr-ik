@@ -23,7 +23,7 @@ namespace HVR.IK.FullTiger
     {
         private readonly HIKAvatarDefinition definition;
         private readonly quaternion _reorienter;
-        private readonly AnimationCurve _curve;
+        private readonly AnimationCurve _struggleCurve;
 
         public HIKLegSolver(HIKAvatarDefinition definition, quaternion reorienter)
         {
@@ -31,7 +31,7 @@ namespace HVR.IK.FullTiger
             
             this.definition = definition;
             _reorienter = reorienter;
-            _curve = new AnimationCurve(
+            _struggleCurve = new AnimationCurve(
                 new Keyframe(0f, 0f, 0f, 2f),
                 new Keyframe(0.2f, 0.63f, 1f, 1f),
                 new Keyframe(0.5f, 0.86f, 0.5f, 0.5f),
@@ -58,7 +58,7 @@ namespace HVR.IK.FullTiger
             var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]);
             
             // Corrections
-            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, useStraddlingLeg, rootPos, upperLength, lowerLength, out var distanceType, objective.legStruggleStart, objective.legStruggleEnd);
+            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, useStraddlingLeg, rootPos, upperLength, lowerLength, out var distanceType, objective.legStruggleStart, objective.legStruggleEnd, _struggleCurve);
 
             var hipReference = ikSnapshot.absoluteRot[(int)HIKBodyBones.Hips];
             

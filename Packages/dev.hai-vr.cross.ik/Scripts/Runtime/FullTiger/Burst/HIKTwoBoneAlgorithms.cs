@@ -12,7 +12,8 @@ namespace HVR.IK.FullTiger
             float lowerLength,
             out HIKTwoBoneDistanceType distanceType,
             float struggleStart,
-            float struggleEnd)
+            float struggleEnd,
+            AnimationCurve struggleCurve)
         {
             var totalLength = upperLength + lowerLength;
             var minimumDistance = math.abs(upperLength - lowerLength);
@@ -27,7 +28,7 @@ namespace HVR.IK.FullTiger
                 if (struggleStart != struggleEnd)
                 {
                     var lerpAmount = math.clamp(math.unlerp(totalLength * struggleStart, totalLength * struggleEnd, distance), 0f, 1f);
-                    var calculatedLength = math.lerp(totalLength * struggleStart, totalLength, lerpAmount);
+                    var calculatedLength = math.lerp(totalLength * struggleStart, totalLength, struggleCurve.Evaluate(lerpAmount));
                     finalLength = calculatedLength;
                 }
                 else

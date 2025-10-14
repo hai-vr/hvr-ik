@@ -24,13 +24,20 @@ namespace HVR.IK.FullTiger
         private const float InsideSwitchingMul = 2;
         private readonly HIKAvatarDefinition definition;
         private readonly quaternion _reorienter;
-        
+        private readonly AnimationCurve _struggleCurve;
+
         public HIKArmSolver(HIKAvatarDefinition definition, quaternion reorienter)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
             this.definition = definition;
             _reorienter = reorienter;
+            _struggleCurve = new AnimationCurve(
+                new Keyframe(0f, 0f, 0f, 2f),
+                new Keyframe(0.2f, 0.63f, 1f, 1f),
+                new Keyframe(0.5f, 0.86f, 0.5f, 0.5f),
+                new Keyframe(1f, 1f, 0f, 0f)
+            );
         }
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
@@ -57,7 +64,7 @@ namespace HVR.IK.FullTiger
             // Corrections
             var TODO_STRADDLING_IS_FALSE = false;
             var TODO_NO_STRUGGLE = 1f;
-            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, TODO_NO_STRUGGLE, TODO_NO_STRUGGLE);
+            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, TODO_NO_STRUGGLE, TODO_NO_STRUGGLE, _struggleCurve);
             
             // TODO: Handle HasUpperChest
             var chestReference = ikSnapshot.absoluteRot[(int)HIKBodyBones.Chest];
