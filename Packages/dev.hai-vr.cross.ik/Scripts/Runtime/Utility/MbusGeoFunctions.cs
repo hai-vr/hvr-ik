@@ -141,5 +141,15 @@ namespace HVR.IK.FullTiger
                 return math.lerp(whenMinusOne, whenZero, dot + 1);
             }
         }
+
+        public static float3 ReprojectTwistToArm(float3 armDirection, float3 handDirection, float3 handTwist)
+        {
+            var axis = math.normalize(math.cross(armDirection, handDirection));
+            
+            var axisArmCross = math.normalize(math.cross(axis, armDirection));
+            var axisHandCross = math.normalize(math.cross(axis, handDirection));
+            
+            return axis * math.dot(handTwist, axis) + axisArmCross * math.dot(handTwist, axisHandCross);
+        }
     }
 }
