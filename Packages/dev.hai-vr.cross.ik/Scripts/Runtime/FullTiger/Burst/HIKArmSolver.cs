@@ -45,8 +45,6 @@ namespace HVR.IK.FullTiger
 
         private HIKSnapshot SolveArm(HIKSnapshot ikSnapshot, HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)
         {
-            var objectivePos = originalObjectivePos;
-            
             var rootBone = side == ArmSide.Right ? HIKBodyBones.RightUpperArm : HIKBodyBones.LeftUpperArm;
             var midBone = side == ArmSide.Right ? HIKBodyBones.RightLowerArm : HIKBodyBones.LeftLowerArm;
             var tipBone = side == ArmSide.Right ? HIKBodyBones.RightHand : HIKBodyBones.LeftHand;
@@ -55,43 +53,15 @@ namespace HVR.IK.FullTiger
 
             var upperLength = math.distance(definition.refPoseHiplativePos[(int)rootBone], definition.refPoseHiplativePos[(int)midBone]);
             var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]);
-            var totalLength = upperLength + lowerLength;
-            var minimumDistance = math.abs(upperLength - lowerLength);
-            
-            // Apply correction when the target is too far
-            bool isMaximumDistance;
-            if (math.distance(rootPos, objectivePos) >= totalLength)
-            {
-                objectivePos = rootPos + math.normalize(objectivePos - rootPos) * totalLength;
-#if UNITY_EDITOR && true
-                Debug.DrawLine(objectivePos, originalObjectivePos, Color.magenta, 0f, false);
-#endif
-                isMaximumDistance = true;
-            }
-            else
-            {
-                isMaximumDistance = false;
-            }
-            
-            // Apply correction when the target is practically unreachable
-            bool isMinimumDistance;
-            if (math.distance(rootPos, objectivePos) < minimumDistance)
-            {
-                objectivePos = rootPos + math.normalize(objectivePos - rootPos) * minimumDistance;
-#if UNITY_EDITOR && true
-                Debug.DrawLine(originalObjectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
-                Debug.DrawLine(objectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
-#endif
-                isMinimumDistance = true;
-            }
-            else
-            {
-                isMinimumDistance = false;
-            }
+
+            // Corrections
+            var TODO_STRADDLING_IS_FALSE = false;
+            var TODO_NO_STRUGGLE = 1f;
+            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, TODO_NO_STRUGGLE, TODO_NO_STRUGGLE);
             
             // TODO: Handle HasUpperChest
             var chestReference = ikSnapshot.absoluteRot[(int)HIKBodyBones.Chest];
-            var bendDirection = ArmBendHeuristics();
+            var bendDirection = TODO_STRADDLING_IS_FALSE ? float3.zero : ArmBendHeuristics(); // Bend direction is not used when straddling.
 
             float3 ArmBendHeuristics()
             {
@@ -129,43 +99,9 @@ namespace HVR.IK.FullTiger
             }
             
             // Solve
-            bool isTooTight = false;
+            var TODO_NO_STRADDLING_POSITION = float3.zero;
             float3 bendPointPos;
-            if (!isMaximumDistance && !isMinimumDistance)
-            {
-                var toTip = objectivePos - rootPos;
-                var toTipLength = math.length(toTip);
-                
-                // Law of cosines
-                var angleRad = math.acos((toTipLength * toTipLength + upperLength * upperLength - lowerLength * lowerLength) / (2 * toTipLength * upperLength));
-                // Ratio rule
-                var toMidpointLength = math.cos(angleRad) * upperLength;
-                var downDistance = math.sin(angleRad) * upperLength;
-
-                var toMidpoint = math.normalize(toTip) * toMidpointLength;
-                var bendDirectionStraightened = MbusGeofunctions.Straighten(math.normalize(bendDirection), toTip);
-                bendPointPos = rootPos + toMidpoint + bendDirectionStraightened * downDistance;
-
-                var v0 = math.mul(originalObjectiveRot, math.right());
-                var v1 = math.normalize(bendPointPos - objectivePos);
-                isTooTight = math.dot(v0, v1) > 0.01f;
-            }
-            else if (isMinimumDistance)
-            {
-                bendPointPos = rootPos + math.normalize(objectivePos - rootPos) * lowerLength;
-            }
-            else
-            {
-                var toTip = objectivePos - rootPos;
-                var toMidpoint = toTip * upperLength / totalLength;
-                bendPointPos = rootPos + toMidpoint;
-            }
-
-#if UNITY_EDITOR && true
-            Debug.DrawLine(rootPos, objectivePos, Color.cyan, 0f, false);
-            Debug.DrawLine(rootPos, bendPointPos, Color.yellow, 0f, false);
-            Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
-#endif
+            (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, TODO_STRADDLING_IS_FALSE, TODO_NO_STRADDLING_POSITION, distanceType, bendDirection);
 
             var twistBase = math.mul(chestReference, math.left());
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
