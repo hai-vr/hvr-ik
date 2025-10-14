@@ -255,6 +255,8 @@ namespace HVR.IK.FullTiger
                 
                 legStruggleStart = effectors.legStruggleStart,
                 legStruggleEnd = effectors.legStruggleEnd,
+                armStruggleStart = effectors.armStruggleStart,
+                armStruggleEnd = effectors.armStruggleEnd,
                 
                 selfParentLeftHandNullable = selfParentLeftHand,
                 selfParentRightHandNullable = selfParentRightHand,

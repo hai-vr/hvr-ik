@@ -91,6 +91,8 @@ namespace HVR.IK.FullTiger
         internal bool doNotPreserveHipsToNeckCurvatureLimit;
         internal float legStruggleStart;
         internal float legStruggleEnd;
+        internal float armStruggleStart;
+        internal float armStruggleEnd;
         
         internal bool useStraddlingLeftLeg;
         internal bool useStraddlingRightLeg;

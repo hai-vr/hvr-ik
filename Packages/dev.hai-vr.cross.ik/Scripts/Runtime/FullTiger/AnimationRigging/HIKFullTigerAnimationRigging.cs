@@ -120,6 +120,8 @@ namespace HVR.IK.FullTiger.AnimationRigging
                 
                 legStruggleStart = HIKObjective.StruggleStart,
                 legStruggleEnd = HIKObjective.StruggleEnd,
+                armStruggleStart = HIKObjective.StruggleStart,
+                armStruggleEnd = HIKObjective.StruggleEnd,
 
                 selfParentLeftHandNullable = new HIKSelfParenting
                 {

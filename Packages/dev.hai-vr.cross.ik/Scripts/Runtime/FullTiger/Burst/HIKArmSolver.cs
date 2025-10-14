@@ -63,8 +63,7 @@ namespace HVR.IK.FullTiger
 
             // Corrections
             var TODO_STRADDLING_IS_FALSE = false;
-            var TODO_NO_STRUGGLE = 1f;
-            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, TODO_NO_STRUGGLE, TODO_NO_STRUGGLE, _struggleCurve);
+            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, objective.armStruggleStart, objective.armStruggleEnd, _struggleCurve);
             
             // TODO: Handle HasUpperChest
             var chestReference = ikSnapshot.absoluteRot[(int)HIKBodyBones.Chest];
