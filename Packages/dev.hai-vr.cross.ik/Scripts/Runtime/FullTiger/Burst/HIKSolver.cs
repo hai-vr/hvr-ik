@@ -7,7 +7,6 @@ namespace HVR.IK.FullTiger
     /// Given a definition and an objective, solves a pose into a snapshot.
     /// There is no dependency on the transform system beyond this point.
     /// Use Unity.Mathematics wherever applicable.
-    [BurstCompile]
     internal struct HIKSolver
     {
         private readonly HIKSpineSolver _spineSolver;
@@ -51,7 +50,6 @@ namespace HVR.IK.FullTiger
         }
     }
     
-    [BurstCompile]
     internal struct HIKObjective
     {
         public const float StruggleStart = 0.99f;
@@ -112,7 +110,6 @@ namespace HVR.IK.FullTiger
         internal HIKSelfParenting selfParentRightHandNullable;
     }
 
-    [BurstCompile]
     internal struct HIKSelfParenting
     {
         public float use;

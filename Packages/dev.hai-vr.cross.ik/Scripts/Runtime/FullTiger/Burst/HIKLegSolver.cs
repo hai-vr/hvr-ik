@@ -19,7 +19,6 @@ using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
-    [BurstCompile]
     internal struct HIKLegSolver
     {
         private readonly HIKAvatarDefinition definition;

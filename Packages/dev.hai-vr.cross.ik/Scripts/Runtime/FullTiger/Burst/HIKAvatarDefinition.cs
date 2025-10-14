@@ -20,7 +20,6 @@ using static HVR.IK.FullTiger.HIKBodyBones;
 
 namespace HVR.IK.FullTiger
 {
-    [BurstCompile]
     public struct HIKAvatarDefinition : IDisposable
     {
         /// When the avatar is in "artist pose", this is the length between the hip to the base of the neck.

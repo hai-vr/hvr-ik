@@ -19,7 +19,6 @@ using Unity.Mathematics;
 
 namespace HVR.IK.FullTiger
 {
-    [BurstCompile]
     internal struct HIKSnapshot : IDisposable
     {
         public void init()

@@ -21,7 +21,6 @@ using static HVR.IK.FullTiger.HIKBodyBones;
 
 namespace HVR.IK.FullTiger
 {
-    [BurstCompile]
     internal struct HIKSpineSolver : IDisposable
     {
         private const int Iterations = 10;
