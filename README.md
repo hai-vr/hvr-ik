@@ -101,6 +101,10 @@ it gets remapped from 99% to 100% following the curve of a charging capacitor.
 
 The default values are 0.99 and 1.04, corresponding to 99% and 104%. To disable this behaviour, use a value of 1 and 1.
 
+<img width="1330" height="512" alt="cdist" src="https://github.com/user-attachments/assets/2051705a-b349-49ca-a778-51353b51e667" />
+
+*When struggle is enabled, the last one percent of the distance takes longer to reach, but it avoids a sudden acceleration of the joint angle in that last percent.*
+
 ## Controlling execution order
 
 This component has an option called **updateEveryFrame**, which defaults to true.
@@ -136,6 +140,8 @@ If you instantiate the following classes directly, you can request a solve witho
 This solver works under the following assumptions:
 - Import:
   - This solver can only operate on avatar models that were imported in Unity as Humanoid.
+    - With some difficulty, you may be able to bypass this restriction by filling the *HIK Avatar Definition*
+      object yourself and [solving without transforms](#solving-without-transforms).
   - There is no need to perform any bone angle normalization (no VRM-like normalization is needed).
 - Avatar scale:
   - The Transform hierarchy must be uniformly scaled.

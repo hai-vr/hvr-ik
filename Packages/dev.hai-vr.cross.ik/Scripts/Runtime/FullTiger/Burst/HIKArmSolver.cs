@@ -32,12 +32,7 @@ namespace HVR.IK.FullTiger
             
             this.definition = definition;
             _reorienter = reorienter;
-            _struggleCurve = new AnimationCurve(
-                new Keyframe(0f, 0f, 0f, 2f),
-                new Keyframe(0.2f, 0.63f, 1f, 1f),
-                new Keyframe(0.5f, 0.86f, 0.5f, 0.5f),
-                new Keyframe(1f, 1f, 0f, 0f)
-            );
+            _struggleCurve = HIKTwoBoneAlgorithms.CreateStruggleCurve();
         }
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
