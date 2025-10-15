@@ -131,6 +131,33 @@ If you instantiate the following classes directly, you can request a solve witho
   - You can learn how to fill this by looking at the implementation of *HIK Effectors* `CreateTarget` function, and *HIK Full Tiger*'s `PerformRegularSolve` function.
 - **HIKSolver** is the solver you need to instantiate using all the aforementioned classes.
 
+## Solver considerations
+
+This solver works under the following assumptions:
+- Import:
+  - This solver can only operate on avatar models that were imported in Unity as Humanoid.
+  - There is no need to perform any bone angle normalization (no VRM-like normalization is needed).
+- Avatar scale:
+  - The Transform hierarchy must be uniformly scaled.
+  - You may change the avatar scale at runtime (Hips or any parent of Hips). Effectors operate in world space.
+  - You may not change the scale of any child transform of the Hips at runtime.
+- Bone positions: 
+  - The bone positions in local space must not change at runtime, except for the Hips.
+
+This solver provides the following guarantees:
+- The results can be applied by setting the Hips transform position and rotation, and the absolute rotation of all the other bones.
+- Unless specified by enabling a special option (not available as of this version of the solver), this solver does not require setting
+  the position of any bone other than the hips.
+  - You should be able to network the pose of the avatar by transmitting the position and rotation of the Hips transform, and the
+    rotation of all other bones.
+- The result of the solver does not depend on the previous pose of the avatar, unless specified (partial solves).
+  - You are able to run a solve or several different solves multiple times per frame onto the same avatar if you deem it necessary
+    (e.g. a solve to be submitted for networking purposes, followed by a partial local solve for real-time object attachment purposes).
+  - The time, delta time, or frame is not an input of the solver. There is no smoothing-over-time function.
+- You are not required to apply the result of the solver to any Transform. Solving is an operation that is separate from applying the result.
+
+Also, the current version of the solver does not support avatars that have an UpperChest bone. Please check back at another time.
+
 ## How this solver will work
 
 Writing an IK solver for social VR has two parts:
