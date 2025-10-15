@@ -49,7 +49,6 @@ namespace HVR.IK.Editor
             }
             if (GUILayout.Button("Copy leg struggle response graph to clipboard"))
             {
-                var struggleCurve = HIKTwoBoneAlgorithms.CreateStruggleCurve();
                 var a = 0.5f;
                 var b = 1 - a;
 
@@ -64,7 +63,7 @@ namespace HVR.IK.Editor
                     if (inputDistance >= my.legStruggleStart)
                     {
                         var lerpAmount = math.clamp(math.unlerp(my.legStruggleStart, my.legStruggleEnd, inputDistance), 0f, 1f);
-                        var calculatedLength = math.lerp(my.legStruggleStart, 1f, struggleCurve.Evaluate(lerpAmount));
+                        var calculatedLength = math.lerp(my.legStruggleStart, 1f, 1 - math.pow(1 - lerpAmount, 4f));
                         finalDistance = math.clamp(calculatedLength, 0f, 1f);
                     }
                     else

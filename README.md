@@ -103,7 +103,7 @@ https://github.com/user-attachments/assets/90fee552-3fbe-4760-9470-f48f4003db29
 
 The default values are 0.99 and 1.04, corresponding to 99% and 104%. To disable this behaviour, use a value of 1 and 1.
 
-<img width="1330" height="512" alt="cdist" src="https://github.com/user-attachments/assets/2051705a-b349-49ca-a778-51353b51e667" />
+<img width="1604" height="607" alt="cdist2" src="https://github.com/user-attachments/assets/086eaf75-cf3e-4391-af31-a1bbc05e0e11" />
 
 *When struggle is enabled, the last one percent of the distance takes longer to reach, but it avoids a sudden acceleration of the joint angle in that last percent.*
 

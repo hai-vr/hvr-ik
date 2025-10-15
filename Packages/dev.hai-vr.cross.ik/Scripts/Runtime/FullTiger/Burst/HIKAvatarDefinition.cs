@@ -47,7 +47,8 @@ namespace HVR.IK.FullTiger
         internal NativeArray<quaternion> dataInversePostRot;
         
         internal NativeArray<float4x4> relativeMatrices;
-        
+
+        internal float3 capturedWithLossyScale;
         internal bool isInitialized;
 
         public void init()
