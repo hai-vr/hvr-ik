@@ -42,15 +42,17 @@ namespace HVR.IK.FullTiger
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
         {
+            var scale = math.length(objective.providedLossyScale) / math.length(definition.capturedWithLossyScale);
+            
             // TODO: Add the ability for the solver to derive a lower arm sub-effector based on (the lower arm effector????? and) a L/R plane effector,
             // describing the intersection of two planes (a line) where the elbow joint could rest on. If the hand is at a fixed position, then the solution is the intersection between
             // a circle and the plane. The circle is described by the bend point rotating around the axis defined by the root pos and the objective pos.
-            if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation);
-            if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation);
+            if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale);
+            if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale);
             return ikSnapshot;
         }
 
-        private HIKSnapshot SolveArm(HIKSnapshot ikSnapshot, HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot)
+        private HIKSnapshot SolveArm(HIKSnapshot ikSnapshot, HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, float scale)
         {
             var rootBone = side == ArmSide.Right ? HIKBodyBones.RightUpperArm : HIKBodyBones.LeftUpperArm;
             var midBone = side == ArmSide.Right ? HIKBodyBones.RightLowerArm : HIKBodyBones.LeftLowerArm;
@@ -58,8 +60,8 @@ namespace HVR.IK.FullTiger
             
             var rootPos = ikSnapshot.absolutePos[(int)rootBone];
 
-            var upperLength = math.distance(definition.refPoseHiplativePos[(int)rootBone], definition.refPoseHiplativePos[(int)midBone]);
-            var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]);
+            var upperLength = math.distance(definition.refPoseHiplativePos[(int)rootBone], definition.refPoseHiplativePos[(int)midBone]) * scale;
+            var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]) * scale;
 
             // Corrections
             var TODO_STRADDLING_IS_FALSE = false;
@@ -119,9 +121,9 @@ namespace HVR.IK.FullTiger
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
-            ikSnapshot.ReevaluatePosition(rootBone, definition);
-            ikSnapshot.ReevaluatePosition(midBone, definition);
-            ikSnapshot.ReevaluatePosition(tipBone, definition);
+            ikSnapshot.ReevaluatePosition(rootBone, definition, scale);
+            ikSnapshot.ReevaluatePosition(midBone, definition, scale);
+            ikSnapshot.ReevaluatePosition(tipBone, definition, scale);
 
             return ikSnapshot;
         }

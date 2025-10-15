@@ -93,6 +93,7 @@ namespace HVR.IK.FullTiger
         internal float legStruggleEnd;
         internal float armStruggleStart;
         internal float armStruggleEnd;
+        internal float3 providedLossyScale;
         
         internal bool useStraddlingLeftLeg;
         internal bool useStraddlingRightLeg;

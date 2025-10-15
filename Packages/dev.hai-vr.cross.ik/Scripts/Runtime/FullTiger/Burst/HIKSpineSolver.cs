@@ -57,6 +57,8 @@ namespace HVR.IK.FullTiger
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
         {
+            var scale = math.length(objective.providedLossyScale) / math.length(definition.capturedWithLossyScale);
+            
             var originalHipTargetPos = objective.hipTargetWorldPosition;
             var originalHeadTargetPos = objective.headTargetWorldPosition;
             
@@ -68,7 +70,7 @@ namespace HVR.IK.FullTiger
             if (!objective.allowContortionist)
             {
                 var headAndHipSameDirection01 = math.dot(math.mul(objective.headTargetWorldRotation, math.right()), math.mul(objective.hipTargetWorldRotation, math.right())) * 0.5f + 0.5f;
-                var ff = math.lerp(0.01f, (definition.refPoseHipToNeckLength + definition.refPoseNeckLength * 0.75f) / definition.refPoseHipToHeadLength, headAndHipSameDirection01);
+                var ff = math.lerp(0.01f, (definition.refPoseHipToNeckLength + definition.refPoseNeckLength * 0.75f) / definition.refPoseHipToHeadLength, headAndHipSameDirection01) * scale;
                 if (math.distance(originalHipTargetPos, headTargetPos) < definition.refPoseHipToHeadLength * ff) // TODO: Allow this to be closer if the head and hip are not in the same direction
                 {
                     hipTargetPos = headTargetPos - math.normalize(headTargetPos - originalHipTargetPos) * definition.refPoseHipToHeadLength * ff;
@@ -90,7 +92,7 @@ namespace HVR.IK.FullTiger
                 // If the distance between the head and the neck is larger than the length of the neck + refPoseHipToNeckLength
                 // (which is not equal to the sum of the bones of the hip-spine-chest-neck) chain, then either the head or the hips MUST be brought closer
                 // so that the solver doesn't overstretch the artists' spine.
-                var refHipToNeckAndThenToHeadLength = definition.refPoseHipToNeckLength + definition.refPoseNeckLength;
+                var refHipToNeckAndThenToHeadLength = (definition.refPoseHipToNeckLength + definition.refPoseNeckLength) * scale;
                 if (math.distance(hipTargetPos, headTargetPos) > refHipToNeckAndThenToHeadLength)
                 {
                     if (objective.headAlignmentMattersMore)
@@ -111,20 +113,23 @@ namespace HVR.IK.FullTiger
             ikSnapshot.absoluteRot[(int)Hips] = objective.hipTargetWorldRotation;
             // The position of the spine is a direct consequence of the position and rotation of the hips, so we have this immediately,
             // and it won't change as a result of IK calculations until we get to the head alignment.
-            ikSnapshot.ReevaluatePosition(Spine, definition);
+            ikSnapshot.ReevaluatePosition(Spine, definition, scale);
             var spinePos = ikSnapshot.absolutePos[(int)Spine];
 
             // ## Prime
             var spineToHead = headTargetPos - spinePos;
             var back = math.mul(objective.headTargetWorldRotation, math.down());
-            var spintToHeadLen = math.length(spineToHead);
+            var spineToHeadLen = math.length(spineToHead);
+            // var spineToHeadNormalized = math.normalize(spineToHead);
         
             // TODO: We should prime the spine based on what the reference pose already suggested.
-            var chestPosBase = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f;
-            var neckPosBase = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spintToHeadLen * 0.3f + back * 0.01f;
+            var chestPosBase = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spineToHeadLen * 0.3f + back * 0.01f * scale;
+            var neckPosBase = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spineToHeadLen * 0.3f + back * 0.01f * scale;
+            // var chestPosBase = spinePos + spineToHeadNormalized * definition.refPoseChestLength * scale + back * 0.01f * scale;
+            // var neckPosBase = headTargetPos - spineToHeadNormalized * definition.refPoseNeckLength * scale + back * 0.01f * scale;
             var primingSpine = spinePos;
             var primingChest = math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest);
-            var primingNeck = math.lerp(neckPosBase, objective.chestTargetWorldPosition + math.mul(objective.chestTargetWorldRotation, math.right() * definition.refPoseChestLength), objective.useChest * objective.alsoUseChestToMoveNeck);
+            var primingNeck = math.lerp(neckPosBase, objective.chestTargetWorldPosition + math.mul(objective.chestTargetWorldRotation, math.right() * definition.refPoseChestLength * scale), objective.useChest * objective.alsoUseChestToMoveNeck);
             var primingHead = headTargetPos;
             _spineChain[0] = primingSpine; // Spine
             _spineChain[1] = primingChest; // Chest
@@ -135,7 +140,7 @@ namespace HVR.IK.FullTiger
             var operationCounter = 0;
             for (var i = 0; i < Iterations; i++)
             {
-                MbusMathSolver.Iterate(_spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue);
+                MbusMathSolver.Iterate(_spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue, scale);
                 // var color = Color.Lerp(Color.black, Color.red, i / (Iterations - 1f));
                 // if (drawDebug) DataViz.Instance.DrawLine(spineBezier, color, color);
             }
@@ -172,33 +177,33 @@ namespace HVR.IK.FullTiger
             ikSnapshot.absoluteRot[(int)Head] = objective.headTargetWorldRotation;
 
             // Recalculate the real position of the head, so that we may realign it.
-            ikSnapshot.ReevaluatePosition(Spine, definition);
-            ikSnapshot.ReevaluatePosition(Chest, definition);
-            ikSnapshot.ReevaluatePosition(Neck, definition);
-            ikSnapshot.ReevaluatePosition(Head, definition);
+            ikSnapshot.ReevaluatePosition(Spine, definition, scale);
+            ikSnapshot.ReevaluatePosition(Chest, definition, scale);
+            ikSnapshot.ReevaluatePosition(Neck, definition, scale);
+            ikSnapshot.ReevaluatePosition(Head, definition, scale);
             
             // Realign the head, if applicable.
             if (objective.headAlignmentMattersMore)
             {
                 var headMismatch2 = headTargetPos - ikSnapshot.absolutePos[(int)Head];
                 ikSnapshot.absolutePos[(int)Hips] += headMismatch2;
-                ikSnapshot.ReevaluatePosition(Spine, definition);
-                ikSnapshot.ReevaluatePosition(Chest, definition);
-                ikSnapshot.ReevaluatePosition(Neck, definition);
-                ikSnapshot.ReevaluatePosition(Head, definition);
+                ikSnapshot.ReevaluatePosition(Spine, definition, scale);
+                ikSnapshot.ReevaluatePosition(Chest, definition, scale);
+                ikSnapshot.ReevaluatePosition(Neck, definition, scale);
+                ikSnapshot.ReevaluatePosition(Head, definition, scale);
             }
             
             // Recalculate the shoulders, arms and legs, so that we may calculate the arms next
-            ikSnapshot.ReevaluatePosition(LeftShoulder, definition);
-            ikSnapshot.ReevaluatePosition(RightShoulder, definition);
+            ikSnapshot.ReevaluatePosition(LeftShoulder, definition, scale);
+            ikSnapshot.ReevaluatePosition(RightShoulder, definition, scale);
             
             ikSnapshot.ApplyReferenceRotation(LeftShoulder, definition);
             ikSnapshot.ApplyReferenceRotation(RightShoulder, definition);
             
-            ikSnapshot.ReevaluatePosition(LeftUpperArm, definition);
-            ikSnapshot.ReevaluatePosition(RightUpperArm, definition);
-            ikSnapshot.ReevaluatePosition(LeftUpperLeg, definition);
-            ikSnapshot.ReevaluatePosition(RightUpperLeg, definition);
+            ikSnapshot.ReevaluatePosition(LeftUpperArm, definition, scale);
+            ikSnapshot.ReevaluatePosition(RightUpperArm, definition, scale);
+            ikSnapshot.ReevaluatePosition(LeftUpperLeg, definition, scale);
+            ikSnapshot.ReevaluatePosition(RightUpperLeg, definition, scale);
             
 #if UNITY_EDITOR && true
             Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], hipTargetPos, Color.magenta, 0f, false);

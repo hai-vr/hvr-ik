@@ -30,9 +30,10 @@ namespace HVR.IK.FullTiger
             NativeArray<float> distances,
             float3 rootPos,
             ref int operationCounter,
-            int maxOperationCount)
+            int maxOperationCount,
+            float scale)
         {
-            return Iterate(mutatedPointsIncludesRoot, targetPos, distances, rootPos, ref operationCounter, maxOperationCount, false, default);
+            return Iterate(mutatedPointsIncludesRoot, targetPos, distances, rootPos, ref operationCounter, maxOperationCount, false, default, scale);
         }
 
         /// Algorithm is based on:
@@ -45,13 +46,14 @@ namespace HVR.IK.FullTiger
             ref int operationCounter,
             int maxOperationCount,
             bool supportsRepulsors,
-            NativeArray<float3> repulsorsNullable)
+            NativeArray<float3> repulsorsNullable,
+            float scale)
         {
             mutatedPointsIncludesRoot[mutatedPointsIncludesRoot.Length - 1] = targetPos;
             if (++operationCounter >= maxOperationCount) return false;
             for (var k = mutatedPointsIncludesRoot.Length - 2; k >= 1; k--)
             {
-                mutatedPointsIncludesRoot[k] = ReachTowards(mutatedPointsIncludesRoot[k + 1], mutatedPointsIncludesRoot[k], distances[k]);
+                mutatedPointsIncludesRoot[k] = ReachTowards(mutatedPointsIncludesRoot[k + 1], mutatedPointsIncludesRoot[k], distances[k] * scale);
                 var repulsion = float3.zero;
                 if (supportsRepulsors)
                 {
@@ -73,7 +75,7 @@ namespace HVR.IK.FullTiger
             if (++operationCounter >= maxOperationCount) return false;
             for (var k = 1; k < mutatedPointsIncludesRoot.Length; k++)
             {
-                mutatedPointsIncludesRoot[k] = ReachTowards(mutatedPointsIncludesRoot[k - 1], mutatedPointsIncludesRoot[k], distances[k - 1]);
+                mutatedPointsIncludesRoot[k] = ReachTowards(mutatedPointsIncludesRoot[k - 1], mutatedPointsIncludesRoot[k], distances[k - 1] * scale);
                 if (++operationCounter >= maxOperationCount) return k == mutatedPointsIncludesRoot.Length - 1;
             }
 

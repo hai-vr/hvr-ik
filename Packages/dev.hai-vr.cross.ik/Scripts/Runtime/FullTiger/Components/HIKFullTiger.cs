@@ -138,6 +138,7 @@ namespace HVR.IK.FullTiger
             definition.refPoseHipToHeadLength = math.distance(definition.refPoseHiplativePos[(int)Hips], definition.refPoseHiplativePos[(int)Head]);
             definition.refPoseChestLength = math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]);
             definition.refPoseNeckLength = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
+            definition.capturedWithLossyScale = bones[(int)Hips].lossyScale;
             definition.isInitialized = true;
 
             return definition;
@@ -257,6 +258,8 @@ namespace HVR.IK.FullTiger
                 legStruggleEnd = effectors.legStruggleEnd,
                 armStruggleStart = effectors.armStruggleStart,
                 armStruggleEnd = effectors.armStruggleEnd,
+                
+                providedLossyScale = animator.GetBoneTransform(Hips).lossyScale,
                 
                 selfParentLeftHandNullable = selfParentLeftHand,
                 selfParentRightHandNullable = selfParentRightHand,

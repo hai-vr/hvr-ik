@@ -42,12 +42,14 @@ namespace HVR.IK.FullTiger
         }
 
         // Recalculates the absolute position of a bone, based on the position and rotation of its parent and its relative matrix.
-        public void ReevaluatePosition(HIKBodyBones ourBone, HIKAvatarDefinition definition)
+        public void ReevaluatePosition(HIKBodyBones ourBone, HIKAvatarDefinition definition, float scale)
         {
             var ourIndex = (int)ourBone;
             var parentBone = ParentOf(ourBone, definition.dataHasBone[(int)HIKBodyBones.UpperChest]);
-            
-            var resolvedMatrix = math.mul(TRSOf(parentBone, definition), definition.relativeMatrices[ourIndex]);
+
+            // FIXME: We're creating a lot of matrices here for repeated calls.
+            var scaleMatrix = float4x4.Scale(scale);
+            var resolvedMatrix = math.mul(TRSOf(parentBone, definition), math.mul(scaleMatrix, definition.relativeMatrices[ourIndex]));
             
             absolutePos[ourIndex] = resolvedMatrix.c3.xyz;
         }

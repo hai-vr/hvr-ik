@@ -41,12 +41,14 @@ namespace HVR.IK.FullTiger
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
         {
-            if (objective.solveRightLeg) ikSnapshot = SolveLeg(ikSnapshot, objective, LegSide.Right, objective.rightFootTargetWorldPosition, objective.rightFootTargetWorldRotation, objective.useStraddlingRightLeg, objective.groundedStraddlingRightLegWorldPosition, objective.groundedStraddlingRightLegWorldRotation);
-            if (objective.solveLeftLeg) ikSnapshot = SolveLeg(ikSnapshot, objective, LegSide.Left, objective.leftFootTargetWorldPosition, objective.leftFootTargetWorldRotation, objective.useStraddlingLeftLeg, objective.groundedStraddlingLeftLegWorldPosition, objective.groundedStraddlingLeftLegWorldRotation);
+            var scale = math.length(objective.providedLossyScale) / math.length(definition.capturedWithLossyScale);
+
+            if (objective.solveRightLeg) ikSnapshot = SolveLeg(ikSnapshot, objective, LegSide.Right, objective.rightFootTargetWorldPosition, objective.rightFootTargetWorldRotation, objective.useStraddlingRightLeg, objective.groundedStraddlingRightLegWorldPosition, objective.groundedStraddlingRightLegWorldRotation, scale);
+            if (objective.solveLeftLeg) ikSnapshot = SolveLeg(ikSnapshot, objective, LegSide.Left, objective.leftFootTargetWorldPosition, objective.leftFootTargetWorldRotation, objective.useStraddlingLeftLeg, objective.groundedStraddlingLeftLegWorldPosition, objective.groundedStraddlingLeftLegWorldRotation, scale);
             return ikSnapshot;
         }
 
-        private HIKSnapshot SolveLeg(HIKSnapshot ikSnapshot, HIKObjective objective, LegSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, bool useStraddlingLeg, float3 groundedStraddlingLegWorldPosition, quaternion groundedStraddlingLegWorldRotation)
+        private HIKSnapshot SolveLeg(HIKSnapshot ikSnapshot, HIKObjective objective, LegSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, bool useStraddlingLeg, float3 groundedStraddlingLegWorldPosition, quaternion groundedStraddlingLegWorldRotation, float scale)
         {
             var rootBone = side == LegSide.Right ? HIKBodyBones.RightUpperLeg : HIKBodyBones.LeftUpperLeg;
             var midBone = side == LegSide.Right ? HIKBodyBones.RightLowerLeg : HIKBodyBones.LeftLowerLeg;
@@ -54,8 +56,8 @@ namespace HVR.IK.FullTiger
             
             var rootPos = ikSnapshot.absolutePos[(int)rootBone];
 
-            var upperLength = math.distance(definition.refPoseHiplativePos[(int)rootBone], definition.refPoseHiplativePos[(int)midBone]);
-            var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]);
+            var upperLength = math.distance(definition.refPoseHiplativePos[(int)rootBone], definition.refPoseHiplativePos[(int)midBone]) * scale;
+            var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]) * scale;
             
             // Corrections
             var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, useStraddlingLeg, rootPos, upperLength, lowerLength, out var distanceType, objective.legStruggleStart, objective.legStruggleEnd, _struggleCurve);
@@ -82,9 +84,9 @@ namespace HVR.IK.FullTiger
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
-            ikSnapshot.ReevaluatePosition(rootBone, definition);
-            ikSnapshot.ReevaluatePosition(midBone, definition);
-            ikSnapshot.ReevaluatePosition(tipBone, definition);
+            ikSnapshot.ReevaluatePosition(rootBone, definition, scale);
+            ikSnapshot.ReevaluatePosition(midBone, definition, scale);
+            ikSnapshot.ReevaluatePosition(tipBone, definition, scale);
 
             return ikSnapshot;
         }
