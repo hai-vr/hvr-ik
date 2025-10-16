@@ -109,18 +109,33 @@ namespace HVR.IK.FullTiger
                     var toTipLength = math.length(toTip);
 
                     // Law of cosines
-                    var angleRad = math.acos((toTipLength * toTipLength + upperLength * upperLength - lowerLength * lowerLength) / (2 * toTipLength * upperLength));
-                    // Ratio rule
-                    var toMidpointLength = math.cos(angleRad) * upperLength;
-                    var downDistance = math.sin(angleRad) * upperLength;
+                    var acosInput = (toTipLength * toTipLength + upperLength * upperLength - lowerLength * lowerLength) / (2 * toTipLength * upperLength);
+                    if (acosInput <= -1f)
+                    {
+                        // When this happens, we're actually at a maximum distance, possibly due to imprecision.
+                        var toMidpoint = toTip * upperLength / totalLength;
+                        bendPointPos = rootPos + toMidpoint;
+                    }
+                    else if (acosInput >= 1f)
+                    {
+                        // When this happens, we're actually at a minimum distance, possibly due to imprecision.
+                        bendPointPos = rootPos + math.normalize(objectivePos - rootPos) * lowerLength;
+                    }
+                    else
+                    {
+                        var angleRad = math.acos(acosInput);
+                        // Ratio rule
+                        var toMidpointLength = math.cos(angleRad) * upperLength;
+                        var downDistance = math.sin(angleRad) * upperLength;
 
-                    var toMidpoint = math.normalize(toTip) * toMidpointLength;
-                    var bendDirectionStraightened = MbusGeofunctions.Straighten(math.normalize(bendDirection), toTip);
-                    bendPointPos = rootPos + toMidpoint + bendDirectionStraightened * downDistance;
+                        var toMidpoint = math.normalize(toTip) * toMidpointLength;
+                        var bendDirectionStraightened = MbusGeofunctions.Straighten(math.normalize(bendDirection), toTip);
+                        bendPointPos = rootPos + toMidpoint + bendDirectionStraightened * downDistance;
 
-                    var v0 = math.mul(objectiveRot, math.right());
-                    var v1 = math.normalize(bendPointPos - objectivePos);
-                    isTooTight = math.dot(v0, v1) > 0.01f;
+                        var v0 = math.mul(objectiveRot, math.right());
+                        var v1 = math.normalize(bendPointPos - objectivePos);
+                        isTooTight = math.dot(v0, v1) > 0.01f;
+                    }
                 }
                 else if (distanceType == HIKTwoBoneDistanceType.MinimumDistance)
                 {
