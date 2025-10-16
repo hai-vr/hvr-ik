@@ -118,18 +118,19 @@ namespace HVR.IK.FullTiger
 
             // ## Prime
             var spineToHead = headTargetPos - spinePos;
-            var back = math.mul(objective.headTargetWorldRotation, math.down());
-            var spineToHeadLen = math.length(spineToHead);
-            // var spineToHeadNormalized = math.normalize(spineToHead);
+            
+            var hipsSide = math.mul(objective.hipTargetWorldRotation, math.forward());
+            var hipsSpineForward = math.normalize(math.cross(spineToHead, hipsSide));
         
             // TODO: We should prime the spine based on what the reference pose already suggested.
-            var chestPosBase = spinePos + math.mul(objective.hipTargetWorldRotation, math.right()) * spineToHeadLen * 0.3f + back * 0.01f * scale;
-            var neckPosBase = headTargetPos - math.mul(objective.headTargetWorldRotation, math.right()) * spineToHeadLen * 0.3f + back * 0.01f * scale;
+            var chestPosBase = spinePos + spineToHead * definition.refPoseChestRelation.x + hipsSpineForward * definition.refPoseChestRelation.y * scale;
+            var neckPosBase = spinePos + spineToHead * definition.refPoseNeckRelation.x + hipsSpineForward * definition.refPoseNeckRelation.y * scale;
             // var chestPosBase = spinePos + spineToHeadNormalized * definition.refPoseChestLength * scale + back * 0.01f * scale;
             // var neckPosBase = headTargetPos - spineToHeadNormalized * definition.refPoseNeckLength * scale + back * 0.01f * scale;
+            var useNeck = objective.useChest * objective.alsoUseChestToMoveNeck;
             var primingSpine = spinePos;
-            var primingChest = math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest);
-            var primingNeck = math.lerp(neckPosBase, objective.chestTargetWorldPosition + math.mul(objective.chestTargetWorldRotation, math.right() * definition.refPoseChestLength * scale), objective.useChest * objective.alsoUseChestToMoveNeck);
+            var primingChest = objective.useChest <= 0 ? chestPosBase : math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest);
+            var primingNeck = useNeck <= 0 ? neckPosBase : math.lerp(neckPosBase, objective.chestTargetWorldPosition + math.mul(objective.chestTargetWorldRotation, math.right() * definition.refPoseChestLength * scale), useNeck);
             var primingHead = headTargetPos;
             _spineChain[0] = primingSpine; // Spine
             _spineChain[1] = primingChest; // Chest
@@ -146,10 +147,11 @@ namespace HVR.IK.FullTiger
             }
 
 #if UNITY_EDITOR && true
-            Debug.DrawLine(primingSpine, _spineChain[0], lawnGreen, 0f, false);
-            Debug.DrawLine(primingChest, _spineChain[1], lawnGreen, 0f, false);
-            Debug.DrawLine(primingNeck, _spineChain[2], lawnGreen, 0f, false);
-            Debug.DrawLine(primingHead, _spineChain[3], lawnGreen, 0f, false);
+            var arrowCross = math.normalize(math.cross(hipsSide, spineToHead));
+            MbusUtil.DrawArrow(_spineChain[0], primingSpine, lawnGreen, 0f, false, arrowCross, 0.01f);
+            MbusUtil.DrawArrow(_spineChain[1], primingChest, lawnGreen, 0f, false, arrowCross, 0.01f);
+            MbusUtil.DrawArrow(_spineChain[2], primingNeck, lawnGreen, 0f, false, arrowCross, 0.01f);
+            MbusUtil.DrawArrow(_spineChain[3], primingHead, lawnGreen, 0f, false, arrowCross, 0.01f);
 #endif
 
             // ## Positions are solved into _spineChain. Now, solve the rotations.

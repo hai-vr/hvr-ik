@@ -33,6 +33,9 @@ namespace HVR.IK.FullTiger
         internal float refPoseChestLength;
         internal float refPoseNeckLength;
         
+        internal float2 refPoseChestRelation;
+        internal float2 refPoseNeckRelation;
+        
         // Reference pose -- Relative to the parent bone. Model coordinates.
         internal NativeArray<float3> refPoseRelativePos;
         internal NativeArray<quaternion> refPoseRelativeRot;

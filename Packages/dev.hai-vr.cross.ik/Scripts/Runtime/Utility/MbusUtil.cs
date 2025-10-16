@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using Unity.Mathematics;
 using UnityEngine;
 
 namespace HVR.IK.FullTiger
@@ -60,6 +61,20 @@ namespace HVR.IK.FullTiger
             to.position = from.position;
             to.rotation = from.rotation * postRotation;
             to.localScale = from.localScale;
+        }
+
+        public static void DrawArrow(float3 start, float3 end, Color color, float duration, bool depthTest, float3 planeNormal, float size)
+        {
+            var arrowLength = math.distance(end, start);
+            var actualSize = arrowLength / 2 > size ? size : arrowLength / 2;
+            
+            var dir = math.normalize(end - start);
+            var cross = math.normalize(math.cross(dir, planeNormal));
+            Debug.DrawLine(start, end, color, duration, depthTest);
+            
+            var baseLocation = end - dir * actualSize;
+            Debug.DrawLine(end, baseLocation + cross * actualSize, color, duration, depthTest);
+            Debug.DrawLine(end, baseLocation - cross * actualSize, color, duration, depthTest);
         }
     }
 }

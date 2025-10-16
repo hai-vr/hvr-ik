@@ -138,6 +138,29 @@ namespace HVR.IK.FullTiger
             definition.refPoseHipToHeadLength = math.distance(definition.refPoseHiplativePos[(int)Hips], definition.refPoseHiplativePos[(int)Head]);
             definition.refPoseChestLength = math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]);
             definition.refPoseNeckLength = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
+
+            {
+                // Encode the spine curvature
+                
+                var spine = animator.GetBoneTransform(Spine);
+                var chest = animator.GetBoneTransform(Chest);
+                var neck = animator.GetBoneTransform(Neck);
+                var head = animator.GetBoneTransform(Head);
+                
+                var spineToHead = (float3)(head.position - spine.position);
+                var spineToHeadLength = math.length(spineToHead);
+                var spineToHeadNormalized = math.normalize(spineToHead);
+
+                var spineToChest = (float3)(chest.position - spine.position);
+                var spineToNeck = (float3)(neck.position - spine.position);
+
+                var hipsSide = math.mul(math.mul(hips.rotation, definition.dataPostRot[(int)Hips]), math.forward());
+                var crossNormalized = math.normalize(math.cross(spineToHeadNormalized, hipsSide));
+
+                definition.refPoseChestRelation = new float2(math.dot(spineToHeadNormalized, spineToChest) / spineToHeadLength, math.dot(crossNormalized, spineToChest));
+                definition.refPoseNeckRelation = new float2(math.dot(spineToHeadNormalized, spineToNeck) / spineToHeadLength, math.dot(crossNormalized, spineToNeck));
+            }
+            
             definition.capturedWithLossyScale = bones[(int)Hips].lossyScale;
             definition.isInitialized = true;
 
