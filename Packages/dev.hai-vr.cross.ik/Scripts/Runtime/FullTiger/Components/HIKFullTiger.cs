@@ -71,6 +71,9 @@ namespace HVR.IK.FullTiger
         public bool updateEveryFrame = true;
         private HIKSnapshot _ikSnapshot = default;
         
+        [Header("Debug")]
+        public bool debugDrawFinalChains = true;
+        
         private bool _solveSpine = true;
         private bool _solveLeftLeg = true;
         private bool _solveRightLeg = true;
@@ -147,6 +150,9 @@ namespace HVR.IK.FullTiger
                 var neck = animator.GetBoneTransform(Neck);
                 var head = animator.GetBoneTransform(Head);
                 
+                var hipsRef = math.mul(hips.rotation, definition.dataPostRot[(int)Hips]);
+                var headRef = math.mul(head.rotation, definition.dataPostRot[(int)Head]);
+                
                 var spineToHead = (float3)(head.position - spine.position);
                 var spineToHeadLength = math.length(spineToHead);
                 var spineToHeadNormalized = math.normalize(spineToHead);
@@ -154,11 +160,14 @@ namespace HVR.IK.FullTiger
                 var spineToChest = (float3)(chest.position - spine.position);
                 var spineToNeck = (float3)(neck.position - spine.position);
 
-                var hipsSide = math.mul(math.mul(hips.rotation, definition.dataPostRot[(int)Hips]), math.forward());
+                var hipsSide = math.mul(hipsRef, math.forward());
                 var crossNormalized = math.normalize(math.cross(spineToHeadNormalized, hipsSide));
 
                 definition.refPoseChestRelation = new float2(math.dot(spineToHeadNormalized, spineToChest) / spineToHeadLength, math.dot(crossNormalized, spineToChest));
                 definition.refPoseNeckRelation = new float2(math.dot(spineToHeadNormalized, spineToNeck) / spineToHeadLength, math.dot(crossNormalized, spineToNeck));
+
+                definition.refPoseSpineVecForHipsRotation = new float2(math.dot(math.mul(hipsRef, math.right()), spineToHeadNormalized), math.dot(math.mul(hipsRef, math.down()), spineToHeadNormalized));
+                definition.refPoseSpineVecForHeadRotation = new float2(math.dot(math.mul(headRef, math.right()), spineToHeadNormalized), math.dot(math.mul(headRef, math.down()), spineToHeadNormalized));
             }
             
             definition.capturedWithLossyScale = bones[(int)Hips].lossyScale;
@@ -192,9 +201,12 @@ namespace HVR.IK.FullTiger
             PerformRegularSolve();
             ApplySnapshot();
 
-            DrawArmChain(SpineChain);
-            DrawArmChain(LeftArmChain);
-            DrawArmChain(RightArmChain);
+            if (debugDrawFinalChains)
+            {
+                DrawArmChain(SpineChain);
+                DrawArmChain(LeftArmChain);
+                DrawArmChain(RightArmChain);
+            }
         }
 
         public void PerformRegularSolve()

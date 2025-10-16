@@ -32,6 +32,7 @@ namespace HVR.IK.FullTiger
         private NativeArray<float> _spineDistances;
         
         private static readonly Color lawnGreen = new Color(0.4862745f, 0.9882354f, 0.0f, 1f);
+        private static readonly Color lawnGreenTransparent = new Color(0.4862745f, 0.9882354f, 0.0f, 0.3f);
         private static readonly Color coral = new Color(1f, 0.4980392f, 0.3137255f, 1f);
         private static readonly Color mediumOrchid = new Color(0.7294118f, 0.3333333f, 0.8274511f, 1f);
 
@@ -118,15 +119,17 @@ namespace HVR.IK.FullTiger
 
             // ## Prime
             var spineToHead = headTargetPos - spinePos;
+            var spineToHeadLen = math.length(spineToHead);
             
             var hipsSide = math.mul(objective.hipTargetWorldRotation, math.forward());
-            var hipsSpineForward = math.normalize(math.cross(spineToHead, hipsSide));
-        
-            // TODO: We should prime the spine based on what the reference pose already suggested.
-            var chestPosBase = spinePos + spineToHead * definition.refPoseChestRelation.x + hipsSpineForward * definition.refPoseChestRelation.y * scale;
-            var neckPosBase = spinePos + spineToHead * definition.refPoseNeckRelation.x + hipsSpineForward * definition.refPoseNeckRelation.y * scale;
-            // var chestPosBase = spinePos + spineToHeadNormalized * definition.refPoseChestLength * scale + back * 0.01f * scale;
-            // var neckPosBase = headTargetPos - spineToHeadNormalized * definition.refPoseNeckLength * scale + back * 0.01f * scale;
+
+            var hipsSpineVecUpwards = math.mul(objective.hipTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHipsRotation.x;
+            var hipsSpineVecFrontwards = math.mul(objective.hipTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHipsRotation.y;
+            var headSpineVecUpwards = math.mul(objective.headTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHeadRotation.x;
+            var headSpineVecFrontwards = math.mul(objective.headTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHeadRotation.y;
+            
+            var chestPosBase = spinePos + hipsSpineVecUpwards * spineToHeadLen * definition.refPoseChestRelation.x + hipsSpineVecFrontwards * definition.refPoseChestRelation.y * scale;
+            var neckPosBase = headTargetPos - headSpineVecUpwards * spineToHeadLen * (1 - definition.refPoseNeckRelation.x) + headSpineVecFrontwards * definition.refPoseNeckRelation.y * scale;
             var useNeck = objective.useChest * objective.alsoUseChestToMoveNeck;
             var primingSpine = spinePos;
             var primingChest = objective.useChest <= 0 ? chestPosBase : math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest);
@@ -144,10 +147,13 @@ namespace HVR.IK.FullTiger
                 MbusMathSolver.Iterate(_spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue, scale);
                 // var color = Color.Lerp(Color.black, Color.red, i / (Iterations - 1f));
                 // if (drawDebug) DataViz.Instance.DrawLine(spineBezier, color, color);
+                Debug.DrawLine(_spineChain[0], _spineChain[1], lawnGreenTransparent, 0f, false);
+                Debug.DrawLine(_spineChain[1], _spineChain[2], lawnGreenTransparent, 0f, false);
+                Debug.DrawLine(_spineChain[2], _spineChain[3], lawnGreenTransparent, 0f, false);
             }
 
 #if UNITY_EDITOR && true
-            var arrowCross = math.normalize(math.cross(hipsSide, spineToHead));
+            var arrowCross = math.normalize(hipsSide);
             MbusUtil.DrawArrow(_spineChain[0], primingSpine, lawnGreen, 0f, false, arrowCross, 0.01f);
             MbusUtil.DrawArrow(_spineChain[1], primingChest, lawnGreen, 0f, false, arrowCross, 0.01f);
             MbusUtil.DrawArrow(_spineChain[2], primingNeck, lawnGreen, 0f, false, arrowCross, 0.01f);
@@ -214,6 +220,7 @@ namespace HVR.IK.FullTiger
             Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)RightShoulder], coral, 0f, false);
             Debug.DrawLine(ikSnapshot.absolutePos[(int)LeftShoulder], ikSnapshot.absolutePos[(int)LeftUpperArm], coral, 0f, false);
             Debug.DrawLine(ikSnapshot.absolutePos[(int)RightShoulder], ikSnapshot.absolutePos[(int)RightUpperArm], coral, 0f, false);
+            Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)Spine], coral, 0f, false);
             Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)LeftUpperLeg], coral, 0f, false);
             Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)RightUpperLeg], coral, 0f, false);
             
