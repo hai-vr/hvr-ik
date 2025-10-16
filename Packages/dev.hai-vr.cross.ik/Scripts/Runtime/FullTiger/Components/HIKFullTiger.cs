@@ -70,6 +70,9 @@ namespace HVR.IK.FullTiger
         public bool updateInLateUpdate = false;
         public bool updateEveryFrame = true;
         private HIKSnapshot _ikSnapshot = default;
+
+        public bool overrideDefaultFabrikIterationCount = false;
+        public int fabrikIterations = HIKSpineSolver.Iterations;
         
         [Header("Debug")]
         public bool debugDrawFinalChains = true;
@@ -295,6 +298,8 @@ namespace HVR.IK.FullTiger
                 armStruggleEnd = effectors.armStruggleEnd,
                 
                 providedLossyScale = animator.GetBoneTransform(Hips).lossyScale,
+                
+                fabrikIterations = overrideDefaultFabrikIterationCount ? fabrikIterations : HIKSpineSolver.Iterations,
                 
                 selfParentLeftHandNullable = selfParentLeftHand,
                 selfParentRightHandNullable = selfParentRightHand,

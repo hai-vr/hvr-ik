@@ -23,7 +23,7 @@ namespace HVR.IK.FullTiger
 {
     internal struct HIKSpineSolver : IDisposable
     {
-        private const int Iterations = 10;
+        public const int Iterations = 20;
         
         private readonly HIKAvatarDefinition definition;
         private readonly quaternion _reorienter;
@@ -142,7 +142,7 @@ namespace HVR.IK.FullTiger
             
             // ## Relax
             var operationCounter = 0;
-            for (var i = 0; i < Iterations; i++)
+            for (var i = 0; i < objective.fabrikIterations; i++)
             {
                 MbusMathSolver.Iterate(_spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue, scale);
                 // var color = Color.Lerp(Color.black, Color.red, i / (Iterations - 1f));
