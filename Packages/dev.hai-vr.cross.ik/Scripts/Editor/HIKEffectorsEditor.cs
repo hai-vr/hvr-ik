@@ -57,7 +57,8 @@ namespace HVR.IK.Editor
                 var graphEnd = my.legStruggleEnd + 0.005f;
                 var lines = new List<string>();
                 lines.Add("Input distance (%);Output distance (%);Without (deg);With (deg)");
-                for (var inputDistance = graphStart; inputDistance <= graphEnd; inputDistance += 0.00025f)
+                var inputDistance = 0f;
+                while (inputDistance <= graphEnd)
                 {
                     float finalDistance;
                     if (inputDistance >= my.legStruggleStart)
@@ -75,6 +76,16 @@ namespace HVR.IK.Editor
                     var without = math.degrees(math.acos((a * a + b * b - clampedDistance * clampedDistance) / (2 * a * b)));
                     var with = math.degrees(math.acos((a * a + b * b - finalDistance * finalDistance) / (2 * a * b)));
                     lines.Add($"{inputDistance};{finalDistance};{without};{with}");
+
+                    if (inputDistance < graphStart)
+                    {
+                        if (inputDistance + 0.01f > graphStart) inputDistance = graphStart;
+                        else inputDistance += 0.01f;
+                    }
+                    else
+                    {
+                        inputDistance += 0.00025f;
+                    }
                 }
                 EditorGUIUtility.systemCopyBuffer = string.Join(System.Environment.NewLine, lines);
             }
