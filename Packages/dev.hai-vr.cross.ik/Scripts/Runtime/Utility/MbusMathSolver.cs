@@ -25,28 +25,28 @@ namespace HVR.IK.FullTiger
         /// When a new operation is about to start but the operation counter has already reached the maximum value,
         /// further operations are not executed and this returns false.
         /// Returns true when the iteration has fully completed.
-        public static bool Iterate(NativeArray<float3> mutatedPointsIncludesRoot,
+        public static bool Iterate(ref HIKSpineData<float3> mutatedPointsIncludesRoot,
             float3 targetPos,
-            NativeArray<float> distances,
+            HIKSpineData<float> distances,
             float3 rootPos,
             ref int operationCounter,
             int maxOperationCount,
             float scale)
         {
-            return Iterate(mutatedPointsIncludesRoot, targetPos, distances, rootPos, ref operationCounter, maxOperationCount, false, default, scale);
+            return Iterate(ref mutatedPointsIncludesRoot, targetPos, distances, rootPos, ref operationCounter, maxOperationCount, false, /*default,*/ scale);
         }
 
         /// Algorithm is based on:
         /// "Andreas Aristidou, Joan Lasenby, FABRIK: A fast, iterative solver for the Inverse Kinematics problem, Graphical Models, 73 (2011)"
         /// Some sections are not part of the original algorithm.
-        public static bool Iterate(NativeArray<float3> mutatedPointsIncludesRoot,
+        public static bool Iterate(ref HIKSpineData<float3> mutatedPointsIncludesRoot,
             float3 targetPos,
-            NativeArray<float> distances,
+            HIKSpineData<float> distances,
             float3 rootPos,
             ref int operationCounter,
             int maxOperationCount,
             bool supportsRepulsors,
-            NativeArray<float3> repulsorsNullable,
+            // HIKNotAnArray<float3> repulsorsNullable,
             float scale)
         {
             mutatedPointsIncludesRoot[mutatedPointsIncludesRoot.Length - 1] = targetPos;
@@ -55,18 +55,18 @@ namespace HVR.IK.FullTiger
             {
                 mutatedPointsIncludesRoot[k] = ReachTowards(mutatedPointsIncludesRoot[k + 1], mutatedPointsIncludesRoot[k], distances[k] * scale);
                 var repulsion = float3.zero;
-                if (supportsRepulsors)
-                {
-                    foreach (var repulsor in repulsorsNullable)
-                    {
-                        var threshold = 0.25f;
-                        var distance = math.distance(mutatedPointsIncludesRoot[k], repulsor);
-                        if (distance < threshold)
-                        {
-                            repulsion += math.normalize(mutatedPointsIncludesRoot[k] - repulsor) * ((threshold - distance) * 0.3f);
-                        }
-                    }
-                }
+                // if (supportsRepulsors)
+                // {
+                //     foreach (var repulsor in repulsorsNullable)
+                //     {
+                //         var threshold = 0.25f;
+                //         var distance = math.distance(mutatedPointsIncludesRoot[k], repulsor);
+                //         if (distance < threshold)
+                //         {
+                //             repulsion += math.normalize(mutatedPointsIncludesRoot[k] - repulsor) * ((threshold - distance) * 0.3f);
+                //         }
+                //     }
+                // }
                 mutatedPointsIncludesRoot[k] += repulsion;
                 if (++operationCounter >= maxOperationCount) return false;
             }

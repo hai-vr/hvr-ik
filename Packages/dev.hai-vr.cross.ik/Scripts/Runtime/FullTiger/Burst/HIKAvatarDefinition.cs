@@ -12,22 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using Unity.Burst;
-using Unity.Collections;
 using Unity.Mathematics;
-using static HVR.IK.FullTiger.HIKBodyBones;
 
 namespace HVR.IK.FullTiger
 {
-    public struct HIKAvatarDefinition : IDisposable
+    public struct HIKAvatarDefinition
     {
         /// When the avatar is in "artist pose", this is the length between the hip to the base of the neck.
         /// The IK solver must try to avoid straightening the curvature of the spinal chain.
         /// 
         // Avatar pose -- Relative to the parent bone. Model coordinates.
-        internal NativeArray<float3> artistPosePos;
-        internal NativeArray<quaternion> artistPoseRot;
+        internal HIKBoneData<float3> artistPosePos;
+        internal HIKBoneData<quaternion> artistPoseRot;
         internal float refPoseHipToNeckLength;
         internal float refPoseHipToHeadLength;
         internal float refPoseChestLength;
@@ -39,55 +35,21 @@ namespace HVR.IK.FullTiger
         internal float2 refPoseSpineVecForHeadRotation;
         
         // Reference pose -- Relative to the parent bone. Model coordinates.
-        internal NativeArray<float3> refPoseRelativePos;
-        internal NativeArray<quaternion> refPoseRelativeRot;
+        internal HIKBoneData<float3> refPoseRelativePos;
+        internal HIKBoneData<quaternion> refPoseRelativeRot;
         
         // Reference pose -- Relative to the hip bone. Model coordinates.
-        internal NativeArray<float3> refPoseHiplativePos;
-        internal NativeArray<quaternion> refPoseHiplativeRot;
+        internal HIKBoneData<float3> refPoseHiplativePos;
+        internal HIKBoneData<quaternion> refPoseHiplativeRot;
         
         // Humanoid data -- Humanoid coordinates.
-        internal NativeArray<bool> dataHasBone;
-        internal NativeArray<quaternion> dataPostRot;
-        internal NativeArray<quaternion> dataInversePostRot;
+        internal HIKBoneData<bool> dataHasBone;
+        internal HIKBoneData<quaternion> dataPostRot;
+        internal HIKBoneData<quaternion> dataInversePostRot;
         
-        internal NativeArray<float4x4> relativeMatrices;
+        internal HIKBoneData<float4x4> relativeMatrices;
 
         internal float3 capturedWithLossyScale;
         internal bool isInitialized;
-
-        public void init()
-        {
-            var boneCount = (int)LastBone;
-            
-            artistPosePos = new NativeArray<float3>(boneCount, Allocator.Persistent);
-            artistPoseRot = new NativeArray<quaternion>(boneCount, Allocator.Persistent);
-            refPoseRelativePos = new NativeArray<float3>(boneCount, Allocator.Persistent);
-            refPoseRelativeRot = new NativeArray<quaternion>(boneCount, Allocator.Persistent);
-            refPoseHiplativePos = new NativeArray<float3>(boneCount, Allocator.Persistent);
-            refPoseHiplativeRot = new NativeArray<quaternion>(boneCount, Allocator.Persistent);
-            dataHasBone = new NativeArray<bool>(boneCount, Allocator.Persistent);
-            dataPostRot = new NativeArray<quaternion>(boneCount, Allocator.Persistent);
-            dataInversePostRot = new NativeArray<quaternion>(boneCount, Allocator.Persistent);
-            relativeMatrices = new NativeArray<float4x4>(boneCount, Allocator.Persistent);
-            
-            isInitialized = true;
-        }
-
-        public void Dispose()
-        {
-            if (artistPosePos.IsCreated) artistPosePos.Dispose();
-            if (artistPoseRot.IsCreated) artistPoseRot.Dispose();
-            if (refPoseRelativePos.IsCreated) refPoseRelativePos.Dispose();
-            if (refPoseRelativeRot.IsCreated) refPoseRelativeRot.Dispose();
-            if (refPoseHiplativePos.IsCreated) refPoseHiplativePos.Dispose();
-            if (refPoseHiplativeRot.IsCreated) refPoseHiplativeRot.Dispose();
-            if (dataHasBone.IsCreated) dataHasBone.Dispose();
-            if (dataPostRot.IsCreated) dataPostRot.Dispose();
-            if (dataInversePostRot.IsCreated) dataInversePostRot.Dispose();
-            if (relativeMatrices.IsCreated) relativeMatrices.Dispose();
-            
-            isInitialized = false;
-        }
     }
 }

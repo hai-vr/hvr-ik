@@ -13,23 +13,21 @@
 // limitations under the License.
 
 using System;
-using Unity.Burst;
-using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 using static HVR.IK.FullTiger.HIKBodyBones;
 
 namespace HVR.IK.FullTiger
 {
-    internal struct HIKSpineSolver : IDisposable
+    internal struct HIKSpineSolver
     {
         public const int Iterations = 20;
         
         private readonly HIKAvatarDefinition definition;
         private readonly quaternion _reorienter;
 
-        private NativeArray<float3> _spineChain;
-        private NativeArray<float> _spineDistances;
+        private HIKSpineData<float3> _spineChain;
+        private HIKSpineData<float> _spineDistances;
         
         private static readonly Color lawnGreen = new Color(0.4862745f, 0.9882354f, 0.0f, 1f);
         private static readonly Color lawnGreenTransparent = new Color(0.4862745f, 0.9882354f, 0.0f, 0.3f);
@@ -43,17 +41,11 @@ namespace HVR.IK.FullTiger
             this.definition = definition;
             _reorienter = reorienter;
 
-            _spineChain = new NativeArray<float3>(4, Allocator.Persistent);
-            _spineDistances = new NativeArray<float>(3, Allocator.Persistent);
+            _spineChain = new HIKSpineData<float3>(4);
+            _spineDistances = new HIKSpineData<float>(3);
             _spineDistances[0] = math.distance(definition.refPoseHiplativePos[(int)Spine], definition.refPoseHiplativePos[(int)Chest]);
             _spineDistances[1] = math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]);
             _spineDistances[2] = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
-        }
-
-        public void Dispose()
-        {
-            if (_spineChain.IsCreated) _spineChain.Dispose();
-            if (_spineDistances.IsCreated) _spineDistances.Dispose();
         }
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
@@ -139,12 +131,16 @@ namespace HVR.IK.FullTiger
             _spineChain[1] = primingChest; // Chest
             _spineChain[2] = primingNeck; // Neck
             _spineChain[3] = primingHead; // Head
+
+            // Help with an issue with Hot Reload
+            _spineChain.Length = 4;
+            _spineDistances.Length = 3;
             
             // ## Relax
             var operationCounter = 0;
             for (var i = 0; i < objective.fabrikIterations; i++)
             {
-                MbusMathSolver.Iterate(_spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue, scale);
+                MbusMathSolver.Iterate(ref _spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue, scale);
                 // var color = Color.Lerp(Color.black, Color.red, i / (Iterations - 1f));
                 // if (drawDebug) DataViz.Instance.DrawLine(spineBezier, color, color);
                 Debug.DrawLine(_spineChain[0], _spineChain[1], lawnGreenTransparent, 0f, false);

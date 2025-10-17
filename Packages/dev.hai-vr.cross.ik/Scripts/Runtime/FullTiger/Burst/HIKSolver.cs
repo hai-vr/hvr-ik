@@ -13,7 +13,6 @@
 // limitations under the License.
 
 using System;
-using Unity.Burst;
 using Unity.Mathematics;
 
 namespace HVR.IK.FullTiger

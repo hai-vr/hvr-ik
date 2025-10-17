@@ -12,34 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using System;
-using Unity.Burst;
-using Unity.Collections;
 using Unity.Mathematics;
 
 namespace HVR.IK.FullTiger
 {
-    internal struct HIKSnapshot : IDisposable
+    internal struct HIKSnapshot
     {
-        public void init()
-        {
-            absolutePos = new NativeArray<float3>((int)HIKBodyBones.LastBone, Allocator.Temp);
-            absoluteRot = new NativeArray<quaternion>((int)HIKBodyBones.LastBone, Allocator.Temp);
-        }
-        public void initPersistent()
-        {
-            absolutePos = new NativeArray<float3>((int)HIKBodyBones.LastBone, Allocator.Persistent);
-            absoluteRot = new NativeArray<quaternion>((int)HIKBodyBones.LastBone, Allocator.Persistent);
-        }
-        
-        internal NativeArray<float3> absolutePos;
-        internal NativeArray<quaternion> absoluteRot;
-
-        public void Dispose()
-        {
-            if (absolutePos.IsCreated) absolutePos.Dispose();
-            if (absoluteRot.IsCreated) absoluteRot.Dispose();
-        }
+        internal HIKBoneData<float3> absolutePos;
+        internal HIKBoneData<quaternion> absoluteRot;
 
         // Recalculates the absolute position of a bone, based on the position and rotation of its parent and its relative matrix.
         public void ReevaluatePosition(HIKBodyBones ourBone, HIKAvatarDefinition definition, float scale)

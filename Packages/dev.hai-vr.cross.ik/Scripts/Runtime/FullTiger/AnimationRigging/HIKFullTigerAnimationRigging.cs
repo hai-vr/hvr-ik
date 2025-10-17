@@ -67,7 +67,6 @@ namespace HVR.IK.FullTiger.AnimationRigging
             if (jobWeight.Get(stream) <= 0) return;
 
             HIKSnapshot ikSnapshot = default;
-            ikSnapshot.init();
             var objective = new HIKObjective
             {
                 hipTargetWorldPosition = math.up() + math.left() * 5,
@@ -152,8 +151,6 @@ namespace HVR.IK.FullTiger.AnimationRigging
             if (objective.solveRightLeg) Apply(stream, ikSnapshot, CopyOrderRightLeg);
             if (objective.solveLeftArm) Apply(stream, ikSnapshot, CopyOrderLeftArm);
             if (objective.solveRightArm) Apply(stream, ikSnapshot, CopyOrderRightArm);
-            
-            ikSnapshot.Dispose();
         }
 
         private void Apply(AnimationStream stream, HIKSnapshot ikSnapshot, HIKBodyBones[] array)
@@ -213,7 +210,6 @@ namespace HVR.IK.FullTiger.AnimationRigging
         public override HIKFullTigerAnimationRiggingJob Create(Animator animator, ref T data, Component component)
         {
             var definition = new HIKAvatarDefinition();
-            definition.init();
 
             var unboundBones = new Transform[(int)LastBone];
             definition = HIKFullTiger.SolveDefinition(animator, definition, unboundBones);

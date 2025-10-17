@@ -23,6 +23,14 @@ namespace HVR.IK.FullTiger
         // private static readonly HumanBodyBones[] ShoulderAndArms = { LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand, RightShoulder, RightUpperArm, RightLowerArm, RightHand };
         // private static readonly HumanBodyBones[] HipsToHead = { Hips, Spine, Chest, UpperChest, Neck, Head };
         // private static readonly HumanBodyBones[] Legs = { LeftUpperLeg, LeftLowerLeg, LeftFoot, RightUpperLeg, RightLowerLeg, RightFoot };
+        private static readonly HumanBodyBones[] AcceptableBodyBones =
+        {
+            Hips, Spine, Chest, UpperChest, Neck, Head,
+            LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand,
+            RightShoulder, RightUpperArm, RightLowerArm, RightHand,
+            LeftUpperLeg, LeftLowerLeg, LeftFoot, LeftToes,
+            RightUpperLeg, RightLowerLeg, RightFoot, RightToes
+        };
         private static readonly HumanBodyBones[] CopyOrder =
         {
             /*Hips,*/ Spine, Chest, UpperChest, Neck, Head,
@@ -85,10 +93,7 @@ namespace HVR.IK.FullTiger
 
         private void Awake()
         {
-            definition.init();
             definition = SolveDefinition(animator, definition, _bones);
-            
-            _ikSnapshot.initPersistent();
             
             // Order matters: This must be instantiated AFTER definition is initialized
             _ikSolver = new HIKSolver(definition);
@@ -98,7 +103,7 @@ namespace HVR.IK.FullTiger
         {
             // TODO: We should T-Pose the avatar before sampling the hiplative positions
             var hips = animator.GetBoneTransform(Hips);
-            for (var boneId = Hips; boneId < LastBone; boneId++)
+            foreach (var boneId in AcceptableBodyBones)
             {
                 var i = (int)boneId;
                 var boneNullable = animator.GetBoneTransform(boneId);
