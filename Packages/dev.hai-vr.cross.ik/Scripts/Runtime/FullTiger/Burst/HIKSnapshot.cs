@@ -16,10 +16,10 @@ using Unity.Mathematics;
 
 namespace HVR.IK.FullTiger
 {
-    internal struct HIKSnapshot
+    internal class/*was_struct*/ HIKSnapshot
     {
-        internal HIKBoneData<float3> absolutePos;
-        internal HIKBoneData<quaternion> absoluteRot;
+        internal HIKBoneData<float3> absolutePos = new();
+        internal HIKBoneData<quaternion> absoluteRot = new();
 
         // Recalculates the absolute position of a bone, based on the position and rotation of its parent and its relative matrix.
         public void ReevaluatePosition(HIKBodyBones ourBone, HIKAvatarDefinition definition, float scale)
@@ -71,6 +71,11 @@ namespace HVR.IK.FullTiger
 
         public void ApplyReferenceRotation(HIKBodyBones ourBone, HIKAvatarDefinition definition)
         {
+            ApplyRelativeRotation(ourBone, definition, quaternion.identity);
+        }
+
+        public void ApplyRelativeRotation(HIKBodyBones ourBone, HIKAvatarDefinition definition, quaternion relativeRot)
+        {
             var ourIndex = (int)ourBone;
             
             var parentBone = ParentOf(ourBone, definition.dataHasBone[(int)HIKBodyBones.UpperChest]);
@@ -79,7 +84,7 @@ namespace HVR.IK.FullTiger
             absoluteRot[ourIndex] = math.mul(
                 math.mul(
                     // Take the parent rotation in model coordinates
-                    math.mul(absoluteRot[parentIndex], definition.dataInversePostRot[parentIndex]),
+                    math.mul(math.mul(absoluteRot[parentIndex], relativeRot), definition.dataInversePostRot[parentIndex]),
                     // Apply the rotative rotation to those model coordinates
                     definition.refPoseRelativeRot[ourIndex]
                 ),

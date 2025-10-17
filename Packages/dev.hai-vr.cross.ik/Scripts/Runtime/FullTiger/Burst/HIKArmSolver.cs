@@ -18,11 +18,17 @@ using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
-    internal struct HIKArmSolver
+    internal class/*was_struct*/ HIKArmSolver
     {
         private const float InsideSwitchingMul = 2;
         private readonly HIKAvatarDefinition definition;
         private readonly quaternion _reorienter;
+        private readonly float _upperRightLength;
+        private readonly float _lowerRightLength;
+        private readonly float _upperLeftLength;
+        private readonly float _lowerLeftLength;
+        private readonly float _shoulderRightLength;
+        private readonly float _shoulderLeftLength;
 
         public HIKArmSolver(HIKAvatarDefinition definition, quaternion reorienter)
         {
@@ -30,6 +36,14 @@ namespace HVR.IK.FullTiger
             
             this.definition = definition;
             _reorienter = reorienter;
+
+            _upperRightLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.RightUpperArm], definition.refPoseHiplativePos[(int)HIKBodyBones.RightLowerArm]);
+            _lowerRightLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.RightLowerArm], definition.refPoseHiplativePos[(int)HIKBodyBones.RightHand]);
+            _upperLeftLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.LeftUpperArm], definition.refPoseHiplativePos[(int)HIKBodyBones.LeftLowerArm]);
+            _lowerLeftLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.LeftLowerArm], definition.refPoseHiplativePos[(int)HIKBodyBones.LeftHand]);
+            
+            _shoulderRightLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.RightShoulder], definition.refPoseHiplativePos[(int)HIKBodyBones.RightUpperArm]);
+            _shoulderLeftLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.LeftShoulder], definition.refPoseHiplativePos[(int)HIKBodyBones.LeftUpperArm]);
         }
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
@@ -52,15 +66,55 @@ namespace HVR.IK.FullTiger
             
             var rootPos = ikSnapshot.absolutePos[(int)rootBone];
 
-            var upperLength = math.distance(definition.refPoseHiplativePos[(int)rootBone], definition.refPoseHiplativePos[(int)midBone]) * scale;
-            var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]) * scale;
+            var upperLength = (side == ArmSide.Right ? _upperRightLength : _upperLeftLength) * scale;
+            var lowerLength = (side == ArmSide.Right ? _lowerRightLength : _lowerLeftLength) * scale;
+            
+            // TODO: Handle HasUpperChest
+            var chestReference = ikSnapshot.absoluteRot[(int)HIKBodyBones.Chest];
+            var chestUpwards = math.mul(chestReference, math.right());
+
+            if (objective.useShoulder > 0f)
+            {
+                // Shoulder
+                var shoulderBone = side == ArmSide.Right ? HIKBodyBones.RightShoulder : HIKBodyBones.LeftShoulder;
+                var shoulderLength = (side == ArmSide.Right ? _shoulderRightLength : _shoulderLeftLength) * scale;
+                
+                // TODO: Calculate the directional distance based on the shoulder length maximum extension in the given direction
+                /*
+                        - There are at least two defects:
+                          - The shoulder angle at rest may be already angled, so at the maximum angle, it might pull the arm backwards.
+                          - The extension distance is based on the shoulder length, but it doesn't multiply it by a function of the maximum angle.
+                 */
+                var directionalRelativeDistance = shoulderLength / (upperLength + lowerLength);
+                
+                var chestFrontwards = math.mul(chestReference, math.down());
+                var prospectiveDirection = math.normalize(originalObjectivePos - rootPos);
+                var frontwardness = math.clamp(math.dot(prospectiveDirection, chestFrontwards), 0f, 1f);
+                var upwardness = math.clamp(math.dot(prospectiveDirection, chestUpwards), 0f, 1f);
+
+                var extensionInfluence = objective.useShoulder * math.clamp(math.unlerp(0.7f, 1f + directionalRelativeDistance, math.length(originalObjectivePos - rootPos) / (lowerLength + upperLength)), 0f, 1f);
+                var shoulderInfluenceFrontward = frontwardness * extensionInfluence;
+                var shoulderInfluenceUpward = upwardness * extensionInfluence;
+                if (shoulderInfluenceFrontward > 0 || shoulderInfluenceUpward > 0)
+                {
+                    var forwardRotation = quaternion.AxisAngle(math.right(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceFrontward * objective.shoulderForwardAngleMultiplier));
+                    var upwardRotation = quaternion.AxisAngle(math.up(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceUpward * objective.shoulderUpwardAngleMultiplier));
+                    var rotationToApply = math.mul(forwardRotation, upwardRotation);
+                    ikSnapshot.ApplyRelativeRotation(shoulderBone, definition, rotationToApply);
+                
+                    ikSnapshot.ReevaluatePosition(rootBone, definition, scale);
+                    var prevRootPos = rootPos;
+                    rootPos = ikSnapshot.absolutePos[(int)rootBone];
+                
+                    MbusUtil.DrawArrow(prevRootPos, rootPos, Color.magenta, 0f, false, chestUpwards);
+                    Debug.DrawLine(ikSnapshot.absolutePos[(int)shoulderBone], rootPos, Color.yellow, 0f, false);
+                }
+            }
 
             // Corrections
             var TODO_STRADDLING_IS_FALSE = false;
             var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, objective.armStruggleStart, objective.armStruggleEnd);
-            
-            // TODO: Handle HasUpperChest
-            var chestReference = ikSnapshot.absoluteRot[(int)HIKBodyBones.Chest];
+
             var bendDirection = TODO_STRADDLING_IS_FALSE ? float3.zero : ArmBendHeuristics(); // Bend direction is not used when straddling.
 
             float3 ArmBendHeuristics()
@@ -72,8 +126,6 @@ namespace HVR.IK.FullTiger
                 {
                     return directedBend;
                 }
-                
-                var chestUpwards = math.mul(chestReference, math.right());
                 
                 var outwards = math.mul(chestReference, side == ArmSide.Right ? math.back() : math.forward());
                 var handSource = math.mul(originalObjectiveRot, math.left());

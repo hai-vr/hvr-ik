@@ -2,7 +2,7 @@
 
 namespace HVR.IK.FullTiger
 {
-    internal struct HIKSpineData<T>
+    internal class/*was_struct*/ HIKSpineData<T>
     {
         // CURSED: We're actively avoiding the use of NativeArray (and arrays) here because it's causing an absolute pain of issues with Burst and Hot Reload.
         // Maybe there's a better way to do this.
@@ -52,7 +52,7 @@ namespace HVR.IK.FullTiger
         }
     }
     
-    internal struct HIKBoneData<T>
+    internal class/*was_struct*/ HIKBoneData<T>
     {
         // CURSED: We're actively avoiding the use of NativeArray (and arrays) here because it's causing an absolute pain of issues with Burst and Hot Reload.
         // Maybe there's a better way to do this.

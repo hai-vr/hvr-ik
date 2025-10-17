@@ -19,7 +19,7 @@ using static HVR.IK.FullTiger.HIKBodyBones;
 
 namespace HVR.IK.FullTiger
 {
-    internal struct HIKSpineSolver
+    internal class/*was_struct*/ HIKSpineSolver
     {
         public const int Iterations = 20;
         
@@ -150,10 +150,10 @@ namespace HVR.IK.FullTiger
 
 #if UNITY_EDITOR && true
             var arrowCross = math.normalize(hipsSide);
-            MbusUtil.DrawArrow(_spineChain[0], primingSpine, lawnGreen, 0f, false, arrowCross, 0.01f);
-            MbusUtil.DrawArrow(_spineChain[1], primingChest, lawnGreen, 0f, false, arrowCross, 0.01f);
-            MbusUtil.DrawArrow(_spineChain[2], primingNeck, lawnGreen, 0f, false, arrowCross, 0.01f);
-            MbusUtil.DrawArrow(_spineChain[3], primingHead, lawnGreen, 0f, false, arrowCross, 0.01f);
+            MbusUtil.DrawArrow(_spineChain[0], primingSpine, lawnGreen, 0f, false, arrowCross);
+            MbusUtil.DrawArrow(_spineChain[1], primingChest, lawnGreen, 0f, false, arrowCross);
+            MbusUtil.DrawArrow(_spineChain[2], primingNeck, lawnGreen, 0f, false, arrowCross);
+            MbusUtil.DrawArrow(_spineChain[3], primingHead, lawnGreen, 0f, false, arrowCross);
 #endif
 
             // ## Positions are solved into _spineChain. Now, solve the rotations.

@@ -69,7 +69,7 @@ namespace HVR.IK.FullTiger
         [SerializeField] internal Animator animator;
         [SerializeField] internal HIKEffectors effectors;
         
-        private HIKAvatarDefinition definition = default;
+        private HIKAvatarDefinition definition = new();
         private HIKSolver _ikSolver;
         
         private readonly Transform[] _bones = new Transform[(int)LastBone];
@@ -77,7 +77,7 @@ namespace HVR.IK.FullTiger
         [Header("Solver Settings")]
         public bool updateInLateUpdate = false;
         public bool updateEveryFrame = true;
-        private HIKSnapshot _ikSnapshot = default;
+        private HIKSnapshot _ikSnapshot = new();
 
         public bool overrideDefaultFabrikIterationCount = false;
         public int fabrikIterations = HIKSpineSolver.Iterations;
@@ -301,6 +301,10 @@ namespace HVR.IK.FullTiger
                 legStruggleEnd = effectors.legStruggleEnd,
                 armStruggleStart = effectors.armStruggleStart,
                 armStruggleEnd = effectors.armStruggleEnd,
+                
+                useShoulder = effectors.useShoulder,
+                shoulderForwardAngleMultiplier = effectors.shoulderForwardAngleMultiplier,
+                shoulderUpwardAngleMultiplier = effectors.shoulderUpwardAngleMultiplier,
                 
                 providedLossyScale = animator.GetBoneTransform(Hips).lossyScale,
                 

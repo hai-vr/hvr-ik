@@ -63,7 +63,7 @@ namespace HVR.IK.FullTiger
             to.localScale = from.localScale;
         }
 
-        public static void DrawArrow(float3 start, float3 end, Color color, float duration, bool depthTest, float3 planeNormal, float size)
+        public static void DrawArrow(float3 start, float3 end, Color color, float duration, bool depthTest, float3 planeNormal, float size = 0.01f)
         {
             var arrowLength = math.distance(end, start);
             var actualSize = arrowLength / 2 > size ? size : arrowLength / 2;

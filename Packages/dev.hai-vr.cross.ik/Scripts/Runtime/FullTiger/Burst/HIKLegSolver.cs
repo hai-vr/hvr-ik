@@ -17,7 +17,7 @@ using Unity.Mathematics;
 
 namespace HVR.IK.FullTiger
 {
-    internal struct HIKLegSolver
+    internal class/*was_struct*/ HIKLegSolver
     {
         private readonly HIKAvatarDefinition definition;
         private readonly quaternion _reorienter;

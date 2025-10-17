@@ -20,7 +20,7 @@ namespace HVR.IK.FullTiger
     /// Given a definition and an objective, solves a pose into a snapshot.
     /// There is no dependency on the transform system beyond this point.
     /// Use Unity.Mathematics wherever applicable.
-    internal struct HIKSolver
+    internal class/*was_struct*/ HIKSolver
     {
         private readonly HIKSpineSolver _spineSolver;
         private readonly HIKArmSolver _armSolver;
@@ -63,7 +63,7 @@ namespace HVR.IK.FullTiger
         }
     }
     
-    internal struct HIKObjective
+    internal class/*was_struct*/ HIKObjective
     {
         public const float StruggleStart = 0.99f;
         public const float StruggleEnd = 1.04f;
@@ -102,10 +102,16 @@ namespace HVR.IK.FullTiger
         internal bool headAlignmentMattersMore;
         internal bool allowContortionist;
         internal bool doNotPreserveHipsToNeckCurvatureLimit;
+        
         internal float legStruggleStart;
         internal float legStruggleEnd;
         internal float armStruggleStart;
         internal float armStruggleEnd;
+        
+        internal float useShoulder;
+        internal float shoulderForwardAngleMultiplier;
+        internal float shoulderUpwardAngleMultiplier;
+        
         internal float3 providedLossyScale;
         
         internal bool useStraddlingLeftLeg;
@@ -128,7 +134,7 @@ namespace HVR.IK.FullTiger
         internal HIKSelfParenting selfParentRightHandNullable;
     }
 
-    internal struct HIKSelfParenting
+    internal class/*was_struct*/ HIKSelfParenting
     {
         public float use;
         public HIKBodyBones bone;
