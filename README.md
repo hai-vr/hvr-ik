@@ -7,20 +7,45 @@ This is the third IK solver that I'm writing, and I hope that it will become goo
 
 https://github.com/user-attachments/assets/f4b17e25-f894-47cd-a856-1171d6773d23
 
+### Why?
+
+An IK solver normally refers to a system that rotates bones in a chain to reach a target position. However, in social VR applications, *"IK"*
+colloquially refers to both that system but also all the heuristics and tuning necessary that makes an avatar model feel good when worn in first person.
+
+The process of writing an IK solver is already massively documented through mathematical papers and implementations of those papers, but the process
+of tuning an IK solver for social VR is much less documented, on top of being completely subjective and different based on the needs of the users of
+the application.
+
+There are a lot of ready-to-use IK solvers out there [including in Unity itself](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.1/manual/ConstraintComponents.html),
+but most will not help you with this tuning and are only interested in providing a solution to the literal definition of an IK solver.
+
+The mission of this repository is to document and demystify the decisions related to this tuning and also provides an implementation that you may use to
+try and develop your own heuristics for the needs of your own application.
+
+In addition, the core part of this solver [does not require Unity Components nor Transforms](#solving-without-transforms), so with some effort, it may
+be ported to other game engines.
+
+> [!WARNING]  
+> This solver is currently incomplete as it is a work in progress. The following parts are functional but cannot be considered ready for production:
+> - General tuning in first person.
+> - The relationship between the head rotation and the hips rotation affecting the chest rotation still needs tuning.
+> - Arm bend is rudimentary and its heuristics are planned to be re-engineered with a completely different approach.
+> - Leg twist has pathological issues at acute and extreme angles.
+
 ## Adding to the scene
 
 > [!NOTE]  
 > This solver has only been tested in Unity 6.2, but it may be modified to ensure compatibility with Unity 2022 in the future.
 > 
 > At this time of writing, this project is primarily intended for use by **software developers**, not end users. If you are a user, you
-> can still try the steps below, but it may be a poor experience. Please check back another time.
+> can still try the steps below, but it may be a poor experience. Please check back at another time.
 
 In Edit mode:
 
 - Have an avatar ready in the scene with an *Animator* component in it.
 - In a GameObject, create a **HIK Effectors** component.
     - Set the *Animator* field to the avatar animator.
-    - None of the other fields matter, leave them empty.
+    - None of the other fields matter; leave them empty.
 - In a GameObject, create a **HIK Full Tiger** component.
     - Set the *Animator* field to the avatar animator.
     - Set the *Effectors* field to the *HIK Effectors* component created above.
@@ -31,7 +56,7 @@ During Play mode, you can copy the modified GameObject hierarchy containing the 
 so that you can replay the same pose.
 
 As an extra, you can convert a pose to an animation clip. First, open the animation clip editor in a visible tab. Then, in the inspector,
-select the *HIK Full Tiger* component, and click the *Create animation clip from pose* button. You can then copy the keyframes.
+select the *HIK Full Tiger* component and click the *Create animation clip from pose* button. You can then copy the keyframes.
 
 The animation clip may not be a faithful 1:1 copy of the pose as it may handle twist differently, but I am not entirely sure where the discrepancy comes from.
 
@@ -45,13 +70,13 @@ This class is **not ready** for use, as in it won't work at all; this part is un
 
 The *HIK Effectors* component has options that can change the behavior of the solver:
 - **Hip Position Matters More** (defaults to false):
-  - When true, ensures that the hip position is always reached. The head may not longer be aligned with the HMD when it is too far from it.
+  - When true, ensures that the hip position is always reached. The head may no longer be aligned with the HMD when it is too far from it.
   - When false, ensures that the head position is always reached, even if it means moving the hips away from its effector.
     This is designed to make sure that the head is always attached to the HMD.
 - **Contortionist** (defaults to false):
   - When true, removes the minimum distance limit between the head and the hips.
   - When false, there is a minimum distance between the head and the hips, which depends on the head angle.
-    This is designed to avoid odd looking poses where the spine chain is crunched on itself.
+    This is designed to avoid odd-looking poses where the spine chain is crunched on itself.
 - **Use Straddling Left/Right Leg** (defaults to false):
   - When true, the upper leg will always point towards the lower leg effector, and the lower leg will point towards the foot effector; the foot position will no longer match.
     This is designed to enable poses where grounding the knees matters more than accurately positioning the feet.
@@ -70,13 +95,13 @@ The *HIK Effectors* component has options that can change the behavior of the so
 - **Do Not Preserve Hips To Neck Curvature Limit** (defaults to false):
   - Many avatars are designed with a spine that is naturally curved. By default (when this option is false), the solver will do its best to preserve that curve.
     That means that, if the head effector target is further away than the hips, we try to avoid making all the bones of the spine (hips-neck chain) point to it as a straight line.
-    This option overrides this behaviour so that the spine can become straight, but this is likely to negatively affect the appearance of the avatar mesh. 
+    This option overrides this behavior so that the spine can become straight, but this is likely to negatively affect the appearance of the avatar mesh. 
   - When true, we do not preserve the spine curvature by not imposing any maximum distance between the hips and the neck; the maximum distance is effectively the sum of the length of the bones.
   - When false, we preserve the spine curvature by limiting the maximum distance between the hips and the head to be smaller than the hips-to-neck length + the neck-to-head length (which is not equal to the sum of the length of the bones).
 
 ### Parenting the hand effectors to the avatar using self-parenting
 
-The left hand effector and the right hand effector can be virtually parented to the avatar's humanoid bones, using the **self-parenting** function.
+The left and right hand effectors can be virtually parented to the avatar's humanoid bones, using the **self-parenting** function.
 This differs from moving the effectors to the avatar's bones prior to solving.
 
 The main use case for this is to enable the ability to grab your own hip or grab your own leg. Grabbing your own arm is much more complicated;
@@ -125,7 +150,7 @@ The solver can also be used without even using *HIK Full Tiger* nor *HIK Effecto
 
 The IK solver was designed to run without any access to Transform, GameObject, nor Component hierarchy during the solve.
 
-The *HIK Effectors* and *HIK Full Tiger* components are just convenient accessors for the actual solver functionnality, but they don't contain
+The *HIK Effectors* and *HIK Full Tiger* components are just convenient accessors for the actual solver functionality, but they don't contain
 critical logic in them.
 
 If you instantiate the following classes directly, you can request a solve without needing Components nor Transforms:
@@ -192,7 +217,7 @@ not necessarily the desired maximum hips-neck distance.
 
 **D** is a triangle, so it's a simple two-bone solver.
 
-In **A** and **D** we do not have to concern ourselves with the rotation of the bones, only the distance between the bones matter.
+In **A** and **D** we do not have to concern ourselves with the rotation of the bones, only the distance between the bones matters.
 
 In **B** and **E** we calculate the rotation of the bones. Two degrees of freedom are constrained by the position solved by **A** and **D**,
 so we just have to solve the roll of the bones, also known as twist.
@@ -215,8 +240,8 @@ There are cases where we will give the solver a position that does not make sens
 - If the avatar's body is straight in any orientation, but the head is way too close to the hips, it's probably a mistake, so we need to shift the hips down.
 - However, if the avatar's body is bent over, then the head can be close to the hips, so it is not considered to be a mistake.
 
-There is a case where we will give the solver a position that is solvable, but would alter the artistic vision of the avatar.
-- Some avatars have a spine chain that is naturally curved by default in its rest pose. This causes the distance between the hip and the neck bone
+There is a case where we will give the solver a position that is solvable but would alter the artistic vision of the avatar.
+- Some avatars have a spine chain naturally curved by default in its rest pose. This causes the distance between the hip and the neck bone
   to be shorter than the sum of the bones between the hips-spine-chest-neck chain.
 - In that case, we should avoid straightening the spine chain, because it causes the avatar mesh to buckle inwards or outwards into an unnatural appearance.
 
@@ -232,7 +257,7 @@ The solver is here to ensure that the lengths between the bones are correct, but
 
 This section is not described yet.
 
-The bend direction of the arms is a particularly annoying part and I still have a lot to figure out with this.
+The bend direction of the arms is a particularly annoying part, and I still have a lot to figure out with this.
 
 In a future version I would like to try using [Motion Matching](https://www.youtube.com/watch?v=KSTn3ePDt50) ([2](https://www.youtube.com/watch?v=RCu-NzH4zrs)) with some arm motion capture
 to see if the bend direction could be solved using this technique.
