@@ -90,6 +90,13 @@ The *HIK Effectors* component has options that can change the behavior of the so
 - **Use L/R Lower Arm**:
   - When closest to 1, the arm will bend towards the lower arm effector.
   - When closest to 0, the arm will bend using the default arm bend direction heuristics.
+- **Use Shoulder** (defaults to 0):
+  - When closest to 1, the shoulder rotation may move based on the direction and how far the hand is away from the upper arm root bone position at rest.
+  - When closest to 0, the shoulder willl be at its rest position.
+  - **Shoulder Forward Angle Multiplier**: When the hand is trying to reach in the forward direction of the chest, multiply the default maximum shoulder angle by this value.
+  - **Shoulder Upward Angle Multiplier**: When the hand is trying to reach in the upward direction of the chest, multiply the default maximum shoulder angle by this value.
+- **Struggle**: Improves how fast the arm angle opens when the maximum arm length is being reached. See [Struggle section](#struggle) below.
+- **Self-parenting**: Allows parenting the hands to the body or legs. See [the section about self-parenting](#parenting-the-hand-effectors-to-the-avatar-using-self-parenting) below.
 
 *Not recommended:*
 - **Do Not Preserve Hips To Neck Curvature Limit** (defaults to false):
