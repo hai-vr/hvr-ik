@@ -88,12 +88,14 @@ namespace HVR.IK.FullTiger
                 var directionalRelativeDistance = shoulderLength / (upperLength + lowerLength);
                 
                 var chestFrontwards = math.mul(chestReference, math.down());
+                var chestInwards = math.mul(chestReference, side == ArmSide.Right ? math.forward() : math.back());
                 var prospectiveDirection = math.normalize(originalObjectivePos - rootPos);
                 var frontwardness = math.clamp(math.dot(prospectiveDirection, chestFrontwards), 0f, 1f);
+                var inwardness = math.clamp(math.dot(prospectiveDirection, chestInwards), 0f, 1f);
                 var upwardness = math.clamp(math.dot(prospectiveDirection, chestUpwards), 0f, 1f);
 
                 var extensionInfluence = objective.useShoulder * math.clamp(math.unlerp(0.7f, 1f + directionalRelativeDistance, math.length(originalObjectivePos - rootPos) / (lowerLength + upperLength)), 0f, 1f);
-                var shoulderInfluenceFrontward = frontwardness * extensionInfluence;
+                var shoulderInfluenceFrontward = (1 - (1 - frontwardness) * (1 - inwardness)) * extensionInfluence;
                 var shoulderInfluenceUpward = upwardness * extensionInfluence;
                 if (shoulderInfluenceFrontward > 0 || shoulderInfluenceUpward > 0)
                 {
