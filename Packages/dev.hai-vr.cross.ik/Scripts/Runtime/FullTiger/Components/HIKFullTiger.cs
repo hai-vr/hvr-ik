@@ -91,6 +91,7 @@ namespace HVR.IK.FullTiger
         private bool _solveRightLeg = true;
         private bool _solveLeftArm = true;
         private bool _solveRightArm = true;
+        private bool _useFakeDoubleJointedKneesWasEverEnabled;
 
         private void Awake()
         {
@@ -318,6 +319,8 @@ namespace HVR.IK.FullTiger
                 
                 fabrikIterations = overrideDefaultFabrikIterationCount ? fabrikIterations : HIKSpineSolver.Iterations,
                 
+                __useFakeDoubleJointedKnees = effectors.useFakeDoubleJointedKnees,
+                
                 selfParentLeftHandNullable = selfParentLeftHand,
                 selfParentRightHandNullable = selfParentRightHand,
             }, _ikSnapshot, debugDrawSolver);
@@ -328,13 +331,34 @@ namespace HVR.IK.FullTiger
             _bones[(int)Hips].position = _ikSnapshot.absolutePos[(int)Hips];
             _bones[(int)Hips].rotation = ConvertSnapshotRotationToBoneRotation(_ikSnapshot, definition, Hips);
             if (_solveSpine) Apply(CopyOrderSpineAndShoulders);
-            if (_solveLeftLeg) Apply(CopyOrderLeftLeg);
-            if (_solveRightLeg) Apply(CopyOrderRightLeg);
+            if (!_useFakeDoubleJointedKneesWasEverEnabled && effectors.useFakeDoubleJointedKnees <= 0f)
+            {
+                if (_solveLeftLeg) Apply(CopyOrderLeftLeg);
+                if (_solveRightLeg) Apply(CopyOrderRightLeg);
+            }
+            else
+            {
+                _useFakeDoubleJointedKneesWasEverEnabled = true;
+                if (_solveLeftLeg)
+                {
+                    Apply(LeftUpperLeg);
+                    _bones[(int)LeftLowerLeg].position = _ikSnapshot.absolutePos[(int)LeftLowerLeg];
+                    Apply(LeftLowerLeg, LeftFoot);
+                    _bones[(int)LeftFoot].position = _ikSnapshot.absolutePos[(int)LeftFoot];
+                };
+                if (_solveRightLeg)
+                {
+                    Apply(RightUpperLeg);
+                    _bones[(int)RightLowerLeg].position = _ikSnapshot.absolutePos[(int)RightLowerLeg];
+                    Apply(RightLowerLeg, RightFoot);
+                    _bones[(int)RightFoot].position = _ikSnapshot.absolutePos[(int)RightFoot];
+                }
+            }
             if (_solveLeftArm) Apply(CopyOrderLeftArm);
             if (_solveRightArm) Apply(CopyOrderRightArm);
         }
 
-        private void Apply(HumanBodyBones[] bones)
+        private void Apply(params HumanBodyBones[] bones)
         {
             foreach (var boneId in bones)
             {

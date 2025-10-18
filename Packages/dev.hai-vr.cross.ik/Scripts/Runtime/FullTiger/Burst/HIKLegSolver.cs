@@ -14,6 +14,7 @@
 
 using System;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace HVR.IK.FullTiger
 {
@@ -78,6 +79,26 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(rootBone, definition, scale);
             ikSnapshot.ReevaluatePosition(midBone, definition, scale);
             ikSnapshot.ReevaluatePosition(tipBone, definition, scale);
+
+            if (objective.__useFakeDoubleJointedKnees > 0f)
+            {
+                var angleDeg = math.degrees(math.acos(math.clamp(math.dot(math.normalize(bendPointPos - rootPos), math.normalize(bendPointPos - objectivePos)), -1f, 1f)));
+                var acuteness = 1 - math.clamp(math.unlerp(0f, 90f, angleDeg), 0f, 1f);
+                
+                var fakeMidPointPos = ikSnapshot.absolutePos[(int)midBone] + math.normalize(objectivePos - rootPos) * (lowerLength / 3.5f * acuteness * objective.__useFakeDoubleJointedKnees);
+                ikSnapshot.absolutePos[(int)midBone] = fakeMidPointPos;
+                ikSnapshot.absoluteRot[(int)midBone] = math.mul(
+                    quaternion.LookRotationSafe(objectivePos - fakeMidPointPos, math.normalize(math.cross(math.mul(originalObjectiveRot, math.back()), objectivePos - fakeMidPointPos))),
+                    _reorienter
+                );
+#if UNITY_EDITOR && true
+                if (debugDrawSolver && acuteness > 0f)
+                {
+                    MbusUtil.DrawArrow(bendPointPos, fakeMidPointPos, Color.magenta, 0f, false, math.mul(ikSnapshot.absoluteRot[(int)midBone], math.forward()));
+                    Debug.DrawLine(fakeMidPointPos, objectivePos, Color.cyan, 0f, false);
+                }
+#endif
+            }
 
             return ikSnapshot;
         }

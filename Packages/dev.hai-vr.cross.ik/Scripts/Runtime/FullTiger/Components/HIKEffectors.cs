@@ -89,6 +89,10 @@ namespace HVR.IK.FullTiger
         public float3 selfParentRightHandRelativePosition;
         public float3 selfParentRightHandRelativeRotationEuler;
 
+        [Header("Experimental (CHANGES POSITION)")]
+        [Range(0, 1)]
+        public float useFakeDoubleJointedKnees = 0f;
+
         private Vector3[] _tPosePos;
         private Quaternion[] _tPoseRot;
 

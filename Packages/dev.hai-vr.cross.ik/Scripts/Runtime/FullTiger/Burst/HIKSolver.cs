@@ -131,6 +131,8 @@ namespace HVR.IK.FullTiger
         
         internal int fabrikIterations;
 
+        internal float __useFakeDoubleJointedKnees;
+
         // FIXME: Switching to structs for burst makes these no longer nullable
         internal HIKSelfParenting selfParentLeftHandNullable;
         internal HIKSelfParenting selfParentRightHandNullable;

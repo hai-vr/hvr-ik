@@ -190,6 +190,8 @@ This solver provides the following guarantees:
   the position of any bone other than the hips.
   - You should be able to network the pose of the avatar by transmitting the position and rotation of the Hips transform, and the
     rotation of all other bones.
+  - This guarantee is broken if you enable the *Double Joined Knees* in the Experimental section, as this option requires setting the
+    position of the lower legs.
 - The result of the solver does not depend on the previous pose of the avatar, unless specified (partial solves).
   - You are able to run a solve or several different solves multiple times per frame onto the same avatar if you deem it necessary
     (e.g. a solve to be submitted for networking purposes, followed by a partial local solve for real-time object attachment purposes).
