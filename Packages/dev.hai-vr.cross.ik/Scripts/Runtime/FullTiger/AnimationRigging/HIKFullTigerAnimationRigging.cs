@@ -139,7 +139,8 @@ namespace HVR.IK.FullTiger.AnimationRigging
                     relRotation = quaternion.identity
                 }
             };
-            ikSnapshot = solver.Solve(objective, ikSnapshot);
+            var TODO_DRAW_DEBUG = true;
+            ikSnapshot = solver.Solve(objective, ikSnapshot, TODO_DRAW_DEBUG);
             
             _pp = ikSnapshot.absolutePos[(int)Hips];
             _rr = ConvertSnapshotRotationToBoneRotation(ikSnapshot, definition, Hips);

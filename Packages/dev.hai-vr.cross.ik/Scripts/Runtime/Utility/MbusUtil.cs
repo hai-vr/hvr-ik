@@ -65,6 +65,7 @@ namespace HVR.IK.FullTiger
 
         public static void DrawArrow(float3 start, float3 end, Color color, float duration, bool depthTest, float3 planeNormal, float size = 0.01f)
         {
+#if UNITY_EDITOR && true
             var arrowLength = math.distance(end, start);
             var actualSize = arrowLength / 2 > size ? size : arrowLength / 2;
             
@@ -75,6 +76,7 @@ namespace HVR.IK.FullTiger
             var baseLocation = end - dir * actualSize;
             Debug.DrawLine(end, baseLocation + cross * actualSize, color, duration, depthTest);
             Debug.DrawLine(end, baseLocation - cross * actualSize, color, duration, depthTest);
+#endif
         }
     }
 }

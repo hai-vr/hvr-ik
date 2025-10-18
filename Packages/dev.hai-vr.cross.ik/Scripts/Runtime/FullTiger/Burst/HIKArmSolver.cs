@@ -46,19 +46,19 @@ namespace HVR.IK.FullTiger
             _shoulderLeftLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.LeftShoulder], definition.refPoseHiplativePos[(int)HIKBodyBones.LeftUpperArm]);
         }
 
-        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver)
         {
             var scale = math.length(objective.providedLossyScale) / math.length(definition.capturedWithLossyScale);
             
             // TODO: Add the ability for the solver to derive a lower arm sub-effector based on (the lower arm effector????? and) a L/R plane effector,
             // describing the intersection of two planes (a line) where the elbow joint could rest on. If the hand is at a fixed position, then the solution is the intersection between
             // a circle and the plane. The circle is described by the bend point rotating around the axis defined by the root pos and the objective pos.
-            if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale);
-            if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale);
+            if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale, debugDrawSolver);
+            if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale, debugDrawSolver);
             return ikSnapshot;
         }
 
-        private HIKSnapshot SolveArm(HIKSnapshot ikSnapshot, HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, float scale)
+        private HIKSnapshot SolveArm(HIKSnapshot ikSnapshot, HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, float scale, bool debugDrawSolver)
         {
             var rootBone = side == ArmSide.Right ? HIKBodyBones.RightUpperArm : HIKBodyBones.LeftUpperArm;
             var midBone = side == ArmSide.Right ? HIKBodyBones.RightLowerArm : HIKBodyBones.LeftLowerArm;
@@ -105,15 +105,20 @@ namespace HVR.IK.FullTiger
                     ikSnapshot.ReevaluatePosition(rootBone, definition, scale);
                     var prevRootPos = rootPos;
                     rootPos = ikSnapshot.absolutePos[(int)rootBone];
-                
-                    MbusUtil.DrawArrow(prevRootPos, rootPos, Color.magenta, 0f, false, chestUpwards);
-                    Debug.DrawLine(ikSnapshot.absolutePos[(int)shoulderBone], rootPos, Color.yellow, 0f, false);
+
+#if UNITY_EDITOR && true
+                    if (debugDrawSolver)
+                    {
+                        MbusUtil.DrawArrow(prevRootPos, rootPos, Color.magenta, 0f, false, chestUpwards);
+                        Debug.DrawLine(ikSnapshot.absolutePos[(int)shoulderBone], rootPos, Color.yellow, 0f, false);
+                    }
+#endif
                 }
             }
 
             // Corrections
             var TODO_STRADDLING_IS_FALSE = false;
-            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, objective.armStruggleStart, objective.armStruggleEnd);
+            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, objective.armStruggleStart, objective.armStruggleEnd, debugDrawSolver);
 
             var bendDirection = TODO_STRADDLING_IS_FALSE ? float3.zero : ArmBendHeuristics(); // Bend direction is not used when straddling.
 
@@ -136,9 +141,12 @@ namespace HVR.IK.FullTiger
                 var isInside = math.clamp(math.smoothstep(0f, 1f, math.dot(-outwards, math.normalize(objectivePos - rootPos) * InsideSwitchingMul)), -1f, 1f);
 
 #if UNITY_EDITOR && true
-                Debug.DrawLine(rootPos , rootPos + chestUpwards * isOutwards * 0.1f, Color.red, 0f, false);
-                Debug.DrawLine(rootPos + outwards * 0.01f, rootPos + outwards * 0.01f + chestUpwards * isPalmUp * 0.1f, Color.green, 0f, false);
-                Debug.DrawLine(rootPos + outwards * 0.02f, rootPos + outwards * 0.02f + chestUpwards * isInside * 0.1f, Color.blue, 0f, false);
+                if (debugDrawSolver)
+                {
+                    Debug.DrawLine(rootPos , rootPos + chestUpwards * isOutwards * 0.1f, Color.red, 0f, false);
+                    Debug.DrawLine(rootPos + outwards * 0.01f, rootPos + outwards * 0.01f + chestUpwards * isPalmUp * 0.1f, Color.green, 0f, false);
+                    Debug.DrawLine(rootPos + outwards * 0.02f, rootPos + outwards * 0.02f + chestUpwards * isInside * 0.1f, Color.blue, 0f, false);
+                }
 #endif
                 
                 var chestSource = math.mul(chestReference, math.left());
@@ -153,7 +161,7 @@ namespace HVR.IK.FullTiger
             // Solve
             var TODO_NO_STRADDLING_POSITION = float3.zero;
             float3 bendPointPos;
-            (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, TODO_STRADDLING_IS_FALSE, TODO_NO_STRADDLING_POSITION, distanceType, bendDirection);
+            (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, TODO_STRADDLING_IS_FALSE, TODO_NO_STRADDLING_POSITION, distanceType, bendDirection, debugDrawSolver);
 
             var twistBase = math.mul(chestReference, math.left());
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(

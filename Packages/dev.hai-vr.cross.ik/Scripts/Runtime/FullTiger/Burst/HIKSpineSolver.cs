@@ -48,7 +48,7 @@ namespace HVR.IK.FullTiger
             _spineDistances[2] = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
         }
 
-        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver)
         {
             var scale = math.length(objective.providedLossyScale) / math.length(definition.capturedWithLossyScale);
             
@@ -68,14 +68,14 @@ namespace HVR.IK.FullTiger
                 {
                     hipTargetPos = headTargetPos - math.normalize(headTargetPos - originalHipTargetPos) * definition.refPoseHipToHeadLength * ff;
 #if UNITY_EDITOR && true
-                    Debug.DrawLine(headTargetPos, hipTargetPos, Color.red, 0f, false);
+                    if (debugDrawSolver) Debug.DrawLine(headTargetPos, hipTargetPos, Color.red, 0f, false);
 #endif
                 }
                 else
                 {
                     var kk = math.normalize(headTargetPos - hipTargetPos) * definition.refPoseHipToHeadLength * ff;
 #if UNITY_EDITOR && true
-                    Debug.DrawLine(hipTargetPos, hipTargetPos + kk, Color.yellow, 0f, false);
+                    if (debugDrawSolver) Debug.DrawLine(hipTargetPos, hipTargetPos + kk, Color.yellow, 0f, false);
 #endif
                 }
             }
@@ -141,19 +141,25 @@ namespace HVR.IK.FullTiger
             for (var i = 0; i < objective.fabrikIterations; i++)
             {
                 MbusMathSolver.Iterate(ref _spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue, scale);
-                // var color = Color.Lerp(Color.black, Color.red, i / (Iterations - 1f));
-                // if (drawDebug) DataViz.Instance.DrawLine(spineBezier, color, color);
-                Debug.DrawLine(_spineChain[0], _spineChain[1], lawnGreenTransparent, 0f, false);
-                Debug.DrawLine(_spineChain[1], _spineChain[2], lawnGreenTransparent, 0f, false);
-                Debug.DrawLine(_spineChain[2], _spineChain[3], lawnGreenTransparent, 0f, false);
+#if UNITY_EDITOR && true
+                if (debugDrawSolver)
+                {
+                    Debug.DrawLine(_spineChain[0], _spineChain[1], lawnGreenTransparent, 0f, false);
+                    Debug.DrawLine(_spineChain[1], _spineChain[2], lawnGreenTransparent, 0f, false);
+                    Debug.DrawLine(_spineChain[2], _spineChain[3], lawnGreenTransparent, 0f, false);
+                }
+#endif
             }
 
 #if UNITY_EDITOR && true
-            var arrowCross = math.normalize(hipsSide);
-            MbusUtil.DrawArrow(_spineChain[0], primingSpine, lawnGreen, 0f, false, arrowCross);
-            MbusUtil.DrawArrow(_spineChain[1], primingChest, lawnGreen, 0f, false, arrowCross);
-            MbusUtil.DrawArrow(_spineChain[2], primingNeck, lawnGreen, 0f, false, arrowCross);
-            MbusUtil.DrawArrow(_spineChain[3], primingHead, lawnGreen, 0f, false, arrowCross);
+            if (debugDrawSolver)
+            {
+                var arrowCross = math.normalize(hipsSide);
+                MbusUtil.DrawArrow(_spineChain[0], primingSpine, lawnGreen, 0f, false, arrowCross);
+                MbusUtil.DrawArrow(_spineChain[1], primingChest, lawnGreen, 0f, false, arrowCross);
+                MbusUtil.DrawArrow(_spineChain[2], primingNeck, lawnGreen, 0f, false, arrowCross);
+                MbusUtil.DrawArrow(_spineChain[3], primingHead, lawnGreen, 0f, false, arrowCross);
+            }
 #endif
 
             // ## Positions are solved into _spineChain. Now, solve the rotations.
@@ -210,19 +216,22 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(RightUpperLeg, definition, scale);
             
 #if UNITY_EDITOR && true
-            Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], hipTargetPos, Color.magenta, 0f, false);
-            
-            Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)LeftShoulder], coral, 0f, false);
-            Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)RightShoulder], coral, 0f, false);
-            Debug.DrawLine(ikSnapshot.absolutePos[(int)LeftShoulder], ikSnapshot.absolutePos[(int)LeftUpperArm], coral, 0f, false);
-            Debug.DrawLine(ikSnapshot.absolutePos[(int)RightShoulder], ikSnapshot.absolutePos[(int)RightUpperArm], coral, 0f, false);
-            Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)Spine], coral, 0f, false);
-            Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)LeftUpperLeg], coral, 0f, false);
-            Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)RightUpperLeg], coral, 0f, false);
-            
-            if (objective.useChest > 0f)
+            if (debugDrawSolver)
             {
-                Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], objective.chestTargetWorldPosition, mediumOrchid, 0f, false);
+                Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], hipTargetPos, Color.magenta, 0f, false);
+            
+                Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)LeftShoulder], coral, 0f, false);
+                Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], ikSnapshot.absolutePos[(int)RightShoulder], coral, 0f, false);
+                Debug.DrawLine(ikSnapshot.absolutePos[(int)LeftShoulder], ikSnapshot.absolutePos[(int)LeftUpperArm], coral, 0f, false);
+                Debug.DrawLine(ikSnapshot.absolutePos[(int)RightShoulder], ikSnapshot.absolutePos[(int)RightUpperArm], coral, 0f, false);
+                Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)Spine], coral, 0f, false);
+                Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)LeftUpperLeg], coral, 0f, false);
+                Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], ikSnapshot.absolutePos[(int)RightUpperLeg], coral, 0f, false);
+            
+                if (objective.useChest > 0f)
+                {
+                    Debug.DrawLine(ikSnapshot.absolutePos[(int)Chest], objective.chestTargetWorldPosition, mediumOrchid, 0f, false);
+                }
             }
 #endif
 

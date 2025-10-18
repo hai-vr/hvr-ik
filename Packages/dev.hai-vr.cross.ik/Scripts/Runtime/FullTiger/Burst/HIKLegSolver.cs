@@ -30,16 +30,16 @@ namespace HVR.IK.FullTiger
             _reorienter = reorienter;
         }
 
-        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver)
         {
             var scale = math.length(objective.providedLossyScale) / math.length(definition.capturedWithLossyScale);
 
-            if (objective.solveRightLeg) ikSnapshot = SolveLeg(ikSnapshot, objective, LegSide.Right, objective.rightFootTargetWorldPosition, objective.rightFootTargetWorldRotation, objective.useStraddlingRightLeg, objective.groundedStraddlingRightLegWorldPosition, objective.groundedStraddlingRightLegWorldRotation, scale);
-            if (objective.solveLeftLeg) ikSnapshot = SolveLeg(ikSnapshot, objective, LegSide.Left, objective.leftFootTargetWorldPosition, objective.leftFootTargetWorldRotation, objective.useStraddlingLeftLeg, objective.groundedStraddlingLeftLegWorldPosition, objective.groundedStraddlingLeftLegWorldRotation, scale);
+            if (objective.solveRightLeg) ikSnapshot = SolveLeg(ikSnapshot, objective, LegSide.Right, objective.rightFootTargetWorldPosition, objective.rightFootTargetWorldRotation, objective.useStraddlingRightLeg, objective.groundedStraddlingRightLegWorldPosition, objective.groundedStraddlingRightLegWorldRotation, scale, debugDrawSolver);
+            if (objective.solveLeftLeg) ikSnapshot = SolveLeg(ikSnapshot, objective, LegSide.Left, objective.leftFootTargetWorldPosition, objective.leftFootTargetWorldRotation, objective.useStraddlingLeftLeg, objective.groundedStraddlingLeftLegWorldPosition, objective.groundedStraddlingLeftLegWorldRotation, scale, debugDrawSolver);
             return ikSnapshot;
         }
 
-        private HIKSnapshot SolveLeg(HIKSnapshot ikSnapshot, HIKObjective objective, LegSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, bool useStraddlingLeg, float3 groundedStraddlingLegWorldPosition, quaternion groundedStraddlingLegWorldRotation, float scale)
+        private HIKSnapshot SolveLeg(HIKSnapshot ikSnapshot, HIKObjective objective, LegSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, bool useStraddlingLeg, float3 groundedStraddlingLegWorldPosition, quaternion groundedStraddlingLegWorldRotation, float scale, bool debugDrawSolver)
         {
             var rootBone = side == LegSide.Right ? HIKBodyBones.RightUpperLeg : HIKBodyBones.LeftUpperLeg;
             var midBone = side == LegSide.Right ? HIKBodyBones.RightLowerLeg : HIKBodyBones.LeftLowerLeg;
@@ -51,7 +51,7 @@ namespace HVR.IK.FullTiger
             var lowerLength = math.distance(definition.refPoseHiplativePos[(int)midBone], definition.refPoseHiplativePos[(int)tipBone]) * scale;
             
             // Corrections
-            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, useStraddlingLeg, rootPos, upperLength, lowerLength, out var distanceType, objective.legStruggleStart, objective.legStruggleEnd);
+            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, useStraddlingLeg, rootPos, upperLength, lowerLength, out var distanceType, objective.legStruggleStart, objective.legStruggleEnd, debugDrawSolver);
 
             var hipReference = ikSnapshot.absoluteRot[(int)HIKBodyBones.Hips];
             
@@ -64,7 +64,7 @@ namespace HVR.IK.FullTiger
 
             // Solve
             float3 bendPointPos;
-            (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, useStraddlingLeg, groundedStraddlingLegWorldPosition, distanceType, bendDirection);
+            (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, useStraddlingLeg, groundedStraddlingLegWorldPosition, distanceType, bendDirection, debugDrawSolver);
 
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
                 quaternion.LookRotationSafe(bendPointPos - rootPos, math.normalize(math.cross(math.mul(hipReference, math.forward()), bendPointPos - rootPos))),

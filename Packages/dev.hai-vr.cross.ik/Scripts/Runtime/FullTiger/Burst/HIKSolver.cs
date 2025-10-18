@@ -36,15 +36,15 @@ namespace HVR.IK.FullTiger
             _legSolver = new HIKLegSolver(definition, reorienter);
         }
 
-        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver = false)
         {
-            if (objective.solveSpine) ikSnapshot = _spineSolver.Solve(objective, ikSnapshot);
+            if (objective.solveSpine) ikSnapshot = _spineSolver.Solve(objective, ikSnapshot, debugDrawSolver);
             
             // We need to solve the legs before the arms to support virtually parenting the hand effector to a bone of the leg.
-            ikSnapshot = _legSolver.Solve(objective, ikSnapshot);
+            ikSnapshot = _legSolver.Solve(objective, ikSnapshot, debugDrawSolver);
             RewriteObjectiveToAccountForHandSelfParenting(ikSnapshot, objective.selfParentRightHandNullable, ref objective.rightHandTargetWorldPosition, ref objective.rightHandTargetWorldRotation);
             RewriteObjectiveToAccountForHandSelfParenting(ikSnapshot, objective.selfParentLeftHandNullable, ref objective.leftHandTargetWorldPosition, ref objective.leftHandTargetWorldRotation);
-            ikSnapshot = _armSolver.Solve(objective, ikSnapshot);
+            ikSnapshot = _armSolver.Solve(objective, ikSnapshot, debugDrawSolver);
             return ikSnapshot;
         }
 

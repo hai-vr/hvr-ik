@@ -84,6 +84,7 @@ namespace HVR.IK.FullTiger
         
         [Header("Debug")]
         public bool debugDrawFinalChains = true;
+        public bool debugDrawSolver = true;
         
         private bool _solveSpine = true;
         private bool _solveLeftLeg = true;
@@ -209,12 +210,14 @@ namespace HVR.IK.FullTiger
             PerformRegularSolve();
             ApplySnapshot();
 
+#if UNITY_EDITOR && true
             if (debugDrawFinalChains)
             {
                 DrawArmChain(SpineChain);
                 DrawArmChain(LeftArmChain);
                 DrawArmChain(RightArmChain);
             }
+#endif
         }
 
         public void PerformRegularSolve()
@@ -312,7 +315,7 @@ namespace HVR.IK.FullTiger
                 
                 selfParentLeftHandNullable = selfParentLeftHand,
                 selfParentRightHandNullable = selfParentRightHand,
-            }, _ikSnapshot);
+            }, _ikSnapshot, debugDrawSolver);
         }
 
         public void ApplySnapshot()
@@ -345,6 +348,7 @@ namespace HVR.IK.FullTiger
 
         private void DrawArmChain(HumanBodyBones[] array)
         {
+#if UNITY_EDITOR && true
             float3 prevPos = _bones[(int)array[0]].position + Vector3.up * 0.001f;
             for (var i = 1; i < array.Length; i++)
             {
@@ -357,6 +361,7 @@ namespace HVR.IK.FullTiger
                     prevPos = newPos;
                 }
             }
+#endif
         }
     }
 }

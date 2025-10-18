@@ -26,7 +26,8 @@ namespace HVR.IK.FullTiger
             float lowerLength,
             out HIKTwoBoneDistanceType distanceType,
             float struggleStart,
-            float struggleEnd)
+            float struggleEnd,
+            bool debugDrawSolver)
         {
             var totalLength = upperLength + lowerLength;
             var minimumDistance = math.abs(upperLength - lowerLength);
@@ -50,7 +51,7 @@ namespace HVR.IK.FullTiger
                 }
                 objectivePos = rootPos + math.normalize(objectivePos - rootPos) * finalLength;
 #if UNITY_EDITOR && true
-                Debug.DrawLine(objectivePos, originalObjectivePos, Color.magenta, 0f, false);
+                if (debugDrawSolver) Debug.DrawLine(objectivePos, originalObjectivePos, Color.magenta, 0f, false);
 #endif
                 distanceType = finalLength >= totalLength ? HIKTwoBoneDistanceType.MaximumDistance : HIKTwoBoneDistanceType.Regular;
             }
@@ -61,8 +62,11 @@ namespace HVR.IK.FullTiger
                 {
                     objectivePos = rootPos + math.normalize(objectivePos - rootPos) * minimumDistance;
 #if UNITY_EDITOR && true
-                    Debug.DrawLine(originalObjectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
-                    Debug.DrawLine(objectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
+                    if (debugDrawSolver)
+                    {
+                        Debug.DrawLine(originalObjectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
+                        Debug.DrawLine(objectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
+                    }
 #endif
                     distanceType = HIKTwoBoneDistanceType.MinimumDistance;
                 }
@@ -75,8 +79,7 @@ namespace HVR.IK.FullTiger
             return objectivePos;
         }
 
-        public static (float3 objectivePos, float3 bendPointPos) SolveBendPoint(
-            float3 rootPos,
+        public static (float3 objectivePos, float3 bendPointPos) SolveBendPoint(float3 rootPos,
             float3 objectivePos,
             quaternion objectiveRot,
             float upperLength,
@@ -84,7 +87,7 @@ namespace HVR.IK.FullTiger
             bool useStraddlingMode,
             float3 straddlingWorldPosition,
             HIKTwoBoneDistanceType distanceType,
-            float3 bendDirection)
+            float3 bendDirection, bool debugDrawSolver)
         {
             float3 bendPointPos;
             var totalLength = upperLength + lowerLength;
@@ -97,8 +100,11 @@ namespace HVR.IK.FullTiger
                 objectivePos = bendPointPos + math.normalize(objectivePos - bendPointPos) * lowerLength;
 
 #if UNITY_EDITOR && true
-                Debug.DrawLine(bendPointPos, straddlingWorldPosition, Color.magenta, 0f, false);
-                Debug.DrawLine(prevObjectivePos, objectivePos, Color.magenta, 0f, false);
+                if (debugDrawSolver)
+                {
+                    Debug.DrawLine(bendPointPos, straddlingWorldPosition, Color.magenta, 0f, false);
+                    Debug.DrawLine(prevObjectivePos, objectivePos, Color.magenta, 0f, false);
+                }
 #endif
             }
             else
@@ -150,9 +156,12 @@ namespace HVR.IK.FullTiger
             }
 
 #if UNITY_EDITOR && true
-            Debug.DrawLine(rootPos, objectivePos, Color.cyan, 0f, false);
-            Debug.DrawLine(rootPos, bendPointPos, Color.yellow, 0f, false);
-            Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
+            if (debugDrawSolver)
+            {
+                Debug.DrawLine(rootPos, objectivePos, Color.cyan, 0f, false);
+                Debug.DrawLine(rootPos, bendPointPos, Color.yellow, 0f, false);
+                Debug.DrawLine(bendPointPos, objectivePos, isTooTight ? Color.red : Color.yellow, 0f, false);
+            }
 #endif
             return (objectivePos, bendPointPos);
         }
