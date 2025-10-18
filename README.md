@@ -97,6 +97,8 @@ The *HIK Effectors* component has options that can change the behavior of the so
   - **Shoulder Upward Angle Multiplier**: When the hand is trying to reach in the upward direction of the chest, multiply the default maximum shoulder angle by this value.
 - **Struggle**: Improves how fast the arm angle opens when the maximum arm length is being reached. See [Struggle section](#struggle) below.
 - **Self-parenting**: Allows parenting the hands to the body or legs. See [the section about self-parenting](#parenting-the-hand-effectors-to-the-avatar-using-self-parenting) below.
+- **Improve Spine Buckling**: Helps overcoming the spine curvature when the body is upright while the hips-to-neck distance is shorter than default. See [the section about spine buckling](#improving-spine-buckling) below.
+- (EXPERIMENTAL) **Use Fake Double Jointed Knees**: This attempts to prevent the upper leg from clipping into the lower leg by moving the position of the lower leg. See [the fake knee joints](#fake-knee-joints) below.
 
 *Not recommended:*
 - **Do Not Preserve Hips To Neck Curvature Limit** (defaults to false):
@@ -105,6 +107,17 @@ The *HIK Effectors* component has options that can change the behavior of the so
     This option overrides this behavior so that the spine can become straight, but this is likely to negatively affect the appearance of the avatar mesh. 
   - When true, we do not preserve the spine curvature by not imposing any maximum distance between the hips and the neck; the maximum distance is effectively the sum of the length of the bones.
   - When false, we preserve the spine curvature by limiting the maximum distance between the hips and the head to be smaller than the hips-to-neck length + the neck-to-head length (which is not equal to the sum of the length of the bones).
+
+### Improving spine buckling
+
+When the hips-to-neck distance is smaller than the default hips-to-neck distance at rest, the spine is considered crunched.
+This poses a problem when the body is upright, because the spine needs to curve in a different way when the head is (horizontally) in front of the hips,
+versus when the head is behind the hips.
+
+When **Improve Spine Buckling** is closer to 1, the solver will slightly push the hips position down around the location where the head position and direction followed
+the default spine curvature. This will straighten the spine so that it has a better opportunity to transform from one curve into the other.
+
+https://github.com/user-attachments/assets/6fca310b-6d36-4aac-99b2-ca237bacf497
 
 ### Parenting the hand effectors to the avatar using self-parenting
 
@@ -138,6 +151,25 @@ The default values are 0.99 and 1.04, corresponding to 99% and 104%. To disable 
 <img width="1604" height="607" alt="cdist2" src="https://github.com/user-attachments/assets/086eaf75-cf3e-4391-af31-a1bbc05e0e11" />
 
 *When struggle is enabled, the last one percent of the distance takes longer to reach, but it avoids a sudden acceleration of the joint angle in that last percent.*
+
+### Fake knee joints
+
+On traditional avatar rigs, the upper leg and lower leg are two bones connected by a joint. This poses a problem when the angle between the upper leg and
+the lower leg is acute, because it causes the thighs to clip into the calves.
+
+Some more complex rigs avoid this by connecting the upper leg and lower leg using multiple joints and may also use multiple accessory bones, but most avatars
+designed for social VR are not designed this way for various justifiable reasons (compatibility, constraint complexity, and unsupported number of bones per vertex
+on certain apps. Unity *does* support more than 4 bones per vertex on the GPU at a possible performance cost if you create your own application).
+
+The fake knee joints option violates the convention that bones only move by rotating around their axis. This option causes the lower leg to move away from the default
+upper-leg-to-lower-leg rotation joint.
+
+https://github.com/user-attachments/assets/de4d9d4f-dca4-4df9-847c-6ca910a25985
+
+> [!CAUTION]
+> This option changes the position of the lower leg bone, but also causes a different rotation of the lower leg bone compared to when this option is disabled.
+> 
+> This can make it difficult to network the pose of the avatar through the IK networking solution of your application, but also animation systems may not be able to handle it.
 
 ## Controlling execution order
 
