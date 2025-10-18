@@ -53,8 +53,22 @@ namespace HVR.IK.FullTiger
             // TODO: Add the ability for the solver to derive a lower arm sub-effector based on (the lower arm effector????? and) a L/R plane effector,
             // describing the intersection of two planes (a line) where the elbow joint could rest on. If the hand is at a fixed position, then the solution is the intersection between
             // a circle and the plane. The circle is described by the bend point rotating around the axis defined by the root pos and the objective pos.
-            if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale, debugDrawSolver);
-            if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale, debugDrawSolver);
+            var solveLeftArmFirst = objective.solveRightArm
+                               && objective.solveLeftArm
+                               && (objective.selfParentRightHandNullable != null && objective.selfParentRightHandNullable.use > 0f) // if the right hand is self-parented
+                               && (objective.selfParentLeftHandNullable == null || objective.selfParentLeftHandNullable.use <= 0f); // AND the left hand is not self-parented
+
+            if (!solveLeftArmFirst)
+            {
+                if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale, debugDrawSolver);
+                if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale, debugDrawSolver);
+            }
+            else
+            {
+                if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale, debugDrawSolver);
+                if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale, debugDrawSolver);
+            }
+            
             return ikSnapshot;
         }
 
