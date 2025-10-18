@@ -90,7 +90,7 @@ namespace HVR.IK.FullTiger
                     // (which is not equal to the sum of the bones of the hip-spine-chest-neck) chain, then either the head or the hips MUST be brought closer
                     // so that the solver doesn't overstretch the artists' spine.
                     ? (definition.refPoseHipToNeckLength + definition.refPoseNeckLength) * scale
-                    : (_hipsToSpineToCheckToNeckToHeadLength) * scale;
+                    : _hipsToSpineToCheckToNeckToHeadLength * scale;
                 if (math.distance(in_hipTargetPos, in_headTargetPos) > maximumLength)
                 {
                     if (objective.headAlignmentMattersMore)
@@ -116,11 +116,11 @@ namespace HVR.IK.FullTiger
             if (objective.improveSpineBuckling > 0f)
             {
                 var effectiveDistanceAfterCorrections = math.distance(hipTargetPos, headTargetPos);
-                var tension = 1 - effectiveDistanceAfterCorrections / _hipsToSpineToCheckToNeckToHeadLength;
+                var tension = 1 - effectiveDistanceAfterCorrections / (_hipsToSpineToCheckToNeckToHeadLength * scale);
                 var tensionDirection = math.normalize(hipTargetPos - headTargetPos);
                 var tensionVectorIsSimilarToSpineVector = math.clamp(math.unlerp(0.96f, 1f, math.dot(math.normalize(-hipsSpineVecUpwards), tensionDirection)), 0f, 1f);
 
-                var totalTension = tension * tensionVectorIsSimilarToSpineVector * objective.improveSpineBuckling;
+                var totalTension = tension * tensionVectorIsSimilarToSpineVector * objective.improveSpineBuckling * scale;
                 if (totalTension > 0f)
                 {
                     var tensionVector = tensionDirection * totalTension;
