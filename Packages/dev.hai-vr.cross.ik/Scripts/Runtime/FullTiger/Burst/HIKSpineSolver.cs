@@ -28,7 +28,8 @@ namespace HVR.IK.FullTiger
 
         private HIKSpineData<float3> _spineChain;
         private HIKSpineData<float> _spineDistances;
-        
+        private readonly float _hipsToSpineToCheckToNeckToHeadLength;
+
         private static readonly Color lawnGreen = new Color(0.4862745f, 0.9882354f, 0.0f, 1f);
         private static readonly Color lawnGreenTransparent = new Color(0.4862745f, 0.9882354f, 0.0f, 0.3f);
         private static readonly Color coral = new Color(1f, 0.4980392f, 0.3137255f, 1f);
@@ -46,6 +47,8 @@ namespace HVR.IK.FullTiger
             _spineDistances[0] = math.distance(definition.refPoseHiplativePos[(int)Spine], definition.refPoseHiplativePos[(int)Chest]);
             _spineDistances[1] = math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]);
             _spineDistances[2] = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
+
+            _hipsToSpineToCheckToNeckToHeadLength = definition.refPoseHipsLength + definition.refPoseSpineLength + definition.refPoseChestLength + definition.refPoseNeckLength;
         }
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver)
@@ -80,24 +83,58 @@ namespace HVR.IK.FullTiger
                 }
             }
 
-            if (!objective.doNotPreserveHipsToNeckCurvatureLimit)
-            {
-                // If the distance between the head and the neck is larger than the length of the neck + refPoseHipToNeckLength
-                // (which is not equal to the sum of the bones of the hip-spine-chest-neck) chain, then either the head or the hips MUST be brought closer
-                // so that the solver doesn't overstretch the artists' spine.
-                var refHipToNeckAndThenToHeadLength = (definition.refPoseHipToNeckLength + definition.refPoseNeckLength) * scale;
-                if (math.distance(hipTargetPos, headTargetPos) > refHipToNeckAndThenToHeadLength)
+            void ApplyLimiter(ref float3 in_hipTargetPos, ref float3 in_headTargetPos) {
+                var maximumLength = 
+                    !objective.doNotPreserveHipsToNeckCurvatureLimit
+                    // If the distance between the head and the neck is larger than the length of the neck + refPoseHipToNeckLength
+                    // (which is not equal to the sum of the bones of the hip-spine-chest-neck) chain, then either the head or the hips MUST be brought closer
+                    // so that the solver doesn't overstretch the artists' spine.
+                    ? (definition.refPoseHipToNeckLength + definition.refPoseNeckLength) * scale
+                    : (_hipsToSpineToCheckToNeckToHeadLength) * scale;
+                if (math.distance(in_hipTargetPos, in_headTargetPos) > maximumLength)
                 {
                     if (objective.headAlignmentMattersMore)
                     {
-                        var toHip = math.normalize(hipTargetPos - headTargetPos);
-                        hipTargetPos = headTargetPos + toHip * refHipToNeckAndThenToHeadLength;
+                        var toHip = math.normalize(in_hipTargetPos - in_headTargetPos);
+                        in_hipTargetPos = in_headTargetPos + toHip * maximumLength;
                     }
                     else
                     {
-                        var toHead = math.normalize(headTargetPos - hipTargetPos);
-                        headTargetPos = hipTargetPos + toHead * refHipToNeckAndThenToHeadLength;
+                        var toHead = math.normalize(in_headTargetPos - in_hipTargetPos);
+                        in_headTargetPos = in_hipTargetPos + toHead * maximumLength;
                     }
+                }
+            }
+            ApplyLimiter(ref hipTargetPos, ref headTargetPos);
+
+            var hipsSpineVecUpwards = math.mul(objective.hipTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHipsRotation.x;
+            var hipsSpineVecFrontwards = math.mul(objective.hipTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHipsRotation.y;
+            var headSpineVecUpwards = math.mul(objective.headTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHeadRotation.x;
+            var headSpineVecFrontwards = math.mul(objective.headTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHeadRotation.y;
+
+            // ## Try to fix spine buckle: Calculate spine tension to try fixing the buckle issue
+            if (objective.improveSpineBuckling > 0f)
+            {
+                var effectiveDistanceAfterCorrections = math.distance(hipTargetPos, headTargetPos);
+                var tension = 1 - effectiveDistanceAfterCorrections / _hipsToSpineToCheckToNeckToHeadLength;
+                var tensionDirection = math.normalize(hipTargetPos - headTargetPos);
+                var tensionVectorIsSimilarToSpineVector = math.clamp(math.unlerp(0.96f, 1f, math.dot(math.normalize(-hipsSpineVecUpwards), tensionDirection)), 0f, 1f);
+
+                var totalTension = tension * tensionVectorIsSimilarToSpineVector * objective.improveSpineBuckling;
+                if (totalTension > 0f)
+                {
+                    var tensionVector = tensionDirection * totalTension;
+                    var prevHipTargetPos = hipTargetPos;
+                    hipTargetPos += tensionVector;
+                    ApplyLimiter(ref hipTargetPos, ref headTargetPos);
+                
+#if UNITY_EDITOR && true
+                    if (debugDrawSolver)
+                    {
+                        MbusUtil.DrawArrow(headTargetPos, headTargetPos + tensionVector, Color.cyan, 0f, false, math.mul(objective.headTargetWorldRotation, math.forward()));
+                        MbusUtil.DrawArrow(prevHipTargetPos, prevHipTargetPos + tensionVector, Color.cyan, 0f, false, math.mul(objective.headTargetWorldRotation, math.forward()));
+                    }
+#endif
                 }
             }
 
@@ -114,11 +151,6 @@ namespace HVR.IK.FullTiger
             var spineToHeadLen = math.length(spineToHead);
             
             var hipsSide = math.mul(objective.hipTargetWorldRotation, math.forward());
-
-            var hipsSpineVecUpwards = math.mul(objective.hipTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHipsRotation.x;
-            var hipsSpineVecFrontwards = math.mul(objective.hipTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHipsRotation.y;
-            var headSpineVecUpwards = math.mul(objective.headTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHeadRotation.x;
-            var headSpineVecFrontwards = math.mul(objective.headTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHeadRotation.y;
             
             var chestPosBase = spinePos + hipsSpineVecUpwards * spineToHeadLen * definition.refPoseChestRelation.x + hipsSpineVecFrontwards * definition.refPoseChestRelation.y * scale;
             var neckPosBase = headTargetPos - headSpineVecUpwards * spineToHeadLen * (1 - definition.refPoseNeckRelation.x) + headSpineVecFrontwards * definition.refPoseNeckRelation.y * scale;

@@ -26,6 +26,8 @@ namespace HVR.IK.FullTiger
         internal HIKBoneData<quaternion> artistPoseRot = new();
         internal float refPoseHipToNeckLength;
         internal float refPoseHipToHeadLength;
+        internal float refPoseHipsLength;
+        internal float refPoseSpineLength;
         internal float refPoseChestLength;
         internal float refPoseNeckLength;
         

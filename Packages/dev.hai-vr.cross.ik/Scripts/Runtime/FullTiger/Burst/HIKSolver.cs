@@ -127,6 +127,8 @@ namespace HVR.IK.FullTiger
         internal bool solveLeftArm;
         internal bool solveRightArm;
         
+        internal float improveSpineBuckling;
+        
         internal int fabrikIterations;
 
         // FIXME: Switching to structs for burst makes these no longer nullable

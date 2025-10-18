@@ -148,6 +148,9 @@ namespace HVR.IK.FullTiger
 
             definition.refPoseHipToNeckLength = math.distance(definition.refPoseHiplativePos[(int)Hips], definition.refPoseHiplativePos[(int)Neck]);
             definition.refPoseHipToHeadLength = math.distance(definition.refPoseHiplativePos[(int)Hips], definition.refPoseHiplativePos[(int)Head]);
+            
+            definition.refPoseHipsLength = math.distance(definition.refPoseHiplativePos[(int)Hips], definition.refPoseHiplativePos[(int)Spine]);
+            definition.refPoseSpineLength = math.distance(definition.refPoseHiplativePos[(int)Spine], definition.refPoseHiplativePos[(int)Chest]);
             definition.refPoseChestLength = math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]);
             definition.refPoseNeckLength = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
 
@@ -308,6 +311,8 @@ namespace HVR.IK.FullTiger
                 useShoulder = effectors.useShoulder,
                 shoulderForwardAngleMultiplier = effectors.shoulderForwardAngleMultiplier,
                 shoulderUpwardAngleMultiplier = effectors.shoulderUpwardAngleMultiplier,
+                
+                improveSpineBuckling = effectors.improveSpineBuckling,
                 
                 providedLossyScale = animator.GetBoneTransform(Hips).lossyScale,
                 
