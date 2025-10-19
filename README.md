@@ -5,6 +5,9 @@ A work-in-progress IK solver primarily designed for use in social VR application
 
 This is the third IK solver that I'm writing, and I hope that it will become good enough to be the last of mine (it probably won't be).
 
+*Made for use in Unity 6.2, and partially ported to [Godot Engine .NET](https://github.com/hai-vr/hvr-ik/pull/6). The core part of
+this solver [does not require Unity Components nor Transforms](#solving-without-transforms), hence why it works in Godot Engine.*
+
 https://github.com/user-attachments/assets/f4b17e25-f894-47cd-a856-1171d6773d23
 
 ### Why?
@@ -23,7 +26,7 @@ The mission of this repository is to document and demystify the decisions relate
 try and develop your own heuristics for the needs of your own application.
 
 In addition, the core part of this solver [does not require Unity Components nor Transforms](#solving-without-transforms), so with some effort, it may
-be ported to other game engines;<br/>As a proof of concept, there is [a branch capable of running on Godot .NET](https://github.com/hai-vr/hvr-ik/pull/6),
+be ported to other game engines;<br/>As a proof of concept, there is [a branch capable of running on Godot Engine .NET](https://github.com/hai-vr/hvr-ik/pull/6),
 which is achieved by aliasing the Unity.Mathematics library with Godot Engine's own types.
 
 > [!WARNING]  
@@ -201,6 +204,8 @@ If you instantiate the following classes directly, you can request a solve witho
 - **HIKObjective** contains the parameters of the solver (effectors, options, etc.).
   - You can learn how to fill this by looking at the implementation of *HIK Effectors* `CreateTarget` function, and *HIK Full Tiger*'s `PerformRegularSolve` function.
 - **HIKSolver** is the solver you need to instantiate using all the aforementioned classes.
+
+As a proof of concept, there is [a branch capable of running on Godot Engine .NET](https://github.com/hai-vr/hvr-ik/pull/6).
 
 ## Solver considerations
 
