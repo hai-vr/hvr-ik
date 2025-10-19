@@ -67,46 +67,6 @@ namespace HVR.IK.FullTiger
             return vector - math.dot(vector, normalizedPlaneNormal) * normalizedPlaneNormal;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 PositionOf(float4x4 m)
-        {
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-            return m.c3.xyz;
-#else //__iff HVR_IS_GODOT
-            return m.Origin;
-#endif
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Quaternion RotationOf(float4x4 trs)
-        {
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-            return new quaternion(trs);
-#else //__iff HVR_IS_GODOT
-            return new quaternion(trs.Basis);
-#endif
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetX(float2 v)
-        {       
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                return v.x;
-#else //__iff HVR_IS_GODOT
-                return v.X;
-#endif
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float GetY(float2 v)
-        {       
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                return v.y;
-#else //__iff HVR_IS_GODOT
-                return v.Y;
-#endif
-        }
-
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
         /**
          * Extract the position and rotation out of a TRS matrix.

@@ -39,7 +39,7 @@ namespace HVR.IK.FullTiger
             var scaleMatrix = hvr_godot_helper.float4x4_Scale(scale);
             var resolvedMatrix = math.mul(TRSOf(parentBone, definition), math.mul(scaleMatrix, definition.relativeMatrices[ourIndex]));
             
-            absolutePos[ourIndex] = MbusGeofunctions.PositionOf(resolvedMatrix);
+            absolutePos[ourIndex] = hvr_godot_helper.PositionOf(resolvedMatrix);
         }
 
         private float4x4 TRSOf(HIKBodyBones parentBone, HIKAvatarDefinition definition)

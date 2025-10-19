@@ -65,8 +65,8 @@ namespace HVR.IK.FullTiger
                     hvr_godot_helper.float4x4_TRUniform(ikSnapshot.absolutePos[parentBone], ikSnapshot.absoluteRot[parentBone]),
                     hvr_godot_helper.float4x4_TRUniform(parent.relPosition, parent.relRotation)
                 );
-                pos = math.lerp(pos, MbusGeofunctions.PositionOf(trs), parent.use);
-                rot = math.slerp(rot, MbusGeofunctions.RotationOf(trs), parent.use);
+                pos = math.lerp(pos, hvr_godot_helper.PositionOf(trs), parent.use);
+                rot = math.slerp(rot, hvr_godot_helper.RotationOf(trs), parent.use);
             }
         }
     }
