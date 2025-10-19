@@ -12,13 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Unity.Burst;
+
+using System.Runtime.CompilerServices;
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
+using UnityEngine;
+using Unity.Burst;
+#else //__iff HVR_IS_GODOT
+using Godot;
+using float3 = Godot.Vector3;
+using float2 = Godot.Vector2;
+using float4x4 = Godot.Transform3D;
+using quaternion = Godot.Quaternion;
+using math = hvr_godot_math;
+#endif
 
 namespace HVR.IK.FullTiger
 {
     /// Contains any general purpose functions to facilitate geometric operations.
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
     [BurstCompile]
+#endif
     internal static class MbusGeofunctions
     {
         /**
@@ -34,8 +48,8 @@ namespace HVR.IK.FullTiger
         public static quaternion FromToOrientation(float3 fromDirection, float3 toDirection, float3 fromUpwards,
             float3 toUpwards)
         {
-            var fromRotation = quaternion.LookRotationSafe(fromDirection, fromUpwards);
-            var toRotation = quaternion.LookRotationSafe(toDirection, toUpwards);
+            var fromRotation = hvr_godot_helper_quaternion.LookRotationSafe(fromDirection, fromUpwards);
+            var toRotation = hvr_godot_helper_quaternion.LookRotationSafe(toDirection, toUpwards);
             return math.mul(toRotation, math.inverse(fromRotation));
         }
 
@@ -53,6 +67,7 @@ namespace HVR.IK.FullTiger
             return vector - math.dot(vector, normalizedPlaneNormal) * normalizedPlaneNormal;
         }
 
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
         /**
          * Extract the position and rotation out of a TRS matrix.
          */
@@ -60,8 +75,9 @@ namespace HVR.IK.FullTiger
         {
             var vector4 = matrix.c3;
             pos = vector4.xyz;
-            rot = quaternion.LookRotationSafe(matrix.c2.xyz, matrix.c1.xyz);
+            rot = hvr_godot_helper_quaternion.LookRotationSafe(matrix.c2.xyz, matrix.c1.xyz);
         }
+#endif
 
         /**
          * Returns a normalized vector perpendicular to the axis.
@@ -124,10 +140,14 @@ namespace HVR.IK.FullTiger
 
         public static float3 Slerp(float3 a, float3 b, float t)
         {
-            var aa = quaternion.LookRotationSafe(a, math.up());
-            var bb = quaternion.LookRotationSafe(b, math.up());
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
+            var aa = hvr_godot_helper_quaternion.LookRotationSafe(a, math.up());
+            var bb = hvr_godot_helper_quaternion.LookRotationSafe(b, math.up());
             return math.mul(math.slerp(aa, bb, t), math.forward());
             // return Vector3.Slerp(a, b, t);
+#else //__iff HVR_IS_GODOT
+            return a.Slerp(b, t);
+#endif
         }
 
         public static float3 LerpDot(float3 whenMinusOne, float3 whenZero, float3 whenOne, float dot)

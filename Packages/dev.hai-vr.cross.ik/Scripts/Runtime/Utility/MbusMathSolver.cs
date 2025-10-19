@@ -12,8 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-using Unity.Collections;
+using System.Reflection;
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
+using UnityEngine;
+using Unity.Collections;
+#else //__iff HVR_IS_GODOT
+using float3 = Godot.Vector3;
+using float2 = Godot.Vector2;
+using float4x4 = Godot.Transform3D;
+using quaternion = Godot.Quaternion;
+using math = hvr_godot_math;
+#endif
 
 namespace HVR.IK.FullTiger
 {
@@ -54,7 +64,7 @@ namespace HVR.IK.FullTiger
             for (var k = mutatedPointsIncludesRoot.Length - 2; k >= 1; k--)
             {
                 mutatedPointsIncludesRoot[k] = ReachTowards(mutatedPointsIncludesRoot[k + 1], mutatedPointsIncludesRoot[k], distances[k] * scale);
-                var repulsion = float3.zero;
+                // var repulsion = hvr_godot_helper.float3_zero;
                 // if (supportsRepulsors)
                 // {
                 //     foreach (var repulsor in repulsorsNullable)
@@ -67,7 +77,7 @@ namespace HVR.IK.FullTiger
                 //         }
                 //     }
                 // }
-                mutatedPointsIncludesRoot[k] += repulsion;
+                // mutatedPointsIncludesRoot[k] += repulsion;
                 if (++operationCounter >= maxOperationCount) return false;
             }
 

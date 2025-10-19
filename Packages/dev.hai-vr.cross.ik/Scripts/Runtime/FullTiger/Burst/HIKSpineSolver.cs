@@ -13,8 +13,16 @@
 // limitations under the License.
 
 using System;
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
 using UnityEngine;
+#else //__iff HVR_IS_GODOT
+using float3 = Godot.Vector3;
+using float2 = Godot.Vector2;
+using float4x4 = Godot.Transform3D;
+using quaternion = Godot.Quaternion;
+using math = hvr_godot_math;
+#endif
 using static HVR.IK.FullTiger.HIKBodyBones;
 
 namespace HVR.IK.FullTiger
@@ -30,10 +38,12 @@ namespace HVR.IK.FullTiger
         private HIKSpineData<float> _spineDistances;
         private readonly float _hipsToSpineToCheckToNeckToHeadLength;
 
+#if UNITY_EDITOR && true
         private static readonly Color lawnGreen = new Color(0.4862745f, 0.9882354f, 0.0f, 1f);
         private static readonly Color lawnGreenTransparent = new Color(0.4862745f, 0.9882354f, 0.0f, 0.3f);
         private static readonly Color coral = new Color(1f, 0.4980392f, 0.3137255f, 1f);
         private static readonly Color mediumOrchid = new Color(0.7294118f, 0.3333333f, 0.8274511f, 1f);
+#endif
 
         public HIKSpineSolver(HIKAvatarDefinition definition, quaternion reorienter)
         {
@@ -107,10 +117,10 @@ namespace HVR.IK.FullTiger
             }
             ApplyLimiter(ref hipTargetPos, ref headTargetPos);
 
-            var hipsSpineVecUpwards = math.mul(objective.hipTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHipsRotation.x;
-            var hipsSpineVecFrontwards = math.mul(objective.hipTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHipsRotation.y;
-            var headSpineVecUpwards = math.mul(objective.headTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHeadRotation.x;
-            var headSpineVecFrontwards = math.mul(objective.headTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHeadRotation.y;
+            var hipsSpineVecUpwards = math.mul(objective.hipTargetWorldRotation, math.right()) * hvr_godot_helper.GetX(definition.refPoseSpineVecForHipsRotation);
+            var hipsSpineVecFrontwards = math.mul(objective.hipTargetWorldRotation, math.down()) * hvr_godot_helper.GetY(definition.refPoseSpineVecForHipsRotation);
+            var headSpineVecUpwards = math.mul(objective.headTargetWorldRotation, math.right()) * hvr_godot_helper.GetX(definition.refPoseSpineVecForHeadRotation);
+            var headSpineVecFrontwards = math.mul(objective.headTargetWorldRotation, math.down()) * hvr_godot_helper.GetY(definition.refPoseSpineVecForHeadRotation);
 
             // ## Try to fix spine buckle: Calculate spine tension to try fixing the buckle issue
             if (objective.improveSpineBuckling > 0f)
@@ -152,8 +162,10 @@ namespace HVR.IK.FullTiger
             
             var hipsSide = math.mul(objective.hipTargetWorldRotation, math.forward());
             
-            var chestPosBase = spinePos + hipsSpineVecUpwards * spineToHeadLen * definition.refPoseChestRelation.x + hipsSpineVecFrontwards * definition.refPoseChestRelation.y * scale;
-            var neckPosBase = headTargetPos - headSpineVecUpwards * spineToHeadLen * (1 - definition.refPoseNeckRelation.x) + headSpineVecFrontwards * definition.refPoseNeckRelation.y * scale;
+            var chestPosBase = spinePos + hipsSpineVecUpwards * spineToHeadLen * hvr_godot_helper.GetX(definition.refPoseChestRelation) 
+                                        + hipsSpineVecFrontwards *  hvr_godot_helper.GetY(definition.refPoseChestRelation) * scale;
+            var neckPosBase = headTargetPos - headSpineVecUpwards * spineToHeadLen * (1 -  hvr_godot_helper.GetX(definition.refPoseNeckRelation)) 
+                              + headSpineVecFrontwards *  hvr_godot_helper.GetY(definition.refPoseNeckRelation) * scale;
             var useNeck = objective.useChest * objective.alsoUseChestToMoveNeck;
             var primingSpine = spinePos;
             var primingChest = objective.useChest <= 0 ? chestPosBase : math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest);
@@ -204,16 +216,16 @@ namespace HVR.IK.FullTiger
 
             ikSnapshot.absoluteRot[(int)Hips] = objective.hipTargetWorldRotation;
             ikSnapshot.absoluteRot[(int)Spine] = math.mul(
-                quaternion.LookRotationSafe(_spineChain[1] - _spineChain[0], spineLerpVec),
+                hvr_godot_helper_quaternion.LookRotationSafe(_spineChain[1] - _spineChain[0], spineLerpVec),
                 _reorienter
             );
             var chestRotBase = math.normalize(MbusGeofunctions.Slerp(hipVec, headVec, 0.75f));
             ikSnapshot.absoluteRot[(int)Chest] = math.mul(
-                quaternion.LookRotationSafe(_spineChain[2] - _spineChain[1], math.lerp(chestRotBase, math.mul(objective.chestTargetWorldRotation, math.down()), objective.useChest)),
+                hvr_godot_helper_quaternion.LookRotationSafe(_spineChain[2] - _spineChain[1], math.lerp(chestRotBase, math.mul(objective.chestTargetWorldRotation, math.down()), objective.useChest)),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)Neck] = math.mul(
-                quaternion.LookRotationSafe(_spineChain[3] - _spineChain[2], math.mul(objective.headTargetWorldRotation, math.down())),
+                hvr_godot_helper_quaternion.LookRotationSafe(_spineChain[3] - _spineChain[2], math.mul(objective.headTargetWorldRotation, math.down())),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)Head] = objective.headTargetWorldRotation;

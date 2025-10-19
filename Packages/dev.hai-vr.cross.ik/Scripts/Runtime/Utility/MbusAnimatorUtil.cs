@@ -13,14 +13,23 @@
 // limitations under the License.
 
 using System.Reflection;
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
 using UnityEngine;
+#else //__iff HVR_IS_GODOT
+using float3 = Godot.Vector3;
+using float2 = Godot.Vector2;
+using float4x4 = Godot.Transform3D;
+using quaternion = Godot.Quaternion;
+using math = hvr_godot_math;
+#endif
 
 namespace HVR.IK.FullTiger
 {
     /// Please only call this from the main thread.
     internal static class MbusAnimatorUtil
     {
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
         private static readonly MethodInfo ReflectiveGetPostRotationFn = AvatarPrivateInstanceMethod("GetPostRotation");
         private static readonly MethodInfo ReflectiveGetPreRotationFn = AvatarPrivateInstanceMethod("GetPreRotation");
         private static readonly MethodInfo ReflectiveGetLimitSignFn = AvatarPrivateInstanceMethod("GetLimitSign");
@@ -47,5 +56,6 @@ namespace HVR.IK.FullTiger
 
         private static MethodInfo AvatarPrivateInstanceMethod(string methodName) =>
             typeof(Avatar).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+#endif
     }
 }

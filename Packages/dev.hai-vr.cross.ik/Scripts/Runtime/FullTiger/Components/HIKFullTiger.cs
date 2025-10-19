@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
 using UnityEngine;
 using static UnityEngine.HumanBodyBones;
@@ -394,3 +395,4 @@ namespace HVR.IK.FullTiger
         }
     }
 }
+#endif
