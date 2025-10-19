@@ -23,7 +23,8 @@ The mission of this repository is to document and demystify the decisions relate
 try and develop your own heuristics for the needs of your own application.
 
 In addition, the core part of this solver [does not require Unity Components nor Transforms](#solving-without-transforms), so with some effort, it may
-be ported to other game engines.
+be ported to other game engines;<br/>As a proof of concept, there is [a branch capable of running on Godot .NET](https://github.com/hai-vr/hvr-ik/pull/6),
+which is achieved by aliasing the Unity.Mathematics library with Godot Engine's own types.
 
 > [!WARNING]  
 > This solver is currently incomplete as it is a work in progress. The following parts are functional but cannot be considered ready for production:
