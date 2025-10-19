@@ -8,6 +8,8 @@ HIKFullTiger.cs.uid.meta
 HIKFullTigerAnimationRigging.cs.uid.meta
 HIKGdEffectors.cs.uid.meta
 HIKGdFullTiger.cs.uid.meta
+HIKGdHumanoidMapper.cs.uid
+HIKGdUtil.cs.uid
 HIKLegSolver.cs.uid.meta
 HIKSnapshot.cs.uid.meta
 HIKSolver.cs.uid.meta

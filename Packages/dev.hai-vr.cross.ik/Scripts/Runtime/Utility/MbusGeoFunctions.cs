@@ -140,10 +140,14 @@ namespace HVR.IK.FullTiger
 
         public static float3 Slerp(float3 a, float3 b, float t)
         {
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
             var aa = hvr_godot_helper_quaternion.LookRotationSafe(a, math.up());
             var bb = hvr_godot_helper_quaternion.LookRotationSafe(b, math.up());
             return math.mul(math.slerp(aa, bb, t), math.forward());
             // return Vector3.Slerp(a, b, t);
+#else //__iff HVR_IS_GODOT
+            return a.Slerp(b, t);
+#endif
         }
 
         public static float3 LerpDot(float3 whenMinusOne, float3 whenZero, float3 whenOne, float dot)

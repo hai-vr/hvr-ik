@@ -1,5 +1,6 @@
 #if !UNITY_2022_1_OR_NEWER //__GODOT
 
+using System;
 using Godot;
 using float3 = Godot.Vector3;
 using float4x4 = Godot.Transform3D;
@@ -79,14 +80,14 @@ public class hvr_godot_math
         return Mathf.Lerp(a, b, v);
     }
 
-    public static float unlerp(float val, float start, float end)
+    public static float unlerp(float start, float end, float v)
     {
-        return (val - start) / (end - start);
+        return (v - start) / (end - start);
     }
 
-    public static quaternion slerp(quaternion a, quaternion b, float val)
+    public static quaternion slerp(quaternion a, quaternion b, float v)
     {
-        return a.Slerp(b, val);
+        return a.Slerp(b, v);
     }
 
     public static float radians(float degrees)
@@ -104,9 +105,9 @@ public class hvr_godot_math
         return Mathf.Acos(f);
     }
 
-    public static float smoothstep(float start, float end, float val)
+    public static float smoothstep(float start, float end, float v)
     {
-        var t = clamp((val - start) / (end - start), 0f, 1f);
+        var t = clamp((v - start) / (end - start), 0f, 1f);
         return t * t * (3f - 2f * t);
     }
 
@@ -120,9 +121,9 @@ public class hvr_godot_math
         return Mathf.Sin(angleRad);
     }
 
-    public static quaternion inverse(quaternion val)
+    public static quaternion inverse(quaternion v)
     {
-        return val.Inverse();
+        return v.Inverse();
     }
 }
 

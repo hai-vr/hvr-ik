@@ -76,11 +76,11 @@ namespace HVR.IK.FullTiger
             (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, useStraddlingLeg, groundedStraddlingLegWorldPosition, distanceType, bendDirection, debugDrawSolver);
 
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
-                hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, math.normalize(math.cross(math.mul(hipReference, math.forward()), bendPointPos - rootPos))),
+                hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, math.normalize(hvr_godot_helper.left_hand_cross(math.mul(hipReference, math.forward()), bendPointPos - rootPos))),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - bendPointPos, math.normalize(math.cross(math.mul(originalObjectiveRot, math.back()), objectivePos - bendPointPos))),
+                hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - bendPointPos, math.normalize(hvr_godot_helper.left_hand_cross(math.mul(originalObjectiveRot, -math.forward()), objectivePos - bendPointPos))),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
@@ -96,7 +96,7 @@ namespace HVR.IK.FullTiger
                 var fakeMidPointPos = ikSnapshot.absolutePos[(int)midBone] + math.normalize(objectivePos - rootPos) * (lowerLength / 3.5f * acuteness * objective.__useFakeDoubleJointedKnees);
                 ikSnapshot.absolutePos[(int)midBone] = fakeMidPointPos;
                 ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                    hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - fakeMidPointPos, math.normalize(math.cross(math.mul(originalObjectiveRot, math.back()), objectivePos - fakeMidPointPos))),
+                    hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - fakeMidPointPos, math.normalize(hvr_godot_helper.left_hand_cross(math.mul(originalObjectiveRot, math.back()), objectivePos - fakeMidPointPos))),
                     _reorienter
                 );
 #if UNITY_EDITOR && true

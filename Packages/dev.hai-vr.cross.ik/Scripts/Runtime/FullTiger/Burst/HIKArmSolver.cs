@@ -121,8 +121,8 @@ namespace HVR.IK.FullTiger
                 var shoulderInfluenceUpward = upwardness * extensionInfluence;
                 if (shoulderInfluenceFrontward > 0 || shoulderInfluenceUpward > 0)
                 {
-                    var forwardRotation = hvr_godot_helper_quaternion.AxisAngle(math.right(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceFrontward * objective.shoulderForwardAngleMultiplier));
-                    var upwardRotation = hvr_godot_helper_quaternion.AxisAngle(math.up(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceUpward * objective.shoulderUpwardAngleMultiplier));
+                    var forwardRotation = hvr_godot_helper_quaternion.left_hand_AxisAngle(math.right(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceFrontward * objective.shoulderForwardAngleMultiplier));
+                    var upwardRotation = hvr_godot_helper_quaternion.left_hand_AxisAngle(math.up(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceUpward * objective.shoulderUpwardAngleMultiplier));
                     var rotationToApply = math.mul(forwardRotation, upwardRotation);
                     ikSnapshot.ApplyRelativeRotation(shoulderBone, definition, rotationToApply);
                 

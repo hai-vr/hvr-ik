@@ -85,7 +85,7 @@ namespace HVR.IK.FullTiger
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float GetX(float2 v)
-        {       
+        {
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
             return v.x;
 #else //__iff HVR_IS_GODOT
@@ -95,23 +95,34 @@ namespace HVR.IK.FullTiger
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float GetY(float2 v)
-        {       
+        {
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
             return v.y;
 #else //__iff HVR_IS_GODOT
             return v.Y;
 #endif
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static float3 left_hand_cross(float3 a, float3 b)
+        {
+            // FIXME: SUSPICIOUS_LEFT_HAND_RULE
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
+            return math.cross(a, b);
+#else //__iff HVR_IS_GODOT
+            return -math.cross(a, b);
+#endif
+        }
     }
 
     public static class hvr_godot_helper_quaternion
     {
-        public static quaternion AxisAngle(float3 axis, float angle)
+        public static quaternion left_hand_AxisAngle(float3 axis, float angle)
         {
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
             return quaternion.AxisAngle(axis, angle);
 #else //__iff HVR_IS_GODOT
-            return new quaternion(axis, angle);
+            return new quaternion(axis, -angle);
 #endif
         }
     
@@ -120,19 +131,20 @@ namespace HVR.IK.FullTiger
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
             return quaternion.LookRotationSafe(forward, upward);
 #else //__iff HVR_IS_GODOT
-            if (forward.LengthSquared() < 1e-6f) return quaternion.Identity;
-                
-            var forwardNormalized = forward.Normalized();
-            var up = upward.LengthSquared() < 1e-6f ? float3.Up : upward.Normalized();
-            
-            var dot = math.abs(math.dot(forwardNormalized, up));
-            if (dot > 0.99f) up = math.abs(forwardNormalized.X) < 0.9f ? float3.Right : float3.Forward;
-            
-            var right = math.cross(up, forwardNormalized).Normalized();
-            up = math.cross(forwardNormalized, right).Normalized();
-            
-            var basis = new Godot.Basis(right, up, forwardNormalized);
-            return new quaternion(basis);
+            return Transform3D.Identity.LookingAt(forward, upward).Basis.GetRotationQuaternion();
+            // if (forward.LengthSquared() < 1e-6f) return quaternion.Identity;
+            //     
+            // var forwardNormalized = forward.Normalized();
+            // var up = upward.LengthSquared() < 1e-6f ? float3.Up : upward.Normalized();
+            //
+            // var dot = math.abs(math.dot(forwardNormalized, up));
+            // if (dot > 0.99f) up = math.abs(forwardNormalized.X) < 0.9f ? float3.Right : float3.Forward;
+            //
+            // var right = math.cross(up, forwardNormalized).Normalized();
+            // up = math.cross(forwardNormalized, right).Normalized();
+            //
+            // var basis = new Godot.Basis(right, up, forwardNormalized);
+            // return new quaternion(basis);
 #endif
         }
     }
