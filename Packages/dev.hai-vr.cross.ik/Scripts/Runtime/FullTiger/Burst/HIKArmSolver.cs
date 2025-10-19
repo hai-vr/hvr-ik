@@ -37,6 +37,7 @@ namespace HVR.IK.FullTiger
         private readonly float _lowerLeftLength;
         private readonly float _shoulderRightLength;
         private readonly float _shoulderLeftLength;
+        private float3 _twistiness;
 
         public HIKArmSolver(HIKAvatarDefinition definition, quaternion reorienter)
         {
@@ -52,6 +53,13 @@ namespace HVR.IK.FullTiger
             
             _shoulderRightLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.RightShoulder], definition.refPoseHiplativePos[(int)HIKBodyBones.RightUpperArm]);
             _shoulderLeftLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.LeftShoulder], definition.refPoseHiplativePos[(int)HIKBodyBones.LeftUpperArm]);
+            
+            // FIXME: SUSPICIOUS_LEFT_HAND_RULE
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
+            _twistiness = math.left();
+#else //__iff HVR_IS_GODOT
+            _twistiness = math.right();
+#endif
         }
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver)
@@ -187,7 +195,7 @@ namespace HVR.IK.FullTiger
             float3 bendPointPos;
             (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, TODO_STRADDLING_IS_FALSE, TODO_NO_STRADDLING_POSITION, distanceType, bendDirection, debugDrawSolver);
 
-            var twistBase = math.mul(chestReference, math.left());
+            var twistBase = math.mul(chestReference, _twistiness);
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
                 hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, side == ArmSide.Right ? twistBase : -twistBase),
                 _reorienter

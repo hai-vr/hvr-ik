@@ -176,7 +176,6 @@ public class HIKGdHumanoidMapper
 
     public Quaternion GetPostRotation(HIKBodyBones bone)
     {
-        // GD.Print($"HIKGdHumanoidMapper.GetPostRotation is NOT IMPLEMENTED");
         return MomentarilySuggestEquivalentPostRotationVectorUsingCurrentPose(bone);
     }
 
