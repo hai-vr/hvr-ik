@@ -132,19 +132,6 @@ namespace HVR.IK.FullTiger
             return quaternion.LookRotationSafe(forward, upward);
 #else //__iff HVR_IS_GODOT
             return Transform3D.Identity.LookingAt(forward, upward).Basis.GetRotationQuaternion();
-            // if (forward.LengthSquared() < 1e-6f) return quaternion.Identity;
-            //     
-            // var forwardNormalized = forward.Normalized();
-            // var up = upward.LengthSquared() < 1e-6f ? float3.Up : upward.Normalized();
-            //
-            // var dot = math.abs(math.dot(forwardNormalized, up));
-            // if (dot > 0.99f) up = math.abs(forwardNormalized.X) < 0.9f ? float3.Right : float3.Forward;
-            //
-            // var right = math.cross(up, forwardNormalized).Normalized();
-            // up = math.cross(forwardNormalized, right).Normalized();
-            //
-            // var basis = new Godot.Basis(right, up, forwardNormalized);
-            // return new quaternion(basis);
 #endif
         }
     }
