@@ -117,34 +117,10 @@ namespace HVR.IK.FullTiger
             }
             ApplyLimiter(ref hipTargetPos, ref headTargetPos);
 
-            var hipsSpineVecUpwards = math.mul(objective.hipTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHipsRotation
-                
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                .x;
-#else //__iff HVR_IS_GODOT
-                .X;
-#endif
-            var hipsSpineVecFrontwards = math.mul(objective.hipTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHipsRotation
-                
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                .y;
-#else //__iff HVR_IS_GODOT
-                .Y;
-#endif
-            var headSpineVecUpwards = math.mul(objective.headTargetWorldRotation, math.right()) * definition.refPoseSpineVecForHeadRotation
-                
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                .x;
-#else //__iff HVR_IS_GODOT
-                .X;
-#endif
-            var headSpineVecFrontwards = math.mul(objective.headTargetWorldRotation, math.down()) * definition.refPoseSpineVecForHeadRotation
-                
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                .y;
-#else //__iff HVR_IS_GODOT
-                .Y;
-#endif
+            var hipsSpineVecUpwards = math.mul(objective.hipTargetWorldRotation, math.right()) * MbusGeofunctions.GetX(definition.refPoseSpineVecForHipsRotation);
+            var hipsSpineVecFrontwards = math.mul(objective.hipTargetWorldRotation, math.down()) * MbusGeofunctions.GetY(definition.refPoseSpineVecForHipsRotation);
+            var headSpineVecUpwards = math.mul(objective.headTargetWorldRotation, math.right()) * MbusGeofunctions.GetX(definition.refPoseSpineVecForHeadRotation);
+            var headSpineVecFrontwards = math.mul(objective.headTargetWorldRotation, math.down()) * MbusGeofunctions.GetY(definition.refPoseSpineVecForHeadRotation);
 
             // ## Try to fix spine buckle: Calculate spine tension to try fixing the buckle issue
             if (objective.improveSpineBuckling > 0f)
@@ -186,34 +162,10 @@ namespace HVR.IK.FullTiger
             
             var hipsSide = math.mul(objective.hipTargetWorldRotation, math.forward());
             
-            var chestPosBase = spinePos + hipsSpineVecUpwards * spineToHeadLen * definition.refPoseChestRelation
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                .x
-#else
-                .X
-#endif
-                
-                                        + hipsSpineVecFrontwards * definition.refPoseChestRelation
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                .y
-#else
-                .Y
-#endif
-                                        * scale;
-            var neckPosBase = headTargetPos - headSpineVecUpwards * spineToHeadLen * (1 - definition.refPoseNeckRelation
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                .x
-#else
-                .X
-#endif
-                )
-                              + headSpineVecFrontwards * definition.refPoseNeckRelation
-#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-                .y
-#else
-                .Y
-#endif
-                              * scale;
+            var chestPosBase = spinePos + hipsSpineVecUpwards * spineToHeadLen * MbusGeofunctions.GetX(definition.refPoseChestRelation) 
+                                        + hipsSpineVecFrontwards *  MbusGeofunctions.GetY(definition.refPoseChestRelation) * scale;
+            var neckPosBase = headTargetPos - headSpineVecUpwards * spineToHeadLen * (1 -  MbusGeofunctions.GetX(definition.refPoseNeckRelation)) 
+                              + headSpineVecFrontwards *  MbusGeofunctions.GetY(definition.refPoseNeckRelation) * scale;
             var useNeck = objective.useChest * objective.alsoUseChestToMoveNeck;
             var primingSpine = spinePos;
             var primingChest = objective.useChest <= 0 ? chestPosBase : math.lerp(chestPosBase, objective.chestTargetWorldPosition, objective.useChest);
