@@ -13,7 +13,15 @@
 // limitations under the License.
 
 using System;
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
+#else //__iff HVR_IS_GODOT
+using float3 = Godot.Vector3;
+using float2 = Godot.Vector2;
+using float4x4 = Godot.Transform3D;
+using quaternion = Godot.Quaternion;
+using math = hvr_godot_math;
+#endif
 
 namespace HVR.IK.FullTiger
 {
@@ -54,11 +62,11 @@ namespace HVR.IK.FullTiger
             {
                 var parentBone = (int)parent.bone;
                 var trs = math.mul(
-                    float4x4.TRS(ikSnapshot.absolutePos[parentBone], ikSnapshot.absoluteRot[parentBone], new float3(1, 1, 1)),
-                    float4x4.TRS(parent.relPosition, parent.relRotation, new float3(1, 1, 1))
+                    hvr_godot_helper.float4x4_TRUniform(ikSnapshot.absolutePos[parentBone], ikSnapshot.absoluteRot[parentBone]),
+                    hvr_godot_helper.float4x4_TRUniform(parent.relPosition, parent.relRotation)
                 );
-                pos = math.lerp(pos, trs.c3.xyz, parent.use);
-                rot = math.slerp(rot, new quaternion(trs), parent.use);
+                pos = math.lerp(pos, MbusGeofunctions.PositionOf(trs), parent.use);
+                rot = math.slerp(rot, MbusGeofunctions.RotationOf(trs), parent.use);
             }
         }
     }

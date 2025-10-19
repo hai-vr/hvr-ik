@@ -1,4 +1,5 @@
-﻿#if HVR_IK_HAS_ANIMATION_RIGGING
+﻿#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
+#if HVR_IK_HAS_ANIMATION_RIGGING
 // Copyright 2025 Haï~ (@vr_hai github.com/hai-vr)
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -231,4 +232,5 @@ namespace HVR.IK.FullTiger.AnimationRigging
         public override void Destroy(HIKFullTigerAnimationRiggingJob job) { }
     }
 }
+#endif
 #endif

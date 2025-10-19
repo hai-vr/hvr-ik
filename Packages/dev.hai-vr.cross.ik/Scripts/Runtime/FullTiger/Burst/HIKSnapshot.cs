@@ -12,7 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
+#else //__iff HVR_IS_GODOT
+using float3 = Godot.Vector3;
+using float2 = Godot.Vector2;
+using float4x4 = Godot.Transform3D;
+using quaternion = Godot.Quaternion;
+using math = hvr_godot_math;
+#endif
 
 namespace HVR.IK.FullTiger
 {
@@ -28,16 +36,16 @@ namespace HVR.IK.FullTiger
             var parentBone = ParentOf(ourBone, definition.dataHasBone[(int)HIKBodyBones.UpperChest]);
 
             // FIXME: We're creating a lot of matrices here for repeated calls.
-            var scaleMatrix = float4x4.Scale(scale);
+            var scaleMatrix = hvr_godot_helper.float4x4_Scale(scale);
             var resolvedMatrix = math.mul(TRSOf(parentBone, definition), math.mul(scaleMatrix, definition.relativeMatrices[ourIndex]));
             
-            absolutePos[ourIndex] = resolvedMatrix.c3.xyz;
+            absolutePos[ourIndex] = MbusGeofunctions.PositionOf(resolvedMatrix);
         }
 
         private float4x4 TRSOf(HIKBodyBones parentBone, HIKAvatarDefinition definition)
         {
             var parentIndex = (int)parentBone;
-            return float4x4.TRS(absolutePos[parentIndex], math.mul(absoluteRot[parentIndex], definition.dataInversePostRot[parentIndex]), new float3(1, 1, 1));
+            return hvr_godot_helper.float4x4_TRUniform(absolutePos[parentIndex], math.mul(absoluteRot[parentIndex], definition.dataInversePostRot[parentIndex]));
         }
 
         private HIKBodyBones ParentOf(HIKBodyBones bone, bool hasUpperChest)
@@ -71,7 +79,7 @@ namespace HVR.IK.FullTiger
 
         public void ApplyReferenceRotation(HIKBodyBones ourBone, HIKAvatarDefinition definition)
         {
-            ApplyRelativeRotation(ourBone, definition, quaternion.identity);
+            ApplyRelativeRotation(ourBone, definition, hvr_godot_helper.quaternion_identity);
         }
 
         public void ApplyRelativeRotation(HIKBodyBones ourBone, HIKAvatarDefinition definition, quaternion relativeRot)

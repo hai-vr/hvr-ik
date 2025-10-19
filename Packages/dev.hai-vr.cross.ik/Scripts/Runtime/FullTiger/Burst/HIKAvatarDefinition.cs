@@ -12,7 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
+#else //__iff HVR_IS_GODOT
+using float3 = Godot.Vector3;
+using float2 = Godot.Vector2;
+using float4x4 = Godot.Transform3D;
+using quaternion = Godot.Quaternion;
+using math = hvr_godot_math;
+#endif
 
 namespace HVR.IK.FullTiger
 {

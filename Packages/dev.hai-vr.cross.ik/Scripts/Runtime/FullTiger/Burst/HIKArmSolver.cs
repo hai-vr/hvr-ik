@@ -13,8 +13,16 @@
 // limitations under the License.
 
 using System;
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
 using UnityEngine;
+#else //__iff HVR_IS_GODOT
+using float3 = Godot.Vector3;
+using float2 = Godot.Vector2;
+using float4x4 = Godot.Transform3D;
+using quaternion = Godot.Quaternion;
+using math = hvr_godot_math;
+#endif
 
 namespace HVR.IK.FullTiger
 {
@@ -113,8 +121,8 @@ namespace HVR.IK.FullTiger
                 var shoulderInfluenceUpward = upwardness * extensionInfluence;
                 if (shoulderInfluenceFrontward > 0 || shoulderInfluenceUpward > 0)
                 {
-                    var forwardRotation = quaternion.AxisAngle(math.right(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceFrontward * objective.shoulderForwardAngleMultiplier));
-                    var upwardRotation = quaternion.AxisAngle(math.up(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceUpward * objective.shoulderUpwardAngleMultiplier));
+                    var forwardRotation = hvr_godot_helper_quaternion.AxisAngle(math.right(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceFrontward * objective.shoulderForwardAngleMultiplier));
+                    var upwardRotation = hvr_godot_helper_quaternion.AxisAngle(math.up(), math.radians((side == ArmSide.Right ? -1f : 1f) * 60f * shoulderInfluenceUpward * objective.shoulderUpwardAngleMultiplier));
                     var rotationToApply = math.mul(forwardRotation, upwardRotation);
                     ikSnapshot.ApplyRelativeRotation(shoulderBone, definition, rotationToApply);
                 
@@ -136,7 +144,7 @@ namespace HVR.IK.FullTiger
             var TODO_STRADDLING_IS_FALSE = false;
             var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, objective.armStruggleStart, objective.armStruggleEnd, debugDrawSolver);
 
-            var bendDirection = TODO_STRADDLING_IS_FALSE ? float3.zero : ArmBendHeuristics(); // Bend direction is not used when straddling.
+            var bendDirection = TODO_STRADDLING_IS_FALSE ? hvr_godot_helper.float3_zero : ArmBendHeuristics(); // Bend direction is not used when straddling.
 
             float3 ArmBendHeuristics()
             {
@@ -175,17 +183,17 @@ namespace HVR.IK.FullTiger
             }
             
             // Solve
-            var TODO_NO_STRADDLING_POSITION = float3.zero;
+            var TODO_NO_STRADDLING_POSITION = hvr_godot_helper.float3_zero;
             float3 bendPointPos;
             (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, TODO_STRADDLING_IS_FALSE, TODO_NO_STRADDLING_POSITION, distanceType, bendDirection, debugDrawSolver);
 
             var twistBase = math.mul(chestReference, math.left());
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
-                quaternion.LookRotationSafe(bendPointPos - rootPos, side == ArmSide.Right ? twistBase : -twistBase),
+                hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, side == ArmSide.Right ? twistBase : -twistBase),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                quaternion.LookRotationSafe(objectivePos - bendPointPos, MbusGeofunctions.ReprojectTwistToArm(objectivePos - bendPointPos, math.mul(originalObjectiveRot, math.right()), math.mul(originalObjectiveRot, side == ArmSide.Right ? math.forward() : math.back()))),
+                hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - bendPointPos, MbusGeofunctions.ReprojectTwistToArm(objectivePos - bendPointPos, math.mul(originalObjectiveRot, math.right()), math.mul(originalObjectiveRot, side == ArmSide.Right ? math.forward() : math.back()))),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
