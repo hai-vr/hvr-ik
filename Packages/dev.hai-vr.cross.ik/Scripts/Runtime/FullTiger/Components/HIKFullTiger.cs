@@ -18,6 +18,7 @@ using System.Linq;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Profiling;
 using static UnityEngine.HumanBodyBones;
 
 namespace HVR.IK.FullTiger
@@ -230,8 +231,13 @@ namespace HVR.IK.FullTiger
             if (!effectors.IsInitialized()) return;
             if (!updateEveryFrame) return;
 
+            Profiler.BeginSample("HIK Perform Regular Solve");
             PerformRegularSolve();
+            Profiler.EndSample();
+            
+            Profiler.BeginSample("HIK Apply Snapshot");
             ApplySnapshot();
+            Profiler.EndSample();
 
 #if UNITY_EDITOR && true
             if (debugDrawFinalChains)
@@ -275,8 +281,9 @@ namespace HVR.IK.FullTiger
             {
                 selfParentRightHand = default;
             }
-            
-            _ikSnapshot = _ikSolver.Solve(new HIKObjective
+
+            Profiler.BeginSample("HIK Build HIKObjective");
+            var objective = new HIKObjective
             {
                 hipTargetWorldPosition = effectors.hipTarget.position,
                 hipTargetWorldRotation = effectors.hipTarget.rotation,
@@ -334,7 +341,7 @@ namespace HVR.IK.FullTiger
                 
                 improveSpineBuckling = effectors.improveSpineBuckling,
                 
-                providedLossyScale = animator.GetBoneTransform(Hips).lossyScale,
+                providedLossyScale = _bones[(int)Hips].lossyScale,
                 
                 fabrikIterations = overrideDefaultFabrikIterationCount ? fabrikIterations : HIKSpineSolver.Iterations,
                 useLookupTables = useLookupTables,
@@ -343,7 +350,9 @@ namespace HVR.IK.FullTiger
                 
                 selfParentLeftHandNullable = selfParentLeftHand,
                 selfParentRightHandNullable = selfParentRightHand,
-            }, _ikSnapshot, debugDrawSolver);
+            };
+            Profiler.EndSample();
+            _ikSnapshot = _ikSolver.Solve(objective, _ikSnapshot, debugDrawSolver);
         }
 
         public void ApplySnapshot()

@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
+using UnityEngine.Profiling;
 #else //__iff HVR_IS_GODOT
 using float3 = Godot.Vector3;
 using float2 = Godot.Vector2;
@@ -49,15 +50,34 @@ namespace HVR.IK.FullTiger
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver = false)
         {
-            if (objective.solveSpine) ikSnapshot = _spineSolver.Solve(objective, ikSnapshot, debugDrawSolver);
+            if (objective.solveSpine)
+            {
+                helper_profiler_BeginSample("HIK Solve Spine");
+                ikSnapshot = _spineSolver.Solve(objective, ikSnapshot, debugDrawSolver);
+                helper_profiler_EndSample();
+            }
             
             // We need to solve the legs before the arms to support virtually parenting the hand effector to a bone of the leg.
+            helper_profiler_BeginSample("HIK Solve Both Legs");
             ikSnapshot = _legSolver.Solve(objective, ikSnapshot, debugDrawSolver);
+            helper_profiler_EndSample();
+            helper_profiler_BeginSample("HIK Rewrite Objectives");
             RewriteObjectiveToAccountForHandSelfParenting(ikSnapshot, objective.selfParentRightHandNullable, ref objective.rightHandTargetWorldPosition, ref objective.rightHandTargetWorldRotation);
             RewriteObjectiveToAccountForHandSelfParenting(ikSnapshot, objective.selfParentLeftHandNullable, ref objective.leftHandTargetWorldPosition, ref objective.leftHandTargetWorldRotation);
+            helper_profiler_EndSample();
+            helper_profiler_BeginSample("HIK Solve Both Arms");
             ikSnapshot = _armSolver.Solve(objective, ikSnapshot, debugDrawSolver);
+            helper_profiler_EndSample();
             return ikSnapshot;
         }
+
+#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
+        private void helper_profiler_BeginSample(string name) { Profiler.BeginSample(name); }
+        private void helper_profiler_EndSample() { Profiler.EndSample(); }
+#else //__iff HVR_IS_GODOT
+        private void helper_profiler_BeginSample(string _) { }
+        private void helper_profiler_EndSample() { }
+#endif
 
         private void RewriteObjectiveToAccountForHandSelfParenting(HIKSnapshot ikSnapshot, HIKSelfParenting objectiveSelfParentHandNullable, ref float3 pos, ref quaternion rot)
         {

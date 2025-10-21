@@ -173,8 +173,6 @@ namespace HVR.IK.FullTiger
                     ? math.normalize((_lookupTableNullable.GetBendPositionInWorldSpace__UsingLookupTable(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength)) - midPoint)
                     : HIKArmBendDefaultHeuristics.GetBendDirectionInWorldSpace(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength);
                 
-                Debug.Log(objective.useLookupTables);
-                
 #if UNITY_EDITOR && true
                 if (debugDrawSolver && isUsingLookupTable)
                 {
