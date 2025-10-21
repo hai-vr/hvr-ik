@@ -1,6 +1,7 @@
 AssemblyInfo.cs.uid.meta
 HIKArmSolver.cs.uid.meta
 HIKAvatarDefinition.cs.uid.meta
+HIKBendLookup.cs.uid.meta
 HIKBodyBones.cs.uid.meta
 HIKBurstAndHotReloadCompatible.cs.uid.meta
 HIKEffectors.cs.uid.meta
@@ -8,8 +9,8 @@ HIKFullTiger.cs.uid.meta
 HIKFullTigerAnimationRigging.cs.uid.meta
 HIKGdEffectors.cs.uid.meta
 HIKGdFullTiger.cs.uid.meta
-HIKGdHumanoidMapper.cs.uid
-HIKGdUtil.cs.uid
+HIKGdHumanoidMapper.cs.uid.meta
+HIKGdUtil.cs.uid.meta
 HIKLegSolver.cs.uid.meta
 HIKSnapshot.cs.uid.meta
 HIKSolver.cs.uid.meta
