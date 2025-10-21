@@ -13,7 +13,10 @@
 // limitations under the License.
 
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Mathematics;
+using UnityEditor;
 using UnityEngine;
 using static UnityEngine.HumanBodyBones;
 
@@ -82,6 +85,7 @@ namespace HVR.IK.FullTiger
 
         public bool overrideDefaultFabrikIterationCount = false;
         public int fabrikIterations = HIKSpineSolver.Iterations;
+        public bool useLookupTables = true;
         
         [Header("Debug")]
         public bool debugDrawFinalChains = true;
@@ -99,7 +103,21 @@ namespace HVR.IK.FullTiger
             definition = SolveDefinition(animator, definition, _bones);
             
             // Order matters: This must be instantiated AFTER definition is initialized
-            _ikSolver = new HIKSolver(definition);
+            _ikSolver = new HIKSolver(definition, new HIKLookupTables(ParseLookup()));
+        }
+
+        private List<float3> ParseLookup()
+        {
+            // FIXME: The asset may not be available in a built app because it's not referenced
+            var lookupTable = AssetDatabase.LoadAssetByGUID<TextAsset>(new GUID("dad70e4f1a7437a43b2cd4b25a877c67")); // This guid is arm_bend_lookup_table.txt
+            var vectors = lookupTable.text.Split(';')
+                .Select(s =>
+                {
+                    var v = s.Split(',');
+                    return new float3(float.Parse(v[0]), float.Parse(v[1]), float.Parse(v[2]));
+                })
+                .ToList();
+            return vectors;
         }
 
         internal static HIKAvatarDefinition SolveDefinition(Animator animator, HIKAvatarDefinition definition, Transform[] bones)
@@ -319,6 +337,7 @@ namespace HVR.IK.FullTiger
                 providedLossyScale = animator.GetBoneTransform(Hips).lossyScale,
                 
                 fabrikIterations = overrideDefaultFabrikIterationCount ? fabrikIterations : HIKSpineSolver.Iterations,
+                useLookupTables = useLookupTables,
                 
                 __useFakeDoubleJointedKnees = effectors.useFakeDoubleJointedKnees,
                 

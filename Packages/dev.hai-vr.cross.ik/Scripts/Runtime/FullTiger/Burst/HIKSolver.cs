@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
 #else //__iff HVR_IS_GODOT
@@ -34,13 +35,15 @@ namespace HVR.IK.FullTiger
         private readonly HIKArmSolver _armSolver;
         private readonly HIKLegSolver _legSolver;
         
-        public HIKSolver(HIKAvatarDefinition definition)
+        public HIKSolver(HIKAvatarDefinition definition, HIKLookupTables lookupTables = null)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
+            
+            if (lookupTables == null) lookupTables = new HIKLookupTables();
 
             var reorienter = MbusGeofunctions.FromToOrientation(math.forward(), math.right(), math.up(), -math.up());
             _spineSolver = new HIKSpineSolver(definition, reorienter);
-            _armSolver = new HIKArmSolver(definition, reorienter);
+            _armSolver = new HIKArmSolver(definition, reorienter, lookupTables);
             _legSolver = new HIKLegSolver(definition, reorienter);
         }
 
@@ -70,7 +73,32 @@ namespace HVR.IK.FullTiger
             }
         }
     }
-    
+
+    internal class HIKLookupTables
+    {
+        public bool isAvailable;
+        
+        private readonly HIKBendLookup _armBendLookup;
+
+        public HIKLookupTables()
+        {
+            isAvailable = false;
+        }
+
+        public HIKLookupTables(List<float3> armBend)
+        {
+            _armBendLookup = new HIKBendLookup();
+            _armBendLookup.ImportLookupTable(armBend);
+
+            isAvailable = true;
+        }
+
+        public HIKBendLookup ArmBend()
+        {
+            return _armBendLookup;
+        }
+    }
+
     internal class/*was_struct*/ HIKObjective
     {
         public const float StruggleStart = 0.99f;
@@ -138,6 +166,7 @@ namespace HVR.IK.FullTiger
         internal float improveSpineBuckling;
         
         internal int fabrikIterations;
+        internal bool useLookupTables;
 
         internal float __useFakeDoubleJointedKnees;
 

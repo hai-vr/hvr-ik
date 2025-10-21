@@ -38,13 +38,16 @@ namespace HVR.IK.FullTiger
         private readonly float _shoulderRightLength;
         private readonly float _shoulderLeftLength;
         private readonly float3 _twistiness;
+        
+        private readonly HIKBendLookup _lookupTableNullable;
 
-        public HIKArmSolver(HIKAvatarDefinition definition, quaternion reorienter)
+        public HIKArmSolver(HIKAvatarDefinition definition, quaternion reorienter, HIKLookupTables lookupTables)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
             this.definition = definition;
             _reorienter = reorienter;
+            _lookupTableNullable = lookupTables.isAvailable ? lookupTables.ArmBend() : null;
 
             _upperRightLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.RightUpperArm], definition.refPoseHiplativePos[(int)HIKBodyBones.RightLowerArm]);
             _lowerRightLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.RightLowerArm], definition.refPoseHiplativePos[(int)HIKBodyBones.RightHand]);
@@ -165,7 +168,22 @@ namespace HVR.IK.FullTiger
                     return directedBend;
                 }
 
-                var regular = HIKArmBendDefaultHeuristics.GetBendDirectionInWorldSpace(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength);
+                var isUsingLookupTable = _lookupTableNullable != null && objective.useLookupTables;
+                var regular = isUsingLookupTable
+                    ? math.normalize((_lookupTableNullable.GetBendPositionInWorldSpace__UsingLookupTable(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength)) - midPoint)
+                    : HIKArmBendDefaultHeuristics.GetBendDirectionInWorldSpace(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength);
+                
+                Debug.Log(objective.useLookupTables);
+                
+#if UNITY_EDITOR && true
+                if (debugDrawSolver && isUsingLookupTable)
+                {
+                    var debugPos = _lookupTableNullable.GetBendPositionInWorldSpace__UsingLookupTable(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength);
+                    MbusUtil.DrawArrow(rootPos, debugPos, Color.red, 0f, false, chestUpwards);
+                    
+                    MbusUtil.DrawArrow(debugPos, debugPos + regular * 0.2f, Color.green, 0f, false, chestUpwards);
+                }
+#endif
                 
                 return useBend <= 0 ? regular : math.lerp(regular, directedBend, useBend);
             }

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 using System;
+using System.Collections.Generic;
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
 using UnityEngine;
@@ -111,13 +112,35 @@ namespace HVR.IK.FullTiger
             return math.lerp(c0, c1, fz);
         }
 
+        public void ImportLookupTable(List<float3> lookupTable)
+        {
+            for (var index = 0; index < lookupTable.Count; index++)
+            {
+                var i = index / (Size * Size);
+                var j = (index / Size) % Size;
+                var k = index % Size;
+                _lookupTable[i][j][k] = lookupTable[index];
+            }
+        }
+
         public float3 GetBendDirectionInWorldSpace__UsingLookupTable(ArmSide side, quaternion chestReference, float3 rootPos, float3 objectivePos, quaternion originalObjectiveRot, float totalArmLength)
         {
             HIKArmBendLookupSpace.ConvertToLookupSpace(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength, out var reoriented, out var objectivePosInLookupSpace, out var objectiveRotInLookupSpace);
 
             var bendDirectionInLookupSpace = Lookup(objectivePosInLookupSpace);
             
-            HIKArmBendLookupSpace.ConvertToWorldSpace(side, rootPos, bendDirectionInLookupSpace, reoriented, out var bendDirectionInWorldSpace);
+            HIKArmBendLookupSpace.ConvertDirectionToWorldSpace(side, bendDirectionInLookupSpace, reoriented, out var bendDirectionInWorldSpace);
+
+            return bendDirectionInWorldSpace;
+        }
+
+        public float3 GetBendPositionInWorldSpace__UsingLookupTable(ArmSide side, quaternion chestReference, float3 rootPos, float3 objectivePos, quaternion originalObjectiveRot, float totalArmLength)
+        {
+            HIKArmBendLookupSpace.ConvertToLookupSpace(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength, out var reoriented, out var objectivePosInLookupSpace, out var objectiveRotInLookupSpace);
+
+            var bendDirectionInLookupSpace = Lookup(objectivePosInLookupSpace);
+            
+            HIKArmBendLookupSpace.ConvertPositionToWorldSpace(side, rootPos, totalArmLength, bendDirectionInLookupSpace, reoriented, out var bendDirectionInWorldSpace);
 
             return bendDirectionInWorldSpace;
         }
@@ -163,7 +186,7 @@ namespace HVR.IK.FullTiger
             }
         }
 
-        internal static void ConvertToWorldSpace(ArmSide side, float3 rootPos, float3 bendDirectionInLookupSpace, quaternion reoriented, out float3 bendDirectionInWorldSpace)
+        internal static void ConvertDirectionToWorldSpace(ArmSide side, float3 bendDirectionInLookupSpace, quaternion reoriented, out float3 bendDirectionInWorldSpace)
         {
             if (side == ArmSide.Left)
             {
@@ -171,6 +194,16 @@ namespace HVR.IK.FullTiger
             }
 
             bendDirectionInWorldSpace = math.mul(reoriented, bendDirectionInLookupSpace);
+        }
+
+        internal static void ConvertPositionToWorldSpace(ArmSide side, float3 rootPos, float totalArmLength, float3 bendDirectionInLookupSpace, quaternion reoriented, out float3 bendDirectionInWorldSpace)
+        {
+            if (side == ArmSide.Left)
+            {
+                bendDirectionInLookupSpace.x = -bendDirectionInLookupSpace.x;
+            }
+
+            bendDirectionInWorldSpace = rootPos + math.mul(reoriented, bendDirectionInLookupSpace * totalArmLength);
         }
     }
 
@@ -182,7 +215,7 @@ namespace HVR.IK.FullTiger
 
             var bendDirectionInLookupSpace = GetBendDirectionInLookupSpace(objectivePosInLookupSpace, objectiveRotInLookupSpace);
             
-            HIKArmBendLookupSpace.ConvertToWorldSpace(side, rootPos, bendDirectionInLookupSpace, reoriented, out var bendDirectionInWorldSpace);
+            HIKArmBendLookupSpace.ConvertDirectionToWorldSpace(side, bendDirectionInLookupSpace, reoriented, out var bendDirectionInWorldSpace);
             
             return bendDirectionInWorldSpace;
         }
