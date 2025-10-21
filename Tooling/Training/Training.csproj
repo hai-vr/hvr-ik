@@ -8,4 +8,14 @@
         <RootNamespace>Tooling</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Microsoft.ML" Version="5.0.0-preview.25503.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="Data\000_tracker_data_record.csv">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

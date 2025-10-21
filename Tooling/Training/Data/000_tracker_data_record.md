@@ -8,6 +8,8 @@ Recorded by Haï~ on 2025-10-20, using two Tundra Trackers and a Valve Index rig
 
 - Unity coordinate system.
 - Data is centered around the primed position of a tracker attached to the shoulder.
+- The 6dof tracker for B is attached to the LOWER ARM; this is unlike where you would normally wear it for regular games.
+  - This was chosen so that the captured B quaternion would be a better representation of the Lower Arm bone.
 - +X is roughly the direction of the right arm when T-posed.
 - Approximately scaled where 1 is beyond the maximum length of the arm.
 - Quaternions are similar to the post-rotation orientation of the right hand, where +X goes to the tip, +Y is the opposite of the palm,
