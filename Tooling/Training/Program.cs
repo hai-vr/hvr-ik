@@ -1,18 +1,35 @@
-﻿using Microsoft.ML;
+﻿// Copyright 2025 Haï~ (@vr_hai github.com/hai-vr)
+// 
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// 
+//    http://www.apache.org/licenses/LICENSE-2.0
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+using System.Globalization;
+using System.Numerics;
+using Microsoft.ML;
 using Microsoft.ML.Data;
+using Tooling;
 
 public class Program
 {
-    private readonly TrainMode _mode;
+    private readonly ExecutionMode _mode;
 
-    private Program(TrainMode mode)
+    private Program(ExecutionMode mode)
     {
         _mode = mode;
     }
 
     public static void Main()
     {
-        new Program(TrainMode.Evaluate).Execute();
+        new Program(ExecutionMode.GenerateLookupTable).Execute();
     }
 
     private void Execute()
@@ -24,14 +41,55 @@ public class Program
         // We should probably:
         // - expand the bend direction to be a tangent of the root--hand vector, and
         // - use the +Y direction of the bend quaternion instead when the points are collinear.
-        
+
+        if (_mode != ExecutionMode.GenerateLookupTable)
+        {
+            TrainingMode(mlContext);
+        }
+        else
+        {
+            var modelA = mlContext.Model.Load("tracker_model_A.zip", out _);
+            var modelB = mlContext.Model.Load("tracker_model_B.zip", out _);
+            var modelC = mlContext.Model.Load("tracker_model_C.zip", out _);
+    
+            var engineA = mlContext.Model.CreatePredictionEngine<TrackerData, PredictionA>(modelA);
+            var engineB = mlContext.Model.CreatePredictionEngine<TrackerData, PredictionB>(modelB);
+            var engineC = mlContext.Model.CreatePredictionEngine<TrackerData, PredictionC>(modelC);
+
+            var lookup = new HIKBendLookup();
+
+            Vector3 LookupFn((Vector3 handPos, Quaternion handRot) tuple)
+            {
+                var pos = tuple.handPos;
+                var data = new TrackerData { D = pos.X, E = pos.Y, F = pos.Z };
+
+                var xx = engineA.Predict(data).PredictedA;
+                var yy = engineB.Predict(data).PredictedB;
+                var zz = engineC.Predict(data).PredictedC;
+
+                return new Vector3(xx, yy, zz);
+            }
+
+            lookup.SetLookupFunction(LookupFn);
+            lookup.BakeLookupTable();
+            
+            var vectors = lookup.ExportLookupTable();
+            var vEnumerable = vectors
+                .Select(v => string.Format(CultureInfo.InvariantCulture, "{0:0.000000},{1:0.000000},{2:0.000000}", v.X, v.Y, v.Z));
+            
+            File.WriteAllText("arm_bend_lookup_table.txt", string.Join(';', vEnumerable));
+        }
+    }
+
+    private void TrainingMode(MLContext mlContext)
+    {
         var data = mlContext.Data.LoadFromTextFile<TrackerData>("Data/000_tracker_data_record.csv", hasHeader: false, separatorChar: ',');
         
         var dataCount = data.GetColumn<float>(nameof(TrackerData.A)).Count();
         Console.WriteLine($"Loaded {dataCount} rows of data");
 
         DataOperationsCatalog.TrainTestData trainTestData = default;
-        if (_mode == TrainMode.Evaluate)
+        if (_mode == ExecutionMode.SplitTrainAndEvaluateWithoutSaving)
         {
             var preview = data.Preview(5);
             Console.WriteLine("First 5 rows of data:");
@@ -56,7 +114,7 @@ public class Program
         var modelB = pipelineB.Fit(data);
         var modelC = pipelineC.Fit(data);
 
-        if (_mode == TrainMode.TrainAllAndExport)
+        if (_mode == ExecutionMode.TrainAllAndExport)
         {
             mlContext.Model.Save(modelA, data.Schema, "tracker_model_A.zip");
             mlContext.Model.Save(modelB, data.Schema, "tracker_model_B.zip");
@@ -74,9 +132,11 @@ public class Program
         }
     }
 
-    private enum TrainMode
+    private enum ExecutionMode
     {
-        TrainAllAndExport, Evaluate
+        TrainAllAndExport,
+        SplitTrainAndEvaluateWithoutSaving,
+        GenerateLookupTable
     }
 }
 
