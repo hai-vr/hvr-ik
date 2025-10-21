@@ -36,7 +36,7 @@ namespace HVR.IK.FullTiger
 
         private HIKSpineData<float3> _spineChain;
         private HIKSpineData<float> _spineDistances;
-        private readonly float _hipsToSpineToCheckToNeckToHeadLength;
+        private readonly float _hipsToSpineToChestToNeckToHeadLength;
 
 #if UNITY_EDITOR && true
         private static readonly Color lawnGreen = new Color(0.4862745f, 0.9882354f, 0.0f, 1f);
@@ -58,7 +58,7 @@ namespace HVR.IK.FullTiger
             _spineDistances[1] = math.distance(definition.refPoseHiplativePos[(int)Chest], definition.refPoseHiplativePos[(int)Neck]);
             _spineDistances[2] = math.distance(definition.refPoseHiplativePos[(int)Neck], definition.refPoseHiplativePos[(int)Head]);
 
-            _hipsToSpineToCheckToNeckToHeadLength = definition.refPoseHipsLength + definition.refPoseSpineLength + definition.refPoseChestLength + definition.refPoseNeckLength;
+            _hipsToSpineToChestToNeckToHeadLength = definition.refPoseHipsLength + definition.refPoseSpineLength + definition.refPoseChestLength + definition.refPoseNeckLength;
         }
 
         public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver)
@@ -93,14 +93,14 @@ namespace HVR.IK.FullTiger
                 }
             }
 
-            void ApplyLimiter(ref float3 in_hipTargetPos, ref float3 in_headTargetPos) {
-                var maximumLength = 
-                    !objective.doNotPreserveHipsToNeckCurvatureLimit
+            var maximumLength = 
+                !objective.doNotPreserveHipsToNeckCurvatureLimit
                     // If the distance between the head and the neck is larger than the length of the neck + refPoseHipToNeckLength
                     // (which is not equal to the sum of the bones of the hip-spine-chest-neck) chain, then either the head or the hips MUST be brought closer
                     // so that the solver doesn't overstretch the artists' spine.
                     ? (definition.refPoseHipToNeckLength + definition.refPoseNeckLength) * scale
-                    : _hipsToSpineToCheckToNeckToHeadLength * scale;
+                    : _hipsToSpineToChestToNeckToHeadLength * scale;
+            void ApplyLimiter(ref float3 in_hipTargetPos, ref float3 in_headTargetPos) {
                 if (math.distance(in_hipTargetPos, in_headTargetPos) > maximumLength)
                 {
                     if (objective.headAlignmentMattersMore)
@@ -126,11 +126,11 @@ namespace HVR.IK.FullTiger
             if (objective.improveSpineBuckling > 0f)
             {
                 var effectiveDistanceAfterCorrections = math.distance(hipTargetPos, headTargetPos);
-                var tension = 1 - effectiveDistanceAfterCorrections / (_hipsToSpineToCheckToNeckToHeadLength * scale);
+                var proportionAwayFromMaximalLength = 1 - effectiveDistanceAfterCorrections / maximumLength;
                 var tensionDirection = math.normalize(hipTargetPos - headTargetPos);
-                var tensionVectorIsSimilarToSpineVector = math.clamp(math.unlerp(0.96f, 1f, math.dot(math.normalize(-hipsSpineVecUpwards), tensionDirection)), 0f, 1f);
+                var tensionVectorIsSimilarToSpineVector = math.smoothstep(0f, 1f, math.clamp(math.unlerp(0.96f, 1f, math.dot(math.normalize(-hipsSpineVecUpwards), tensionDirection)), 0f, 1f));
 
-                var totalTension = tension * tensionVectorIsSimilarToSpineVector * objective.improveSpineBuckling * scale;
+                var totalTension = proportionAwayFromMaximalLength * tensionVectorIsSimilarToSpineVector * objective.improveSpineBuckling * scale;
                 if (totalTension > 0f)
                 {
                     var tensionVector = tensionDirection * totalTension;
