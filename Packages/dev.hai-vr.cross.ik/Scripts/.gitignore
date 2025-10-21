@@ -1,3 +1,5 @@
+## Ignored .uid.meta files
+
 AssemblyInfo.cs.uid.meta
 HIKArmSolver.cs.uid.meta
 HIKAvatarDefinition.cs.uid.meta
@@ -22,3 +24,8 @@ MbusMathSolver.cs.uid.meta
 MbusUtil.cs.uid.meta
 hvr_godot_helper.cs.uid.meta
 hvr_godot_math.cs.uid.meta
+
+## Ignored .meta files pertaining to Godot-only code
+
+HIKGdHumanoidMapper.cs.meta
+HIKGdUtil.cs.meta

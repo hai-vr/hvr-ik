@@ -1,0 +1,6 @@
+﻿bin/
+obj/
+.idea
+*.DotSettings.user
+
+# Additional ignored .uid.meta files may be found in Packages/dev.hai-vr.cross.ik/Scripts/.gitignore
