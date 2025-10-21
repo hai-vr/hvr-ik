@@ -29,6 +29,12 @@ namespace HVR.IK.Editor
             DrawDefaultInspector();
             
             var my = (HIKEffectors)target;
+
+            if (my.useFakeDoubleJointedKnees > 0f)
+            {
+                EditorGUILayout.HelpBox("\"Use Fake Double Jointed Knees\" is enabled. This will change the relative position of the lower leg, but also its rotation. " +
+                                        "Enabling this option can interfere with your IK networking solution and/or your animation capture solution.", MessageType.Warning);
+            }
             
             if (GUILayout.Button("Set chest to current position"))
             {
