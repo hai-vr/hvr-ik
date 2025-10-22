@@ -95,6 +95,7 @@ namespace HVR.IK.FullTiger
         public float3 selfParentRightHandRelativeRotationEuler;
         
         [Header("Environmental")]
+        [Range(0, 1)]
         public float useHipsFromEnvironmental = 0f;
         
         [Header("Experimental (CHANGES POSITION)")]
