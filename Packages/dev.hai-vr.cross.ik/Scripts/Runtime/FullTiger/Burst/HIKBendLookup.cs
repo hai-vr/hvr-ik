@@ -33,7 +33,7 @@ namespace HVR.IK.FullTiger
     {
         private const int Divisions = 10;
         private const int Size = (Divisions * 2) + 1;
-        private const int TotalSize = Size * Size * Size;
+        internal const int TotalSize = Size * Size * Size;
 
         // private float3[] _lookupTable;
         private NativeArray<float3> _lookupTable;
@@ -43,7 +43,12 @@ namespace HVR.IK.FullTiger
         public void init()
         {
             Debug.Log("Recreating the lookup table.");
-            _lookupTable = new NativeArray<float3>(TotalSize, Allocator.Persistent);
+            _lookupTable = new NativeArray<float3>(TotalSize, Allocator.TempJob);
+        }
+        
+        public void direct_init(NativeArray<float3> lookupTable)
+        {
+            _lookupTable = lookupTable;
         }
 
         public void Dispose()

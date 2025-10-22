@@ -39,7 +39,7 @@ namespace HVR.IK.FullTiger
         private readonly float _shoulderLeftLength;
         private readonly float3 _twistiness;
         
-        private readonly HIKBendLookup _lookupTableNullable; // FIXME: Can no longer be null as it was converted to a struct
+        private HIKBendLookup _lookupTableNullable; // FIXME: Can no longer be null as it was converted to a struct
         private bool _isLookupTableAvailable;
 
         public HIKArmSolver(HIKAvatarDefinition definition, quaternion reorienter, HIKLookupTables lookupTables)
@@ -67,8 +67,11 @@ namespace HVR.IK.FullTiger
 #endif
         }
 
-        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver, HIKDebugDrawFlags debugDrawFlags)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, HIKLookupTables lookupTables, bool debugDrawSolver, HIKDebugDrawFlags debugDrawFlags)
         {
+            _isLookupTableAvailable = lookupTables.isAvailable;
+            _lookupTableNullable = _isLookupTableAvailable ? lookupTables.ArmBend() : new HIKBendLookup(); // FIXME: Can no longer be null as it was converted to a struct
+            
             var scale = math.length(objective.providedLossyScale) / math.length(definition.capturedWithLossyScale);
             
             // TODO: Add the ability for the solver to derive a lower arm sub-effector based on (the lower arm effector????? and) a L/R plane effector,

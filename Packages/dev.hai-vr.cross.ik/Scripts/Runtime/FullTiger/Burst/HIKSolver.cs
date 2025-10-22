@@ -14,6 +14,7 @@
 
 using System;
 using System.Collections.Generic;
+using Unity.Collections;
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
 using UnityEngine.Profiling;
@@ -48,7 +49,7 @@ namespace HVR.IK.FullTiger
             _legSolver = new HIKLegSolver(definition, reorienter);
         }
 
-        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver = false, HIKDebugDrawFlags debugDrawFlags = HIKDebugDrawFlags.Default)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, HIKLookupTables lookupTables, bool debugDrawSolver = false, HIKDebugDrawFlags debugDrawFlags = HIKDebugDrawFlags.Default)
         {
             if (objective.solveSpine)
             {
@@ -66,7 +67,7 @@ namespace HVR.IK.FullTiger
             RewriteObjectiveToAccountForHandSelfParenting(ikSnapshot, objective.selfParentLeftHandNullable, ref objective.leftHandTargetWorldPosition, ref objective.leftHandTargetWorldRotation);
             helper_profiler_EndSample();
             helper_profiler_BeginSample("HIK Solve Both Arms");
-            ikSnapshot = _armSolver.Solve(objective, ikSnapshot, debugDrawSolver, debugDrawFlags);
+            ikSnapshot = _armSolver.Solve(objective, ikSnapshot, lookupTables, debugDrawSolver, debugDrawFlags);
             helper_profiler_EndSample();
             return ikSnapshot;
         }
@@ -105,6 +106,14 @@ namespace HVR.IK.FullTiger
             _armBendLookup = new HIKBendLookup();
             _armBendLookup.init();
             _armBendLookup.ImportLookupTable(armBend);
+
+            isAvailable = true;
+        }
+
+        public HIKLookupTables(NativeArray<float3> armBendLookupTable)
+        {
+            _armBendLookup = new HIKBendLookup();
+            _armBendLookup.direct_init(armBendLookupTable);
 
             isAvailable = true;
         }

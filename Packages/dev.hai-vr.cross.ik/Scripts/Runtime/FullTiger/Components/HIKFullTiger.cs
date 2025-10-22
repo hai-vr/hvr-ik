@@ -105,7 +105,8 @@ namespace HVR.IK.FullTiger
         
         private JobHandle _jobHandle;
         private NativeArray<HIKSnapshot> _result;
-        
+        private NativeArray<float3> _rrrLookup;
+
         private static HIKLookupTables _lookupTables;
 
         private void Awake()
@@ -123,10 +124,17 @@ namespace HVR.IK.FullTiger
 
         private void RegenLookupTablesAndSolver()
         {
-            if (!_lookupTables.IsValid())
+            if (!_lookupTables.IsValid() || _rrrLookup.Length != HIKBendLookup.TotalSize)
             {
+                var parse = ParseLookup();
+                _rrrLookup = new NativeArray<float3>(parse.Count, Allocator.Persistent);
+                for (var i = 0; i < _rrrLookup.Length; i++)
+                {
+                    _rrrLookup[i] = parse[i];
+                }
+                Debug.Log("We are regenerating the lookup tables.");
                 _lookupTables.Dispose();
-                _lookupTables = new HIKLookupTables(ParseLookup());
+                _lookupTables = new HIKLookupTables(parse);
                 _ikSolver = new HIKSolver(definition, _lookupTables);
             }
         }
@@ -276,15 +284,16 @@ namespace HVR.IK.FullTiger
             public NativeArray<HIKSnapshot> result;
             public HIKObjective objective;
             public HIKAvatarDefinition definition;
+            [ReadOnly] public NativeArray<float3> armBendLookupTable;
             public bool debugDrawSolver;
             public HIKDebugDrawFlags debugDrawFlags;
-            public HIKLookupTables lookupTables;
 
             public void Execute()
             {
+                var lookupTables = new HIKLookupTables(armBendLookupTable);
                 var solver = new HIKSolver(definition, lookupTables);
                 var snapshot = new HIKSnapshot();
-                snapshot = solver.Solve(objective, snapshot, debugDrawSolver, debugDrawFlags);
+                snapshot = solver.Solve(objective, snapshot, lookupTables, debugDrawSolver, debugDrawFlags);
                 result[0] = snapshot;
             }
         }
@@ -325,7 +334,7 @@ namespace HVR.IK.FullTiger
 #endif
             
             var objective = CreateObjective();
-            _ikSnapshot = _ikSolver.Solve(objective, _ikSnapshot, debugDrawSolver, debugDrawFlags);
+            _ikSnapshot = _ikSolver.Solve(objective, _ikSnapshot, _lookupTables, debugDrawSolver, debugDrawFlags);
         }
 
         private void PerformRegularSolveInJobSystem()
@@ -336,15 +345,17 @@ namespace HVR.IK.FullTiger
             
             var objective = CreateObjective();
             
+            Debug.Log($"{_rrrLookup.Length}");
+            
             _result = new NativeArray<HIKSnapshot>(1, Allocator.TempJob);
             var job = new HIKFullTigerJob
             {
                 result = _result,
                 objective = objective,
                 definition = definition,
-                lookupTables = _lookupTables,
                 debugDrawSolver = debugDrawSolver,
-                debugDrawFlags = debugDrawFlags
+                debugDrawFlags = debugDrawFlags,
+                armBendLookupTable = _rrrLookup
             };
             _jobHandle = job.Schedule();
         }
