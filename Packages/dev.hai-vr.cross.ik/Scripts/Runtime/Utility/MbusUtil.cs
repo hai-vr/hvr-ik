@@ -87,6 +87,26 @@ namespace HVR.IK.FullTiger
             Debug.DrawLine(end, baseLocation - cross * actualSize, color, duration, depthTest);
 #endif
         }
+
+        public static void DrawDirectionArrow(float3 start, float3 end, Color color, float duration, bool depthTest, float3 planeNormal, float size = 0.01f)
+        {
+#if UNITY_EDITOR && true
+            var arrowLength = math.distance(end, start);
+            var actualSize = arrowLength / 2 > size ? size : arrowLength / 2;
+            
+            var dir = math.normalize(end - start);
+            var cross = math.normalize(math.cross(dir, planeNormal));
+            Debug.DrawLine(start, end, color, duration, depthTest);
+
+            var shift = dir * actualSize * 0.5f;
+            var mid = (start + end) * 0.5f + shift;
+            var baseLocation = mid - dir * actualSize;
+            Debug.DrawLine(mid, baseLocation + cross * actualSize, color, duration, depthTest);
+            Debug.DrawLine(mid, baseLocation - cross * actualSize, color, duration, depthTest);
+            Debug.DrawLine(mid - shift * 2, baseLocation + cross * actualSize - shift * 2, color, duration, depthTest);
+            Debug.DrawLine(mid - shift * 2, baseLocation - cross * actualSize - shift * 2, color, duration, depthTest);
+#endif
+        }
 #endif
     }
 }

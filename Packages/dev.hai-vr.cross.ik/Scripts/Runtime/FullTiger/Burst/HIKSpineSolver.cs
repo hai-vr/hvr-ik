@@ -61,7 +61,7 @@ namespace HVR.IK.FullTiger
             _hipsToSpineToChestToNeckToHeadLength = definition.refPoseHipsLength + definition.refPoseSpineLength + definition.refPoseChestLength + definition.refPoseNeckLength;
         }
 
-        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver, HIKDebugDrawFlags debugDrawFlags)
         {
             var scale = math.length(objective.providedLossyScale) / math.length(definition.capturedWithLossyScale);
             
@@ -81,14 +81,14 @@ namespace HVR.IK.FullTiger
                 {
                     hipTargetPos = headTargetPos - math.normalize(headTargetPos - originalHipTargetPos) * definition.refPoseHipToHeadLength * ff;
 #if UNITY_EDITOR && true
-                    if (debugDrawSolver) Debug.DrawLine(headTargetPos, hipTargetPos, Color.red, 0f, false);
+                    if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0) Debug.DrawLine(headTargetPos, hipTargetPos, Color.red, 0f, false);
 #endif
                 }
                 else
                 {
                     var kk = math.normalize(headTargetPos - hipTargetPos) * definition.refPoseHipToHeadLength * ff;
 #if UNITY_EDITOR && true
-                    if (debugDrawSolver) Debug.DrawLine(hipTargetPos, hipTargetPos + kk, Color.yellow, 0f, false);
+                    if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0) Debug.DrawLine(hipTargetPos, hipTargetPos + kk, Color.yellow, 0f, false);
 #endif
                 }
             }
@@ -139,7 +139,7 @@ namespace HVR.IK.FullTiger
                     ApplyLimiter(ref hipTargetPos, ref headTargetPos);
                 
 #if UNITY_EDITOR && true
-                    if (debugDrawSolver)
+                    if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0)
                     {
                         MbusUtil.DrawArrow(headTargetPos, headTargetPos + tensionVector, Color.cyan, 0f, false, math.mul(objective.headTargetWorldRotation, math.forward()));
                         MbusUtil.DrawArrow(prevHipTargetPos, prevHipTargetPos + tensionVector, Color.cyan, 0f, false, math.mul(objective.headTargetWorldRotation, math.forward()));
@@ -186,7 +186,7 @@ namespace HVR.IK.FullTiger
             {
                 MbusMathSolver.Iterate(ref _spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue, scale);
 #if UNITY_EDITOR && true
-                if (debugDrawSolver)
+                if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0)
                 {
                     Debug.DrawLine(_spineChain[0], _spineChain[1], lawnGreenTransparent, 0f, false);
                     Debug.DrawLine(_spineChain[1], _spineChain[2], lawnGreenTransparent, 0f, false);
@@ -196,7 +196,7 @@ namespace HVR.IK.FullTiger
             }
 
 #if UNITY_EDITOR && true
-            if (debugDrawSolver)
+            if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0)
             {
                 var arrowCross = math.normalize(hipsSide);
                 MbusUtil.DrawArrow(_spineChain[0], primingSpine, lawnGreen, 0f, false, arrowCross);
@@ -260,7 +260,7 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(RightUpperLeg, definition, scale);
             
 #if UNITY_EDITOR && true
-            if (debugDrawSolver)
+            if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0)
             {
                 Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], hipTargetPos, Color.magenta, 0f, false);
             

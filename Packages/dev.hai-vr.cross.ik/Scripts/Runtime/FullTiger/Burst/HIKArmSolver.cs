@@ -65,7 +65,7 @@ namespace HVR.IK.FullTiger
 #endif
         }
 
-        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver)
+        public HIKSnapshot Solve(HIKObjective objective, HIKSnapshot ikSnapshot, bool debugDrawSolver, HIKDebugDrawFlags debugDrawFlags)
         {
             var scale = math.length(objective.providedLossyScale) / math.length(definition.capturedWithLossyScale);
             
@@ -79,19 +79,19 @@ namespace HVR.IK.FullTiger
 
             if (!solveLeftArmFirst)
             {
-                if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale, debugDrawSolver);
-                if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale, debugDrawSolver);
+                if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale, debugDrawSolver, debugDrawFlags);
+                if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale, debugDrawSolver, debugDrawFlags);
             }
             else
             {
-                if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale, debugDrawSolver);
-                if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale, debugDrawSolver);
+                if (objective.solveLeftArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Left, objective.leftHandTargetWorldPosition, objective.leftHandTargetWorldRotation, scale, debugDrawSolver, debugDrawFlags);
+                if (objective.solveRightArm) ikSnapshot = SolveArm(ikSnapshot, objective, ArmSide.Right, objective.rightHandTargetWorldPosition, objective.rightHandTargetWorldRotation, scale, debugDrawSolver, debugDrawFlags);
             }
             
             return ikSnapshot;
         }
 
-        private HIKSnapshot SolveArm(HIKSnapshot ikSnapshot, HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, float scale, bool debugDrawSolver)
+        private HIKSnapshot SolveArm(HIKSnapshot ikSnapshot, HIKObjective objective, ArmSide side, float3 originalObjectivePos, quaternion originalObjectiveRot, float scale, bool debugDrawSolver, HIKDebugDrawFlags debugDrawFlags)
         {
             var rootBone = side == ArmSide.Right ? HIKBodyBones.RightUpperArm : HIKBodyBones.LeftUpperArm;
             var midBone = side == ArmSide.Right ? HIKBodyBones.RightLowerArm : HIKBodyBones.LeftLowerArm;
@@ -143,7 +143,7 @@ namespace HVR.IK.FullTiger
                     rootPos = ikSnapshot.absolutePos[(int)rootBone];
 
 #if UNITY_EDITOR && true
-                    if (debugDrawSolver)
+                    if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowArm) != 0)
                     {
                         MbusUtil.DrawArrow(prevRootPos, rootPos, Color.magenta, 0f, false, chestUpwards);
                         Debug.DrawLine(ikSnapshot.absolutePos[(int)shoulderBone], rootPos, Color.yellow, 0f, false);
@@ -154,7 +154,7 @@ namespace HVR.IK.FullTiger
 
             // Corrections
             var TODO_STRADDLING_IS_FALSE = false;
-            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, objective.armStruggleStart, objective.armStruggleEnd, debugDrawSolver);
+            var objectivePos = HIKTwoBoneAlgorithms.ApplyCorrections(originalObjectivePos, TODO_STRADDLING_IS_FALSE, rootPos, upperLength, lowerLength, out var distanceType, objective.armStruggleStart, objective.armStruggleEnd, debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowArm) != 0);
 
             var bendDirection = TODO_STRADDLING_IS_FALSE ? hvr_godot_helper.float3_zero : ArmBendHeuristics(); // Bend direction is not used when straddling.
 
@@ -162,24 +162,37 @@ namespace HVR.IK.FullTiger
             {
                 var useBend = side == ArmSide.Right ? objective.useRightLowerArm : objective.useLeftLowerArm;
                 var midPoint = (objectivePos + rootPos) * 0.5f;
-                var directedBend = math.normalize((side == ArmSide.Right ? objective.rightLowerArmWorldPosition : objective.leftLowerArmWorldPosition) - midPoint);
+                var directedBend = math.normalize(MbusGeofunctions.Straighten((side == ArmSide.Right ? objective.rightLowerArmWorldPosition : objective.leftLowerArmWorldPosition) - midPoint, objectivePos - rootPos));
                 if (useBend >= 1f)
                 {
                     return directedBend;
                 }
-
+                
                 var isUsingLookupTable = _lookupTableNullable != null && objective.useLookupTables;
                 var regular = isUsingLookupTable
-                    ? math.normalize((_lookupTableNullable.GetBendPositionInWorldSpace__UsingLookupTable(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength)) - midPoint)
+                    ? math.normalize(MbusGeofunctions.Straighten(_lookupTableNullable.GetBendPositionInWorldSpace__UsingLookupTable(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength) - midPoint, objectivePos - rootPos))
                     : HIKArmBendDefaultHeuristics.GetBendDirectionInWorldSpace(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength);
                 
 #if UNITY_EDITOR && true
-                if (debugDrawSolver && isUsingLookupTable)
+                var isSpecialDebugComparisonMode = false;
+                if ((debugDrawSolver && isUsingLookupTable || isSpecialDebugComparisonMode) && (debugDrawFlags & HIKDebugDrawFlags.ShowArm) != 0)
                 {
                     var debugPos = _lookupTableNullable.GetBendPositionInWorldSpace__UsingLookupTable(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength);
                     MbusUtil.DrawArrow(rootPos, debugPos, Color.red, 0f, false, chestUpwards);
+
+                    var straightened = math.normalize(MbusGeofunctions.Straighten(debugPos - midPoint, objectivePos - rootPos));
                     
-                    MbusUtil.DrawArrow(debugPos, debugPos + regular * 0.2f, Color.green, 0f, false, chestUpwards);
+                    var arrowPos = isSpecialDebugComparisonMode ? rootPos : debugPos;
+                    MbusUtil.DrawDirectionArrow(arrowPos, arrowPos + straightened * 0.2f, Color.green, 0f, false, chestUpwards);
+                    MbusUtil.DrawDirectionArrow(midPoint, midPoint + math.normalize(debugPos - midPoint) * 0.2f, Color.green, 0f, false, chestUpwards);
+
+                    if (isSpecialDebugComparisonMode)
+                    {
+                        var debugDirection = HIKArmBendDefaultHeuristics.GetBendDirectionInWorldSpace(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength);
+                        MbusUtil.DrawDirectionArrow(midPoint, midPoint + debugDirection * 0.2f, Color.white, 0f, false, chestUpwards);
+                        var debugDirection2 = math.normalize(MbusGeofunctions.Straighten(debugDirection, objectivePos - rootPos));
+                        MbusUtil.DrawDirectionArrow(rootPos, rootPos + debugDirection2 * 0.2f, Color.white, 0f, false, chestUpwards);
+                    }
                 }
 #endif
                 
@@ -189,7 +202,7 @@ namespace HVR.IK.FullTiger
             // Solve
             var TODO_NO_STRADDLING_POSITION = hvr_godot_helper.float3_zero;
             float3 bendPointPos;
-            (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, TODO_STRADDLING_IS_FALSE, TODO_NO_STRADDLING_POSITION, distanceType, bendDirection, debugDrawSolver);
+            (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, TODO_STRADDLING_IS_FALSE, TODO_NO_STRADDLING_POSITION, distanceType, bendDirection, debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowArm) != 0);
 
             var twistBase = math.mul(chestReference, _twistiness);
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(

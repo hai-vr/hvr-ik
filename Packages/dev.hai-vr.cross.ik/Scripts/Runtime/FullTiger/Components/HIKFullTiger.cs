@@ -91,6 +91,7 @@ namespace HVR.IK.FullTiger
         [Header("Debug")]
         public bool debugDrawFinalChains = true;
         public bool debugDrawSolver = true;
+        public HIKDebugDrawFlags debugDrawFlags = (HIKDebugDrawFlags)int.MaxValue;
         
         private bool _solveSpine = true;
         private bool _solveLeftLeg = true;
@@ -352,7 +353,7 @@ namespace HVR.IK.FullTiger
                 selfParentRightHandNullable = selfParentRightHand,
             };
             Profiler.EndSample();
-            _ikSnapshot = _ikSolver.Solve(objective, _ikSnapshot, debugDrawSolver);
+            _ikSnapshot = _ikSolver.Solve(objective, _ikSnapshot, debugDrawSolver, debugDrawFlags);
         }
 
         public void ApplySnapshot()
