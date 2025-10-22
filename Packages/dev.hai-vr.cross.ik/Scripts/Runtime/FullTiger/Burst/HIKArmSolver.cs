@@ -39,7 +39,8 @@ namespace HVR.IK.FullTiger
         private readonly float _shoulderLeftLength;
         private readonly float3 _twistiness;
         
-        private readonly HIKBendLookup _lookupTableNullable;
+        private readonly HIKBendLookup _lookupTableNullable; // FIXME: Can no longer be null as it was converted to a struct
+        private bool _isLookupTableAvailable;
 
         public HIKArmSolver(HIKAvatarDefinition definition, quaternion reorienter, HIKLookupTables lookupTables)
         {
@@ -47,7 +48,8 @@ namespace HVR.IK.FullTiger
             
             this.definition = definition;
             _reorienter = reorienter;
-            _lookupTableNullable = lookupTables.isAvailable ? lookupTables.ArmBend() : null;
+            _isLookupTableAvailable = lookupTables.isAvailable;
+            _lookupTableNullable = _isLookupTableAvailable ? lookupTables.ArmBend() : new HIKBendLookup(); // FIXME: Can no longer be null as it was converted to a struct
 
             _upperRightLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.RightUpperArm], definition.refPoseHiplativePos[(int)HIKBodyBones.RightLowerArm]);
             _lowerRightLength = math.distance(definition.refPoseHiplativePos[(int)HIKBodyBones.RightLowerArm], definition.refPoseHiplativePos[(int)HIKBodyBones.RightHand]);
@@ -168,7 +170,7 @@ namespace HVR.IK.FullTiger
                     return directedBend;
                 }
                 
-                var isUsingLookupTable = _lookupTableNullable != null && objective.useLookupTables;
+                var isUsingLookupTable = /*_lookupTableNullable != null && */_isLookupTableAvailable && objective.useLookupTables;
                 var regular = isUsingLookupTable
                     ? math.normalize(MbusGeofunctions.Straighten(_lookupTableNullable.GetBendPositionInWorldSpace__UsingLookupTable(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength) - midPoint, objectivePos - rootPos))
                     : HIKArmBendDefaultHeuristics.GetBendDirectionInWorldSpace(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength);

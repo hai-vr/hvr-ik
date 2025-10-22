@@ -105,13 +105,15 @@ namespace HVR.IK.FullTiger
         
         private JobHandle _jobHandle;
         private NativeArray<HIKSnapshot> _result;
+        private HIKLookupTables _lookupTables;
 
         private void Awake()
         {
             definition = SolveDefinition(animator, definition, _bones);
             
             // Order matters: This must be instantiated AFTER definition is initialized
-            _ikSolver = new HIKSolver(definition, new HIKLookupTables(ParseLookup()));
+            _lookupTables = new HIKLookupTables(ParseLookup());
+            _ikSolver = new HIKSolver(definition, _lookupTables);
         }
 
         private List<float3> ParseLookup()
@@ -254,12 +256,15 @@ namespace HVR.IK.FullTiger
             public NativeArray<HIKSnapshot> result;
             public HIKObjective objective;
             public HIKAvatarDefinition definition;
+            public bool debugDrawSolver;
+            public HIKDebugDrawFlags debugDrawFlags;
+            public HIKLookupTables lookupTables;
 
             public void Execute()
             {
-                var solver = new HIKSolver(definition);
+                var solver = new HIKSolver(definition, lookupTables);
                 var snapshot = new HIKSnapshot();
-                snapshot = solver.Solve(objective, snapshot);
+                snapshot = solver.Solve(objective, snapshot, debugDrawSolver, debugDrawFlags);
                 result[0] = snapshot;
             }
         }
@@ -303,13 +308,42 @@ namespace HVR.IK.FullTiger
             {
                 result = _result,
                 objective = objective,
-                definition = definition
+                definition = definition,
+                lookupTables = _lookupTables,
+                debugDrawSolver = debugDrawSolver,
+                debugDrawFlags = debugDrawFlags
             };
             _jobHandle = job.Schedule();
         }
 
         private HIKObjective CreateObjective()
         {
+            Profiler.BeginSample("HIK Collect Transforms HIKObjective");
+            float3 hipTargetWorldPosition = effectors.hipTarget.position;
+            quaternion hipTargetWorldRotation = effectors.hipTarget.rotation;
+            float3 headTargetWorldPosition = effectors.headTarget.position;
+            quaternion headTargetWorldRotation = effectors.headTarget.rotation;
+            float3 leftHandTargetWorldPosition = effectors.leftHandTarget.position;
+            quaternion leftHandTargetWorldRotation = effectors.leftHandTarget.rotation;
+            float3 rightHandTargetWorldPosition = effectors.rightHandTarget.position;
+            quaternion rightHandTargetWorldRotation = effectors.rightHandTarget.rotation;
+            float3 leftFootTargetWorldPosition = effectors.leftFootTarget.position;
+            quaternion leftFootTargetWorldRotation = effectors.leftFootTarget.rotation;
+            float3 rightFootTargetWorldPosition = effectors.rightFootTarget.position;
+            quaternion rightFootTargetWorldRotation = effectors.rightFootTarget.rotation;
+            float3 chestTargetWorldPosition = effectors.useChest > 0f ? effectors.chestTarget.position : float3.zero;
+            quaternion chestTargetWorldRotation = effectors.useChest > 0f ? effectors.chestTarget.rotation : quaternion.identity;
+            float3 leftLowerArmWorldPosition = effectors.useLeftLowerArm > 0f ? effectors.leftLowerArmTarget.position : float3.zero;
+            quaternion leftLowerArmWorldRotation = effectors.useLeftLowerArm > 0f ? effectors.leftLowerArmTarget.rotation : quaternion.identity;
+            float3 rightLowerArmWorldPosition = effectors.useRightLowerArm > 0f ? effectors.rightLowerArmTarget.position : float3.zero;
+            quaternion rightLowerArmWorldRotation = effectors.useRightLowerArm > 0f ? effectors.rightLowerArmTarget.rotation : quaternion.identity;
+            float3 groundedStraddlingLeftLegWorldPosition = effectors.useStraddlingLeftLeg ? effectors.groundedStraddlingLeftLeg.position : float3.zero;
+            quaternion groundedStraddlingLeftLegWorldRotation = effectors.useStraddlingLeftLeg ? effectors.groundedStraddlingLeftLeg.rotation : quaternion.identity;
+            float3 groundedStraddlingRightLegWorldPosition = effectors.useStraddlingRightLeg ? effectors.groundedStraddlingRightLeg.position : float3.zero;
+            quaternion groundedStraddlingRightLegWorldRotation = effectors.useStraddlingRightLeg ? effectors.groundedStraddlingRightLeg.rotation : quaternion.identity;
+            var providedLossyScale = _bones[(int)Hips].lossyScale;
+            Profiler.EndSample();
+            
             Profiler.BeginSample("HIK Build HIKObjective");
             HIKSelfParenting selfParentLeftHand;
             if (effectors.useSelfParentLeftHand > 0f)
@@ -344,33 +378,33 @@ namespace HVR.IK.FullTiger
 
             var objective = new HIKObjective
             {
-                hipTargetWorldPosition = effectors.hipTarget.position,
-                hipTargetWorldRotation = effectors.hipTarget.rotation,
+                hipTargetWorldPosition = hipTargetWorldPosition,
+                hipTargetWorldRotation = hipTargetWorldRotation,
                 
-                headTargetWorldPosition = effectors.headTarget.position,
-                headTargetWorldRotation = effectors.headTarget.rotation,
+                headTargetWorldPosition = headTargetWorldPosition,
+                headTargetWorldRotation = headTargetWorldRotation,
                 
-                leftHandTargetWorldPosition = effectors.leftHandTarget.position,
-                leftHandTargetWorldRotation = effectors.leftHandTarget.rotation,
-                rightHandTargetWorldPosition = effectors.rightHandTarget.position,
-                rightHandTargetWorldRotation = effectors.rightHandTarget.rotation,
+                leftHandTargetWorldPosition = leftHandTargetWorldPosition,
+                leftHandTargetWorldRotation = leftHandTargetWorldRotation,
+                rightHandTargetWorldPosition = rightHandTargetWorldPosition,
+                rightHandTargetWorldRotation = rightHandTargetWorldRotation,
                 
-                leftFootTargetWorldPosition = effectors.leftFootTarget.position,
-                leftFootTargetWorldRotation = effectors.leftFootTarget.rotation,
-                rightFootTargetWorldPosition = effectors.rightFootTarget.position,
-                rightFootTargetWorldRotation = effectors.rightFootTarget.rotation,
+                leftFootTargetWorldPosition = leftFootTargetWorldPosition,
+                leftFootTargetWorldRotation = leftFootTargetWorldRotation,
+                rightFootTargetWorldPosition = rightFootTargetWorldPosition,
+                rightFootTargetWorldRotation = rightFootTargetWorldRotation,
                 
                 useChest = effectors.useChest,
-                chestTargetWorldPosition = effectors.chestTarget.position,
-                chestTargetWorldRotation = effectors.chestTarget.rotation,
+                chestTargetWorldPosition = chestTargetWorldPosition,
+                chestTargetWorldRotation = chestTargetWorldRotation,
                 alsoUseChestToMoveNeck = effectors.alsoUseChestToMoveNeck,
                 
                 useLeftLowerArm = effectors.useLeftLowerArm,
-                leftLowerArmWorldPosition = effectors.leftLowerArmTarget.position,
-                leftLowerArmWorldRotation = effectors.leftLowerArmTarget.rotation,
+                leftLowerArmWorldPosition = leftLowerArmWorldPosition,
+                leftLowerArmWorldRotation = leftLowerArmWorldRotation,
                 useRightLowerArm = effectors.useRightLowerArm,
-                rightLowerArmWorldPosition = effectors.rightLowerArmTarget.position,
-                rightLowerArmWorldRotation = effectors.rightLowerArmTarget.rotation,
+                rightLowerArmWorldPosition = rightLowerArmWorldPosition,
+                rightLowerArmWorldRotation = rightLowerArmWorldRotation,
                 
                 headAlignmentMattersMore = !effectors.hipPositionMattersMore,
                 allowContortionist = effectors.contortionist,
@@ -378,10 +412,10 @@ namespace HVR.IK.FullTiger
                 
                 useStraddlingLeftLeg = effectors.useStraddlingLeftLeg,
                 useStraddlingRightLeg = effectors.useStraddlingRightLeg,
-                groundedStraddlingLeftLegWorldPosition = effectors.groundedStraddlingLeftLeg.position,
-                groundedStraddlingLeftLegWorldRotation = effectors.groundedStraddlingLeftLeg.rotation,
-                groundedStraddlingRightLegWorldPosition = effectors.groundedStraddlingRightLeg.position,
-                groundedStraddlingRightLegWorldRotation = effectors.groundedStraddlingRightLeg.rotation,
+                groundedStraddlingLeftLegWorldPosition = groundedStraddlingLeftLegWorldPosition,
+                groundedStraddlingLeftLegWorldRotation = groundedStraddlingLeftLegWorldRotation,
+                groundedStraddlingRightLegWorldPosition = groundedStraddlingRightLegWorldPosition,
+                groundedStraddlingRightLegWorldRotation = groundedStraddlingRightLegWorldRotation,
                 
                 solveSpine = _solveSpine,
                 solveLeftLeg = _solveLeftLeg,
@@ -400,7 +434,7 @@ namespace HVR.IK.FullTiger
                 
                 improveSpineBuckling = effectors.improveSpineBuckling,
                 
-                providedLossyScale = _bones[(int)Hips].lossyScale,
+                providedLossyScale = providedLossyScale,
                 
                 fabrikIterations = overrideDefaultFabrikIterationCount ? fabrikIterations : HIKSpineSolver.Iterations,
                 useLookupTables = useLookupTables,

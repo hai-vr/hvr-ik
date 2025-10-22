@@ -27,16 +27,16 @@ using math = hvr_godot_math;
 
 namespace HVR.IK.FullTiger
 {
-    internal class HIKBendLookup
+    internal struct/*converted_to_struct*/ HIKBendLookup
     {
         private const int Divisions = 10;
         private const int Size = (Divisions * 2) + 1;
 
-        private readonly float3[][][] _lookupTable;
+        private float3[][][] _lookupTable;
         
         private Func<(float3 handPos, quaternion handRot), float3> _lookupFn;
 
-        public HIKBendLookup()
+        public void init()
         {
             _lookupTable = new float3[Size][][];
             for (var j = 0; j < Size; j++)

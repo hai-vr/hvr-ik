@@ -36,11 +36,11 @@ namespace HVR.IK.FullTiger
         private readonly HIKArmSolver _armSolver;
         private readonly HIKLegSolver _legSolver;
         
-        public HIKSolver(HIKAvatarDefinition definition, HIKLookupTables lookupTables = null)
+        public HIKSolver(HIKAvatarDefinition definition, HIKLookupTables lookupTables = default)
         {
             if (!definition.isInitialized) throw new InvalidOperationException("definition must be initialized before instantiating the solver");
             
-            if (lookupTables == null) lookupTables = new HIKLookupTables();
+            // if (lookupTables == null) lookupTables = new HIKLookupTables();
 
             var reorienter = MbusGeofunctions.FromToOrientation(math.forward(), math.right(), math.up(), -math.up());
             _spineSolver = new HIKSpineSolver(definition, reorienter);
@@ -94,20 +94,16 @@ namespace HVR.IK.FullTiger
         }
     }
 
-    internal class HIKLookupTables
+    internal struct/*converted_to_struct*/ HIKLookupTables
     {
         public bool isAvailable;
         
         private readonly HIKBendLookup _armBendLookup;
 
-        public HIKLookupTables()
-        {
-            isAvailable = false;
-        }
-
         public HIKLookupTables(List<float3> armBend)
         {
             _armBendLookup = new HIKBendLookup();
+            _armBendLookup.init();
             _armBendLookup.ImportLookupTable(armBend);
 
             isAvailable = true;
