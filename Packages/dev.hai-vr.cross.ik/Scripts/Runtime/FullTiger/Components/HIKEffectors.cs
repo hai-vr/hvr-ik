@@ -40,6 +40,10 @@ namespace HVR.IK.FullTiger
         public bool doNotPreserveHipsToNeckCurvatureLimit;
         [Range(0, 1)]
         public float improveSpineBuckling = 1f;
+        
+        [Header("Automatic Chest")]
+        [Range(0, 1)]
+        public float chestRotationUsesHead = 0f;
 
         [Header("Chest effector")]
         [Range(0, 1)]

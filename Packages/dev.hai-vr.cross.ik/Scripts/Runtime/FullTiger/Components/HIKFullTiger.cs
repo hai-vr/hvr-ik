@@ -365,6 +365,8 @@ namespace HVR.IK.FullTiger
                 chestTargetWorldRotation = effectors.chestTarget.rotation,
                 alsoUseChestToMoveNeck = effectors.alsoUseChestToMoveNeck,
                 
+                chestRotationUsesHead = effectors.chestRotationUsesHead,
+                
                 useLeftLowerArm = effectors.useLeftLowerArm,
                 leftLowerArmWorldPosition = effectors.leftLowerArmTarget.position,
                 leftLowerArmWorldRotation = effectors.leftLowerArmTarget.rotation,

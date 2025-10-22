@@ -219,7 +219,7 @@ namespace HVR.IK.FullTiger
                 hvr_godot_helper_quaternion.LookRotationSafe(_spineChain[1] - _spineChain[0], spineLerpVec),
                 _reorienter
             );
-            var chestRotBase = math.normalize(MbusGeofunctions.Slerp(hipVec, headVec, 0.75f));
+            var chestRotBase = math.normalize(MbusGeofunctions.Slerp(hipVec, headVec, objective.chestRotationUsesHead));
             ikSnapshot.absoluteRot[(int)Chest] = math.mul(
                 hvr_godot_helper_quaternion.LookRotationSafe(_spineChain[2] - _spineChain[1], math.lerp(chestRotBase, math.mul(objective.chestTargetWorldRotation, math.down()), objective.useChest)),
                 _reorienter

@@ -144,6 +144,8 @@ namespace HVR.IK.FullTiger
         internal quaternion chestTargetWorldRotation;
         internal float alsoUseChestToMoveNeck;
         
+        public float chestRotationUsesHead;
+        
         internal float useLeftLowerArm;
         internal float3 leftLowerArmWorldPosition;
         internal quaternion leftLowerArmWorldRotation; // TODO: We may have to play with the rotation to solve the "straight arm twist" problem.
