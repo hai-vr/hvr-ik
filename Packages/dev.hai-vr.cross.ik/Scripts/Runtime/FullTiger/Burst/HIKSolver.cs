@@ -42,6 +42,8 @@ namespace HVR.IK.FullTiger
             
             if (lookupTables == null) lookupTables = new HIKLookupTables();
 
+            // The reorienter quaternion converts a LookRotation quaternion into the orientation used by effectors
+            // (in an effector, +X points to the tip, and +Z is the major rotation axis).
             var reorienter = MbusGeofunctions.FromToOrientation(math.forward(), math.right(), math.up(), -math.up());
             _spineSolver = new HIKSpineSolver(definition, reorienter);
             _armSolver = new HIKArmSolver(definition, reorienter, lookupTables);
@@ -61,10 +63,12 @@ namespace HVR.IK.FullTiger
             helper_profiler_BeginSample("HIK Solve Both Legs");
             ikSnapshot = _legSolver.Solve(objective, ikSnapshot, debugDrawSolver, debugDrawFlags);
             helper_profiler_EndSample();
+            
             helper_profiler_BeginSample("HIK Rewrite Objectives");
             RewriteObjectiveToAccountForHandSelfParenting(ikSnapshot, objective.selfParentRightHandNullable, ref objective.rightHandTargetWorldPosition, ref objective.rightHandTargetWorldRotation);
             RewriteObjectiveToAccountForHandSelfParenting(ikSnapshot, objective.selfParentLeftHandNullable, ref objective.leftHandTargetWorldPosition, ref objective.leftHandTargetWorldRotation);
             helper_profiler_EndSample();
+            
             helper_profiler_BeginSample("HIK Solve Both Arms");
             ikSnapshot = _armSolver.Solve(objective, ikSnapshot, debugDrawSolver, debugDrawFlags);
             helper_profiler_EndSample();

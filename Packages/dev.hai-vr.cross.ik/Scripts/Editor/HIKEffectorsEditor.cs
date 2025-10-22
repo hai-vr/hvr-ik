@@ -101,8 +101,8 @@ namespace HVR.IK.Editor
         private static void BakeIt(HIKEffectors my, Transform target, HumanBodyBones bone, ref float3 pos, ref float3 rotEuler, ref float use)
         {
             var boneTransform = my.animator.GetBoneTransform(bone);
-            var parentPosition = boneTransform.position;
-            var parentRotation = boneTransform.rotation * MbusAnimatorUtil.ReflectiveGetPostRotation(my.animator.avatar, bone);
+            float3 parentPosition = boneTransform.position;
+            quaternion parentRotation = boneTransform.rotation * MbusAnimatorUtil.ReflectiveGetPostRotation(my.animator.avatar, bone);
              
             // FIXME: Something about the rotation is incorrect
             var our = math.mul(

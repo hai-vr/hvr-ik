@@ -32,9 +32,9 @@ which is achieved by aliasing the Unity.Mathematics library with Godot Engine's 
 > [!WARNING]  
 > This solver is currently incomplete as it is a work in progress. The following parts are functional but cannot be considered ready for production:
 > - General tuning in first person.
-> - The relationship between the head rotation and the hips rotation affecting the chest rotation still needs tuning.
-> - Arm bend is rudimentary and its heuristics are planned to be re-engineered with a completely different approach.
-> - Leg twist has pathological issues at acute and extreme angles.
+> - Arm bend is rudimentary and its heuristics are currently being re-engineered with a several different approaches.
+> - Leg and upper arm twist has pathological issues at acute and extreme angles.
+> - A hip target is currently mandatory, but it will not be required in the future.
 
 ## Adding to the scene
 

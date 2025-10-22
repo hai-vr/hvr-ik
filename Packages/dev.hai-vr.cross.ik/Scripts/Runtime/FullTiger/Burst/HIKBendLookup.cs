@@ -63,7 +63,7 @@ namespace HVR.IK.FullTiger
                     for (var k = 0; k < Size; k++)
                     {
                         var handPos = new Vector3(i / (Size - 1f) * 2 - 1, j / (Size - 1f) * 2 - 1, k / (Size - 1f) * 2 - 1);
-                        var bendPoint = _lookupFn((handPos, quaternion.identity));
+                        var bendPoint = _lookupFn((handPos, hvr_godot_helper.quaternion_identity));
                         _lookupTable[i][j][k] = bendPoint;
                     }
                 }

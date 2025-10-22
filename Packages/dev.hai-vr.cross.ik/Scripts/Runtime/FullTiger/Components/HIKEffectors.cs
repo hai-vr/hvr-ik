@@ -93,7 +93,10 @@ namespace HVR.IK.FullTiger
         public HumanBodyBones selfParentRightHandBone;
         public float3 selfParentRightHandRelativePosition;
         public float3 selfParentRightHandRelativeRotationEuler;
-
+        
+        [Header("Environmental")]
+        public float useHipsFromEnvironmental = 0f;
+        
         [Header("Experimental (CHANGES POSITION)")]
         [Range(0, 1)]
         public float useFakeDoubleJointedKnees = 0f;
