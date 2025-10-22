@@ -94,7 +94,7 @@ namespace HVR.IK.FullTiger
         }
     }
 
-    internal struct/*converted_to_struct*/ HIKLookupTables
+    internal struct/*converted_to_struct*/ HIKLookupTables : IDisposable
     {
         public bool isAvailable;
         
@@ -112,6 +112,16 @@ namespace HVR.IK.FullTiger
         public HIKBendLookup ArmBend()
         {
             return _armBendLookup;
+        }
+
+        public bool IsValid()
+        {
+            return isAvailable && _armBendLookup.IsValid();
+        }
+
+        public void Dispose()
+        {
+            _armBendLookup.Dispose();
         }
     }
 

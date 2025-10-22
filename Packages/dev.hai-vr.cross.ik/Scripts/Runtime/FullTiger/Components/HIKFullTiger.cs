@@ -105,15 +105,30 @@ namespace HVR.IK.FullTiger
         
         private JobHandle _jobHandle;
         private NativeArray<HIKSnapshot> _result;
-        private HIKLookupTables _lookupTables;
+        
+        private static HIKLookupTables _lookupTables;
 
         private void Awake()
         {
             definition = SolveDefinition(animator, definition, _bones);
             
             // Order matters: This must be instantiated AFTER definition is initialized
+#if HVR_IK_HAS_HOT_RELOAD
+            RegenLookupTablesAndSolver();
+#else
             _lookupTables = new HIKLookupTables(ParseLookup());
+#endif
             _ikSolver = new HIKSolver(definition, _lookupTables);
+        }
+
+        private void RegenLookupTablesAndSolver()
+        {
+            if (!_lookupTables.IsValid())
+            {
+                _lookupTables.Dispose();
+                _lookupTables = new HIKLookupTables(ParseLookup());
+                _ikSolver = new HIKSolver(definition, _lookupTables);
+            }
         }
 
         private List<float3> ParseLookup()
@@ -240,7 +255,12 @@ namespace HVR.IK.FullTiger
                 _jobHandle.Complete();
                 _ikSnapshot = _result[0];
                 _result.Dispose();
+                
+                Profiler.BeginSample("HIK Apply Snapshot");
                 ApplySnapshot();
+                Profiler.EndSample();
+
+                DrawFinalChains();
             }
             else
             {
@@ -283,6 +303,11 @@ namespace HVR.IK.FullTiger
             ApplySnapshot();
             Profiler.EndSample();
 
+            DrawFinalChains();
+        }
+
+        private void DrawFinalChains()
+        {
 #if UNITY_EDITOR && true
             if (debugDrawFinalChains)
             {
@@ -295,12 +320,20 @@ namespace HVR.IK.FullTiger
 
         public void PerformRegularSolve()
         {
+#if HVR_IK_HAS_HOT_RELOAD
+            RegenLookupTablesAndSolver();
+#endif
+            
             var objective = CreateObjective();
             _ikSnapshot = _ikSolver.Solve(objective, _ikSnapshot, debugDrawSolver, debugDrawFlags);
         }
 
         private void PerformRegularSolveInJobSystem()
         {
+#if HVR_IK_HAS_HOT_RELOAD
+            RegenLookupTablesAndSolver();
+#endif
+            
             var objective = CreateObjective();
             
             _result = new NativeArray<HIKSnapshot>(1, Allocator.TempJob);

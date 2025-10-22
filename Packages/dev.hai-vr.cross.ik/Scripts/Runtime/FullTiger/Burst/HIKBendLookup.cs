@@ -14,6 +14,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using Unity.Collections;
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using Unity.Mathematics;
 using UnityEngine;
@@ -27,46 +29,40 @@ using math = hvr_godot_math;
 
 namespace HVR.IK.FullTiger
 {
-    internal struct/*converted_to_struct*/ HIKBendLookup
+    internal struct/*converted_to_struct*/ HIKBendLookup : IDisposable
     {
         private const int Divisions = 10;
         private const int Size = (Divisions * 2) + 1;
+        private const int TotalSize = Size * Size * Size;
 
-        private float3[][][] _lookupTable;
+        // private float3[] _lookupTable;
+        private NativeArray<float3> _lookupTable;
         
-        private Func<(float3 handPos, quaternion handRot), float3> _lookupFn;
+        // private Func<(float3 handPos, quaternion handRot), float3> _lookupFn;
 
         public void init()
         {
-            _lookupTable = new float3[Size][][];
-            for (var j = 0; j < Size; j++)
+            Debug.Log("Recreating the lookup table.");
+            _lookupTable = new NativeArray<float3>(TotalSize, Allocator.Persistent);
+        }
+
+        public void Dispose()
+        {
+            _lookupTable.Dispose();
+        }
+
+        public bool IsValid()
+        {
+            if (!(_lookupTable.IsCreated && _lookupTable.Length == TotalSize)) return false;
+
+            try
             {
-                _lookupTable[j] = new float3[Size][];
-                for (var i = 0; i < Size; i++)
-                {
-                    _lookupTable[j][i] = new float3[Size];
-                }
+                _ = _lookupTable[0];
+                return true;
             }
-        }
-
-        public void SetLookupFunction(Func<(float3 handPos, quaternion handRot), float3> handPosToBendPointFn)
-        {
-            _lookupFn = handPosToBendPointFn;
-        }
-
-        public void BakeLookupTable()
-        {
-            for (var i = 0; i < Size; i++)
+            catch (Exception _)
             {
-                for (var j = 0; j < Size; j++)
-                {
-                    for (var k = 0; k < Size; k++)
-                    {
-                        var handPos = new Vector3(i / (Size - 1f) * 2 - 1, j / (Size - 1f) * 2 - 1, k / (Size - 1f) * 2 - 1);
-                        var bendPoint = _lookupFn((handPos, quaternion.identity));
-                        _lookupTable[i][j][k] = bendPoint;
-                    }
-                }
+                return false;
             }
         }
 
@@ -91,14 +87,14 @@ namespace HVR.IK.FullTiger
             var fy = y - y0;
             var fz = z - z0;
 
-            var c000 = _lookupTable[x0][y0][z0];
-            var c001 = _lookupTable[x0][y0][z1];
-            var c010 = _lookupTable[x0][y1][z0];
-            var c011 = _lookupTable[x0][y1][z1];
-            var c100 = _lookupTable[x1][y0][z0];
-            var c101 = _lookupTable[x1][y0][z1];
-            var c110 = _lookupTable[x1][y1][z0];
-            var c111 = _lookupTable[x1][y1][z1];
+            var c000 = _lookupTable[ToIndex(x0, y0, z0)];
+            var c001 = _lookupTable[ToIndex(x0, y0, z1)];
+            var c010 = _lookupTable[ToIndex(x0, y1, z0)];
+            var c011 = _lookupTable[ToIndex(x0, y1, z1)];
+            var c100 = _lookupTable[ToIndex(x1, y0, z0)];
+            var c101 = _lookupTable[ToIndex(x1, y0, z1)];
+            var c110 = _lookupTable[ToIndex(x1, y1, z0)];
+            var c111 = _lookupTable[ToIndex(x1, y1, z1)];
 
             // Trilinear interpolation
             var c00 = math.lerp(c000, c100, fx);
@@ -116,11 +112,14 @@ namespace HVR.IK.FullTiger
         {
             for (var index = 0; index < lookupTable.Count; index++)
             {
-                var i = index / (Size * Size);
-                var j = (index / Size) % Size;
-                var k = index % Size;
-                _lookupTable[i][j][k] = lookupTable[index];
+                _lookupTable[index] = lookupTable[index];
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static int ToIndex(int x, int y, int z)
+        {
+            return x * Size * Size + y * Size + z;
         }
 
         public float3 GetBendDirectionInWorldSpace__UsingLookupTable(ArmSide side, quaternion chestReference, float3 rootPos, float3 objectivePos, quaternion originalObjectiveRot, float totalArmLength)
