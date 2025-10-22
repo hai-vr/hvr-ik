@@ -74,8 +74,8 @@ namespace HVR.IK.FullTiger
             // a circle and the plane. The circle is described by the bend point rotating around the axis defined by the root pos and the objective pos.
             var solveLeftArmFirst = objective.solveRightArm
                                && objective.solveLeftArm
-                               && (objective.selfParentRightHandNullable != null && objective.selfParentRightHandNullable.use > 0f) // if the right hand is self-parented
-                               && (objective.selfParentLeftHandNullable == null || objective.selfParentLeftHandNullable.use <= 0f); // AND the left hand is not self-parented
+                               && (/*objective.selfParentRightHandNullable != null &&*/ objective.selfParentRightHandNullable.use > 0f) // if the right hand is self-parented
+                               && (/*objective.selfParentLeftHandNullable == null ||*/ objective.selfParentLeftHandNullable.use <= 0f); // AND the left hand is not self-parented
 
             if (!solveLeftArmFirst)
             {

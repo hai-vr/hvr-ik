@@ -119,7 +119,7 @@ namespace HVR.IK.FullTiger
         }
     }
 
-    internal class/*was_struct*/ HIKObjective
+    internal struct/*reconverted_to_struct*/ HIKObjective
     {
         public const float StruggleStart = 0.99f;
         public const float StruggleEnd = 1.04f;
@@ -195,7 +195,7 @@ namespace HVR.IK.FullTiger
         internal HIKSelfParenting selfParentRightHandNullable;
     }
 
-    internal class/*was_struct*/ HIKSelfParenting
+    internal struct/*reconverted_to_struct*/ HIKSelfParenting
     {
         public float use;
         public HIKBodyBones bone;

@@ -24,14 +24,14 @@ using math = hvr_godot_math;
 
 namespace HVR.IK.FullTiger
 {
-    public class/*was_struct*/ HIKAvatarDefinition
+    public struct/*reconverted_to_struct*/ HIKAvatarDefinition
     {
         /// When the avatar is in "artist pose", this is the length between the hip to the base of the neck.
         /// The IK solver must try to avoid straightening the curvature of the spinal chain.
         /// 
         // Avatar pose -- Relative to the parent bone. Model coordinates.
-        internal HIKBoneData<float3> artistPosePos = new();
-        internal HIKBoneData<quaternion> artistPoseRot = new();
+        internal HIKBoneData<float3> artistPosePos;// = new();
+        internal HIKBoneData<quaternion> artistPoseRot;// = new();
         internal float refPoseHipToNeckLength;
         internal float refPoseHipToHeadLength;
         internal float refPoseHipsLength;
@@ -45,19 +45,19 @@ namespace HVR.IK.FullTiger
         internal float2 refPoseSpineVecForHeadRotation;
         
         // Reference pose -- Relative to the parent bone. Model coordinates.
-        internal HIKBoneData<float3> refPoseRelativePos = new();
-        internal HIKBoneData<quaternion> refPoseRelativeRot = new();
+        internal HIKBoneData<float3> refPoseRelativePos;// = new();
+        internal HIKBoneData<quaternion> refPoseRelativeRot;// = new();
         
         // Reference pose -- Relative to the hip bone. Model coordinates.
-        internal HIKBoneData<float3> refPoseHiplativePos = new();
-        internal HIKBoneData<quaternion> refPoseHiplativeRot = new();
+        internal HIKBoneData<float3> refPoseHiplativePos;// = new();
+        internal HIKBoneData<quaternion> refPoseHiplativeRot;// = new();
         
         // Humanoid data -- Humanoid coordinates.
-        internal HIKBoneData<bool> dataHasBone = new();
-        internal HIKBoneData<quaternion> dataPostRot = new();
-        internal HIKBoneData<quaternion> dataInversePostRot = new();
+        internal HIKBoneData<bool> dataHasBone;// = new();
+        internal HIKBoneData<quaternion> dataPostRot;// = new();
+        internal HIKBoneData<quaternion> dataInversePostRot;// = new();
         
-        internal HIKBoneData<float4x4> relativeMatrices = new();
+        internal HIKBoneData<float4x4> relativeMatrices;// = new();
 
         internal float3 capturedWithLossyScale;
         internal bool isInitialized;

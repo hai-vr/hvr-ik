@@ -19,6 +19,7 @@ using UnityEngine;
 
 namespace HVR.IK.Editor
 {
+    [CanEditMultipleObjects]
     [CustomEditor(typeof(HIKFullTiger))]
     public class HIKFullTigerEditor : UnityEditor.Editor
     {

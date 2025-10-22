@@ -52,7 +52,7 @@ namespace HVR.IK.FullTiger
         }
     }
     
-    internal class/*was_struct*/ HIKBoneData<T>
+    internal struct/*reconverted_to_struct*/ HIKBoneData<T>
     {
         // CURSED: We're actively avoiding the use of NativeArray (and arrays) here because it's causing an absolute pain of issues with Burst and Hot Reload.
         // Maybe there's a better way to do this.

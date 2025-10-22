@@ -24,10 +24,10 @@ using math = hvr_godot_math;
 
 namespace HVR.IK.FullTiger
 {
-    internal class/*was_struct*/ HIKSnapshot
+    internal struct/*reconverted_to_struct*/ HIKSnapshot
     {
-        internal HIKBoneData<float3> absolutePos = new();
-        internal HIKBoneData<quaternion> absoluteRot = new();
+        internal HIKBoneData<float3> absolutePos;// = new();
+        internal HIKBoneData<quaternion> absoluteRot;// = new();
 
         // Recalculates the absolute position of a bone, based on the position and rotation of its parent and its relative matrix.
         public void ReevaluatePosition(HIKBodyBones ourBone, HIKAvatarDefinition definition, float scale)

@@ -15,6 +15,8 @@
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Collections;
+using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine;
@@ -81,6 +83,7 @@ namespace HVR.IK.FullTiger
 
         [Header("Solver Settings")]
         public bool updateInLateUpdate = false;
+        public bool useJobSystem = false;
         public bool updateEveryFrame = true;
         private HIKSnapshot _ikSnapshot = new();
 
@@ -99,6 +102,9 @@ namespace HVR.IK.FullTiger
         private bool _solveLeftArm = true;
         private bool _solveRightArm = true;
         private bool _useFakeDoubleJointedKneesWasEverEnabled;
+        
+        private JobHandle _jobHandle;
+        private NativeArray<HIKSnapshot> _result;
 
         private void Awake()
         {
@@ -212,17 +218,49 @@ namespace HVR.IK.FullTiger
 
         private void Update()
         {
-            if (!updateInLateUpdate)
+            if (useJobSystem)
             {
-                ExecuteSolver();
+                PerformRegularSolveInJobSystem();
+            }
+            else
+            {
+                if (!updateInLateUpdate)
+                {
+                    ExecuteSolver();
+                }
             }
         }
-        
+
         private void LateUpdate()
         {
-            if (updateInLateUpdate)
+            if (useJobSystem)
             {
-                ExecuteSolver();
+                _jobHandle.Complete();
+                _ikSnapshot = _result[0];
+                _result.Dispose();
+                ApplySnapshot();
+            }
+            else
+            {
+                if (updateInLateUpdate)
+                {
+                    ExecuteSolver();
+                }
+            }
+        }
+
+        internal struct HIKFullTigerJob : IJob
+        {
+            public NativeArray<HIKSnapshot> result;
+            public HIKObjective objective;
+            public HIKAvatarDefinition definition;
+
+            public void Execute()
+            {
+                var solver = new HIKSolver(definition);
+                var snapshot = new HIKSnapshot();
+                snapshot = solver.Solve(objective, snapshot);
+                result[0] = snapshot;
             }
         }
 
@@ -252,6 +290,27 @@ namespace HVR.IK.FullTiger
 
         public void PerformRegularSolve()
         {
+            var objective = CreateObjective();
+            _ikSnapshot = _ikSolver.Solve(objective, _ikSnapshot, debugDrawSolver, debugDrawFlags);
+        }
+
+        private void PerformRegularSolveInJobSystem()
+        {
+            var objective = CreateObjective();
+            
+            _result = new NativeArray<HIKSnapshot>(1, Allocator.TempJob);
+            var job = new HIKFullTigerJob
+            {
+                result = _result,
+                objective = objective,
+                definition = definition
+            };
+            _jobHandle = job.Schedule();
+        }
+
+        private HIKObjective CreateObjective()
+        {
+            Profiler.BeginSample("HIK Build HIKObjective");
             HIKSelfParenting selfParentLeftHand;
             if (effectors.useSelfParentLeftHand > 0f)
             {
@@ -283,7 +342,6 @@ namespace HVR.IK.FullTiger
                 selfParentRightHand = default;
             }
 
-            Profiler.BeginSample("HIK Build HIKObjective");
             var objective = new HIKObjective
             {
                 hipTargetWorldPosition = effectors.hipTarget.position,
@@ -353,7 +411,8 @@ namespace HVR.IK.FullTiger
                 selfParentRightHandNullable = selfParentRightHand,
             };
             Profiler.EndSample();
-            _ikSnapshot = _ikSolver.Solve(objective, _ikSnapshot, debugDrawSolver, debugDrawFlags);
+            
+            return objective;
         }
 
         public void ApplySnapshot()
