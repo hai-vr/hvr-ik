@@ -24,6 +24,11 @@
             "name": "com.unity.animation.rigging",
             "expression": "1.3.0",
             "define": "HVR_IK_HAS_ANIMATION_RIGGING"
+        },
+        {
+            "name": "com.singularitygroup.hotreload",
+            "expression": "1.13.11",
+            "define": "HVR_IK_HAS_HOT_RELOAD"
         }
     ],
     "noEngineReferences": false
