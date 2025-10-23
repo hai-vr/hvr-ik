@@ -73,9 +73,9 @@ namespace HVR.IK.FullTiger
         private static readonly HumanBodyBones[] LeftArmChain = { LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand };
         private static readonly HumanBodyBones[] RightArmChain = { RightShoulder, RightUpperArm, RightLowerArm, RightHand };
         
-        [SerializeField] internal Animator animator;
-        [SerializeField] internal HIKEffectors effectors;
-        [SerializeField] internal HIKEnvironmental environmental;
+        public Animator animator;
+        public HIKEffectors effectors;
+        public HIKEnvironmental environmental;
         
         private HIKAvatarDefinition definition = new();
         private HIKSolver _ikSolver;

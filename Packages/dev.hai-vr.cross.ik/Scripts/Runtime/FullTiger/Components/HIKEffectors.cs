@@ -23,7 +23,7 @@ namespace HVR.IK.FullTiger
     /// The end effectors placements should be modified by external modules before the IK solver runs.
     public class HIKEffectors : MonoBehaviour
     {
-        [SerializeField] internal Animator animator;
+        public Animator animator;
 
         [Header("Classic effectors")]
         public Transform runtimeTargets;
