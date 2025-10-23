@@ -148,10 +148,10 @@ namespace HVR.IK.FullTiger
                 if (null == chestTarget) chestTarget = CreateTarget(HumanBodyBones.Chest, "ChestTarget");
                 if (null == leftLowerArmTarget) leftLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "LeftLowerArmTarget");
                 if (null == rightLowerArmTarget) rightLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "RightLowerArmTarget");
-            }
 
-            _tPosePos = AllTargetsStartingWithHead().Select(t => t.position).ToArray();
-            _tPoseRot = AllTargetsStartingWithHead().Select(t => t.rotation).ToArray();
+                _tPosePos = AllTargetsStartingWithHead().Select(t => t.position).ToArray();
+                _tPoseRot = AllTargetsStartingWithHead().Select(t => t.rotation).ToArray();
+            }
             
             _isInitialized = true;
         }
