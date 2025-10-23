@@ -164,6 +164,14 @@ namespace HVR.IK.FullTiger
 
         public static float3 ReprojectTwistToArm(float3 armDirection, float3 handDirection, float3 handTwist)
         {
+            armDirection = math.normalize(armDirection);
+            handDirection = math.normalize(handDirection);
+            if (math.dot(armDirection, handDirection) >= 0.9999f)
+            {
+                // axis could have become NaN if this check were not in place.
+                return handTwist;
+            }
+            
             var axis = math.normalize(math.cross(armDirection, handDirection));
             
             var axisArmCross = math.normalize(math.cross(axis, armDirection));
