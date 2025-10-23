@@ -2,13 +2,7 @@
     "name": "HVR.IK.Runtime",
     "rootNamespace": "",
     "references": [
-        "BasisSDK",
         "Unity.Mathematics",
-        "LiteNetLib",
-        "Basis Framework",
-        "BasisDebug",
-        "Unity.Addressables",
-        "Unity.ResourceManager",
         "Unity.Animation.Rigging",
         "Unity.Burst"
     ],
