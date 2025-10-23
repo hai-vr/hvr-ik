@@ -106,6 +106,8 @@ namespace HVR.IK.FullTiger
         public bool useDirectDrive = false;
         [HideInInspector] public float3 hipWorldPosition;
         [HideInInspector] public quaternion hipWorldRotation;
+        [HideInInspector] public float3 headWorldPosition;
+        [HideInInspector] public quaternion headWorldRotation;
         [HideInInspector] public float3 leftHandWorldPosition;
         [HideInInspector] public quaternion leftHandWorldRotation;
         [HideInInspector] public float3 rightHandWorldPosition;

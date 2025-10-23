@@ -312,8 +312,8 @@ namespace HVR.IK.FullTiger
         private HIKObjective CreateObjective()
         {
             Profiler.BeginSample("HIK Collect Transforms HIKObjective");
-            float3 headTargetWorldPosition = effectors.headTarget.position;
-            quaternion headTargetWorldRotation = effectors.headTarget.rotation;
+            float3 headTargetWorldPosition = effectors.useDirectDrive ? effectors.headWorldPosition : effectors.headTarget.position;
+            quaternion headTargetWorldRotation = effectors.useDirectDrive ? effectors.headWorldRotation : effectors.headTarget.rotation;
             
             var needsEnvironmental = environmental != null && effectors.useHipsFromEnvironmental > 0;
 
