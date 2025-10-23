@@ -28,6 +28,8 @@ namespace HVR.IK.FullTiger
 {
     internal class/*was_struct*/ HIKArmSolver
     {
+        private const bool UpperTwistIsBasedOnEffectiveArmBend = false;
+        
         internal const float InsideSwitchingMul = 2;
         private readonly HIKAvatarDefinition definition;
         private readonly quaternion _reorienter;
@@ -204,9 +206,20 @@ namespace HVR.IK.FullTiger
             float3 bendPointPos;
             (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, TODO_STRADDLING_IS_FALSE, TODO_NO_STRADDLING_POSITION, distanceType, bendDirection, debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowArm) != 0);
 
-            var twistBase = math.mul(chestReference, _twistiness);
+            float3 upperTwist;
+            if (UpperTwistIsBasedOnEffectiveArmBend) {
+                // The upper twist uses the effective arm bend (not the heuristic), so that it's orthogonal to the upper arm--lower arm pivot axis;
+                // However, when the upper arm--lower arm tends to be straight, we fall back to the twistiness based on the chest reference.
+                var nCross = math.cross(math.normalize(objectivePos - bendPointPos), math.normalize(rootPos - bendPointPos));
+                upperTwist = math.lerp(math.mul(chestReference, _twistiness), nCross, math.unlerp(0f, 0.5f, math.length(nCross)));
+            }
+            else {
+                // The upper twist uses the arm bend heuristic, so that it's orthogonal to the upper arm--lower arm pivot axis.
+                upperTwist = math.normalize(math.cross(bendDirection, objectivePos - rootPos)); // TODO: GODOT NOT EVALUATED TWIST, SUSPICIOUS_LEFT_HAND_RULE
+            }
+
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
-                hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, side == ArmSide.Right ? twistBase : -twistBase),
+                hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, upperTwist),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
@@ -217,6 +230,18 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(rootBone, definition, scale);
             ikSnapshot.ReevaluatePosition(midBone, definition, scale);
             ikSnapshot.ReevaluatePosition(tipBone, definition, scale);
+            
+#if UNITY_EDITOR && true
+            if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0)
+            {
+                var midPos = ikSnapshot.absolutePos[(int)midBone];
+                var pivotVec = math.mul(ikSnapshot.absoluteRot[(int)rootBone], math.up()) * 0.04f;
+                Debug.DrawLine(midPos - pivotVec, midPos + pivotVec, Color.cyan, 0f, false);
+                HIKTwoBoneAlgorithms.DrawTwist(ikSnapshot, rootBone, midBone, math.forward());
+                HIKTwoBoneAlgorithms.DrawTwist(ikSnapshot, midBone, tipBone, side == ArmSide.Right ? math.down() : math.up());
+                HIKTwoBoneAlgorithms.DrawTwist(ikSnapshot, tipBone, tipBone, math.forward());
+            }
+#endif
 
             return ikSnapshot;
         }

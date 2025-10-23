@@ -75,12 +75,14 @@ namespace HVR.IK.FullTiger
             float3 bendPointPos;
             (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, useStraddlingLeg, groundedStraddlingLegWorldPosition, distanceType, bendDirection, debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0);
 
+            var lowerLegTwistBasedOnFoot = MbusGeofunctions.ReprojectTwistToArm(objectivePos - bendPointPos, math.mul(originalObjectiveRot, math.right()), math.mul(originalObjectiveRot, math.down()));
+            var upperLegTwistBasedOnLowerLeg = MbusGeofunctions.ReprojectTwistToArm(bendPointPos - rootPos, objectivePos - bendPointPos, lowerLegTwistBasedOnFoot);
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
-                hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, math.normalize(hvr_godot_helper.left_hand_cross(math.mul(hipReference, math.forward()), bendPointPos - rootPos))),
+                hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, upperLegTwistBasedOnLowerLeg),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - bendPointPos, math.normalize(hvr_godot_helper.left_hand_cross(math.mul(originalObjectiveRot, -math.forward()), objectivePos - bendPointPos))),
+                hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - bendPointPos, lowerLegTwistBasedOnFoot),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
@@ -107,7 +109,16 @@ namespace HVR.IK.FullTiger
                 }
 #endif
             }
-
+            
+#if UNITY_EDITOR && true
+            if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0)
+            {
+                HIKTwoBoneAlgorithms.DrawTwist(ikSnapshot, rootBone, midBone, math.down());
+                HIKTwoBoneAlgorithms.DrawTwist(ikSnapshot, midBone, tipBone, math.down());
+                HIKTwoBoneAlgorithms.DrawTwist(ikSnapshot, tipBone, tipBone, math.down());
+            }
+#endif
+            
             return ikSnapshot;
         }
 

@@ -174,6 +174,30 @@ namespace HVR.IK.FullTiger
             return (objectivePos, bendPointPos);
         }
 
+        public static void DrawTwist(HIKSnapshot ikSnapshot, HIKBodyBones whichBone, HIKBodyBones toBone, float3 direction)
+        {
+            var color = new Color(1f, 0.99f, 0.35f);
+            var len = 0.04f;
+            
+            var from = ikSnapshot.absolutePos[(int)whichBone];
+            var fromT = from + math.mul(ikSnapshot.absoluteRot[(int)whichBone], direction) * len;
+            MbusUtil.DrawDirectionArrow(from, fromT, color, 0f, false, math.mul(ikSnapshot.absoluteRot[(int)whichBone], math.right()));
+            if (whichBone != toBone)
+            {
+                var to = ikSnapshot.absolutePos[(int)toBone];
+                var toT = to + math.mul(ikSnapshot.absoluteRot[(int)whichBone], direction) * len;
+                MbusUtil.DrawDirectionArrow(to, toT, color, 0f, false, math.mul(ikSnapshot.absoluteRot[(int)whichBone], math.right()));
+                Debug.DrawLine(fromT, toT, color, 0f, false);
+            }
+            else
+            {
+                var to = from + math.mul(ikSnapshot.absoluteRot[(int)whichBone], math.right()) * 0.1f;
+                var toT = to + math.mul(ikSnapshot.absoluteRot[(int)whichBone], direction) * len;
+                MbusUtil.DrawDirectionArrow(to, toT, color, 0f, false, math.mul(ikSnapshot.absoluteRot[(int)whichBone], math.right()));
+                Debug.DrawLine(fromT, toT, color, 0f, false);
+            }
+        }
+
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
         public static AnimationCurve CreateStruggleCurve()
         {

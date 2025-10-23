@@ -115,7 +115,7 @@ namespace HVR.IK.FullTiger
             _ikSolver = new HIKSolver(definition, new HIKLookupTables(ParseLookup()));
         }
 
-        private List<float3> ParseLookup()
+        internal static List<float3> ParseLookup()
         {
             // FIXME: The asset may not be available in a built app because it's not referenced
             var lookupTable = AssetDatabase.LoadAssetByGUID<TextAsset>(new GUID("dad70e4f1a7437a43b2cd4b25a877c67")); // This guid is arm_bend_lookup_table.txt
