@@ -101,6 +101,29 @@ namespace HVR.IK.FullTiger
         [Header("Experimental (CHANGES POSITION)")]
         [Range(0, 1)]
         public float useFakeDoubleJointedKnees = 0f;
+        
+        [Header("Direct Drive")]
+        public bool useDirectDrive = false;
+        [HideInInspector] public float3 hipWorldPosition;
+        [HideInInspector] public quaternion hipWorldRotation;
+        [HideInInspector] public float3 leftHandWorldPosition;
+        [HideInInspector] public quaternion leftHandWorldRotation;
+        [HideInInspector] public float3 rightHandWorldPosition;
+        [HideInInspector] public quaternion rightHandWorldRotation;
+        [HideInInspector] public float3 leftFootWorldPosition;
+        [HideInInspector] public quaternion leftFootWorldRotation;
+        [HideInInspector] public float3 rightFootWorldPosition;
+        [HideInInspector] public quaternion rightFootWorldRotation;
+        [HideInInspector] public float3 chestTargetWorldPosition;
+        [HideInInspector] public quaternion chestTargetWorldRotation;
+        [HideInInspector] public float3 leftLowerArmWorldPosition;
+        [HideInInspector] public quaternion leftLowerArmWorldRotation;
+        [HideInInspector] public float3 rightLowerArmWorldPosition;
+        [HideInInspector] public quaternion rightLowerArmWorldRotation;
+        [HideInInspector] public float3 groundedStraddlingLeftLegWorldPosition;
+        [HideInInspector] public quaternion groundedStraddlingLeftLegWorldRotation;
+        [HideInInspector] public float3 groundedStraddlingRightLegWorldPosition;
+        [HideInInspector] public quaternion groundedStraddlingRightLegWorldRotation;
 
         private Vector3[] _tPosePos;
         private Quaternion[] _tPoseRot;
@@ -110,19 +133,22 @@ namespace HVR.IK.FullTiger
 
         private void OnEnable()
         {
-            if (null == runtimeTargets) runtimeTargets = MbusUtil.NewTransform("RuntimeTargets", transform);
-            if (null == hipTarget) hipTarget = CreateTarget(HumanBodyBones.Hips, "HipTarget");
-            if (null == headTarget) headTarget = CreateTarget(HumanBodyBones.Head, "HeadTarget");
-            if (null == leftHandTarget) leftHandTarget = CreateTarget(HumanBodyBones.LeftHand, "LeftHandTarget");
-            if (null == rightHandTarget) rightHandTarget = CreateTarget(HumanBodyBones.RightHand, "RightHandTarget");
-            if (null == leftFootTarget) leftFootTarget = CreateTarget(HumanBodyBones.LeftFoot, "LeftFootTarget");
-            if (null == rightFootTarget) rightFootTarget = CreateTarget(HumanBodyBones.RightFoot, "RightFootTarget");
-            if (null == groundedStraddlingLeftLeg) groundedStraddlingLeftLeg = CreateTarget(HumanBodyBones.LeftLowerLeg, "GroundedStraddlingLeftLeg");
-            if (null == groundedStraddlingRightLeg) groundedStraddlingRightLeg = CreateTarget(HumanBodyBones.RightLowerLeg, "GroundedStraddlingRightLeg");
+            if (!useDirectDrive)
+            {
+                if (null == runtimeTargets) runtimeTargets = MbusUtil.NewTransform("RuntimeTargets", transform);
+                if (null == hipTarget) hipTarget = CreateTarget(HumanBodyBones.Hips, "HipTarget");
+                if (null == headTarget) headTarget = CreateTarget(HumanBodyBones.Head, "HeadTarget");
+                if (null == leftHandTarget) leftHandTarget = CreateTarget(HumanBodyBones.LeftHand, "LeftHandTarget");
+                if (null == rightHandTarget) rightHandTarget = CreateTarget(HumanBodyBones.RightHand, "RightHandTarget");
+                if (null == leftFootTarget) leftFootTarget = CreateTarget(HumanBodyBones.LeftFoot, "LeftFootTarget");
+                if (null == rightFootTarget) rightFootTarget = CreateTarget(HumanBodyBones.RightFoot, "RightFootTarget");
+                if (null == groundedStraddlingLeftLeg) groundedStraddlingLeftLeg = CreateTarget(HumanBodyBones.LeftLowerLeg, "GroundedStraddlingLeftLeg");
+                if (null == groundedStraddlingRightLeg) groundedStraddlingRightLeg = CreateTarget(HumanBodyBones.RightLowerLeg, "GroundedStraddlingRightLeg");
             
-            if (null == chestTarget) chestTarget = CreateTarget(HumanBodyBones.Chest, "ChestTarget");
-            if (null == leftLowerArmTarget) leftLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "LeftLowerArmTarget");
-            if (null == rightLowerArmTarget) rightLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "RightLowerArmTarget");
+                if (null == chestTarget) chestTarget = CreateTarget(HumanBodyBones.Chest, "ChestTarget");
+                if (null == leftLowerArmTarget) leftLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "LeftLowerArmTarget");
+                if (null == rightLowerArmTarget) rightLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "RightLowerArmTarget");
+            }
 
             _tPosePos = AllTargetsStartingWithHead().Select(t => t.position).ToArray();
             _tPoseRot = AllTargetsStartingWithHead().Select(t => t.rotation).ToArray();
@@ -141,7 +167,7 @@ namespace HVR.IK.FullTiger
             groundedStraddlingLeftLeg = null;
             groundedStraddlingRightLeg = null;
 
-            Destroy(runtimeTargets.gameObject);
+            if (null != runtimeTargets) Destroy(runtimeTargets.gameObject);
             runtimeTargets = null;
         }
 

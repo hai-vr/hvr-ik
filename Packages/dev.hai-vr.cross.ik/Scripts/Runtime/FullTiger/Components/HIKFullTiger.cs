@@ -329,26 +329,79 @@ namespace HVR.IK.FullTiger
                 environmentalRot = quaternion.identity;
             }
 
-            float3 hipTargetWorldPosition = needsEnvironmental ? math.lerp(effectors.hipTarget.position, environmentalPos, effectors.useHipsFromEnvironmental) : effectors.hipTarget.position;
-            quaternion hipTargetWorldRotation = needsEnvironmental ? math.slerp(effectors.hipTarget.rotation, environmentalRot, effectors.useHipsFromEnvironmental) : effectors.hipTarget.rotation;
-            float3 leftHandTargetWorldPosition = effectors.leftHandTarget.position;
-            quaternion leftHandTargetWorldRotation = effectors.leftHandTarget.rotation;
-            float3 rightHandTargetWorldPosition = effectors.rightHandTarget.position;
-            quaternion rightHandTargetWorldRotation = effectors.rightHandTarget.rotation;
-            float3 leftFootTargetWorldPosition = effectors.leftFootTarget.position;
-            quaternion leftFootTargetWorldRotation = effectors.leftFootTarget.rotation;
-            float3 rightFootTargetWorldPosition = effectors.rightFootTarget.position;
-            quaternion rightFootTargetWorldRotation = effectors.rightFootTarget.rotation;
-            float3 chestTargetWorldPosition = effectors.useChest > 0f ? effectors.chestTarget.position : float3.zero;
-            quaternion chestTargetWorldRotation = effectors.useChest > 0f ? effectors.chestTarget.rotation : quaternion.identity;
-            float3 leftLowerArmWorldPosition = effectors.useLeftLowerArm > 0f ? effectors.leftLowerArmTarget.position : float3.zero;
-            quaternion leftLowerArmWorldRotation = effectors.useLeftLowerArm > 0f ? effectors.leftLowerArmTarget.rotation : quaternion.identity;
-            float3 rightLowerArmWorldPosition = effectors.useRightLowerArm > 0f ? effectors.rightLowerArmTarget.position : float3.zero;
-            quaternion rightLowerArmWorldRotation = effectors.useRightLowerArm > 0f ? effectors.rightLowerArmTarget.rotation : quaternion.identity;
-            float3 groundedStraddlingLeftLegWorldPosition = effectors.useStraddlingLeftLeg ? effectors.groundedStraddlingLeftLeg.position : float3.zero;
-            quaternion groundedStraddlingLeftLegWorldRotation = effectors.useStraddlingLeftLeg ? effectors.groundedStraddlingLeftLeg.rotation : quaternion.identity;
-            float3 groundedStraddlingRightLegWorldPosition = effectors.useStraddlingRightLeg ? effectors.groundedStraddlingRightLeg.position : float3.zero;
-            quaternion groundedStraddlingRightLegWorldRotation = effectors.useStraddlingRightLeg ? effectors.groundedStraddlingRightLeg.rotation : quaternion.identity;
+            float3 hipTargetWorldPosition;
+            quaternion hipTargetWorldRotation;
+            float3 leftHandTargetWorldPosition;
+            quaternion leftHandTargetWorldRotation;
+            float3 rightHandTargetWorldPosition;
+            quaternion rightHandTargetWorldRotation;
+            float3 leftFootTargetWorldPosition;
+            quaternion leftFootTargetWorldRotation;
+            float3 rightFootTargetWorldPosition;
+            quaternion rightFootTargetWorldRotation;
+            float3 chestTargetWorldPosition;
+            quaternion chestTargetWorldRotation;
+            float3 leftLowerArmWorldPosition;
+            quaternion leftLowerArmWorldRotation;
+            float3 rightLowerArmWorldPosition;
+            quaternion rightLowerArmWorldRotation;
+            float3 groundedStraddlingLeftLegWorldPosition;
+            quaternion groundedStraddlingLeftLegWorldRotation;
+            float3 groundedStraddlingRightLegWorldPosition;
+            quaternion groundedStraddlingRightLegWorldRotation;
+            if (effectors.useDirectDrive)
+            {
+                hipTargetWorldPosition = effectors.hipWorldPosition;
+                hipTargetWorldRotation = effectors.hipWorldRotation;
+                leftHandTargetWorldPosition = effectors.leftHandWorldPosition;
+                leftHandTargetWorldRotation = effectors.leftHandWorldRotation;
+                rightHandTargetWorldPosition = effectors.rightHandWorldPosition;
+                rightHandTargetWorldRotation = effectors.rightHandWorldRotation;
+                leftFootTargetWorldPosition = effectors.leftFootWorldPosition;
+                leftFootTargetWorldRotation = effectors.leftFootWorldRotation;
+                rightFootTargetWorldPosition = effectors.rightFootWorldPosition;
+                rightFootTargetWorldRotation = effectors.rightFootWorldRotation;
+                chestTargetWorldPosition = effectors.chestTargetWorldPosition;
+                chestTargetWorldRotation = effectors.chestTargetWorldRotation;
+                leftLowerArmWorldPosition = effectors.leftLowerArmWorldPosition;
+                leftLowerArmWorldRotation = effectors.leftLowerArmWorldRotation;
+                rightLowerArmWorldPosition = effectors.rightLowerArmWorldPosition;
+                rightLowerArmWorldRotation = effectors.rightLowerArmWorldRotation;
+                groundedStraddlingLeftLegWorldPosition = effectors.groundedStraddlingLeftLegWorldPosition;
+                groundedStraddlingLeftLegWorldRotation = effectors.groundedStraddlingLeftLegWorldRotation;
+                groundedStraddlingRightLegWorldPosition = effectors.groundedStraddlingRightLegWorldPosition;
+                groundedStraddlingRightLegWorldRotation = effectors.groundedStraddlingRightLegWorldRotation;
+            }
+            else
+            {
+                hipTargetWorldPosition = effectors.hipTarget.position;
+                hipTargetWorldRotation = effectors.hipTarget.rotation;
+                leftHandTargetWorldPosition = effectors.leftHandTarget.position;
+                leftHandTargetWorldRotation = effectors.leftHandTarget.rotation;
+                rightHandTargetWorldPosition = effectors.rightHandTarget.position;
+                rightHandTargetWorldRotation = effectors.rightHandTarget.rotation;
+                leftFootTargetWorldPosition = effectors.leftFootTarget.position;
+                leftFootTargetWorldRotation = effectors.leftFootTarget.rotation;
+                rightFootTargetWorldPosition = effectors.rightFootTarget.position;
+                rightFootTargetWorldRotation = effectors.rightFootTarget.rotation;
+                chestTargetWorldPosition = effectors.useChest > 0f ? effectors.chestTarget.position : float3.zero;
+                chestTargetWorldRotation = effectors.useChest > 0f ? effectors.chestTarget.rotation : quaternion.identity;
+                leftLowerArmWorldPosition = effectors.useLeftLowerArm > 0f ? effectors.leftLowerArmTarget.position : float3.zero;
+                leftLowerArmWorldRotation = effectors.useLeftLowerArm > 0f ? effectors.leftLowerArmTarget.rotation : quaternion.identity;
+                rightLowerArmWorldPosition = effectors.useRightLowerArm > 0f ? effectors.rightLowerArmTarget.position : float3.zero;
+                rightLowerArmWorldRotation = effectors.useRightLowerArm > 0f ? effectors.rightLowerArmTarget.rotation : quaternion.identity;
+                groundedStraddlingLeftLegWorldPosition = effectors.useStraddlingLeftLeg ? effectors.groundedStraddlingLeftLeg.position : float3.zero;
+                groundedStraddlingLeftLegWorldRotation = effectors.useStraddlingLeftLeg ? effectors.groundedStraddlingLeftLeg.rotation : quaternion.identity;
+                groundedStraddlingRightLegWorldPosition = effectors.useStraddlingRightLeg ? effectors.groundedStraddlingRightLeg.position : float3.zero;
+                groundedStraddlingRightLegWorldRotation = effectors.useStraddlingRightLeg ? effectors.groundedStraddlingRightLeg.rotation : quaternion.identity;
+            }
+
+            if (needsEnvironmental)
+            {
+                hipTargetWorldPosition = math.lerp(hipTargetWorldPosition, environmentalPos, effectors.useHipsFromEnvironmental);
+                hipTargetWorldRotation = math.slerp(hipTargetWorldRotation, environmentalRot, effectors.useHipsFromEnvironmental);
+            }
+            
             var providedLossyScale = _bones[(int)Hips].lossyScale;
             Profiler.EndSample();
             
