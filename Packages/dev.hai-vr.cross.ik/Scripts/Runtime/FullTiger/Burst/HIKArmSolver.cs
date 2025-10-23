@@ -232,7 +232,7 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(tipBone, definition, scale);
             
 #if UNITY_EDITOR && true
-            if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0)
+            if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0 && (debugDrawFlags & HIKDebugDrawFlags.ShowTwist) != 0)
             {
                 var midPos = ikSnapshot.absolutePos[(int)midBone];
                 var pivotVec = math.mul(ikSnapshot.absoluteRot[(int)rootBone], math.up()) * 0.04f;

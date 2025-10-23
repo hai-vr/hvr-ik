@@ -111,7 +111,7 @@ namespace HVR.IK.FullTiger
             }
             
 #if UNITY_EDITOR && true
-            if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0)
+            if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0 && (debugDrawFlags & HIKDebugDrawFlags.ShowTwist) != 0)
             {
                 HIKTwoBoneAlgorithms.DrawTwist(ikSnapshot, rootBone, midBone, math.down());
                 HIKTwoBoneAlgorithms.DrawTwist(ikSnapshot, midBone, tipBone, math.down());

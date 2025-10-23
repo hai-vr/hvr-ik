@@ -216,5 +216,6 @@ namespace HVR.IK.FullTiger
         ShowSpine = 1,
         ShowArm = 2,
         ShowLeg = 4,
+        ShowTwist = 128,
     }
 }
