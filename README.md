@@ -35,6 +35,7 @@ which is achieved by aliasing the Unity.Mathematics library with Godot Engine's 
 > - Arm bend is rudimentary and its heuristics are currently being re-engineered with a several different approaches.
 > - Leg and upper arm twist has pathological issues at acute and extreme angles.
 > - A hip target is currently mandatory, but it will not be required in the future.
+> - Does not yet support armatures that have an upper chest bone.
 
 ## Adding to the scene
 
@@ -53,6 +54,7 @@ In Edit mode:
 - In a GameObject, create a **HIK Full Tiger** component.
     - Set the *Animator* field to the avatar animator.
     - Set the *Effectors* field to the *HIK Effectors* component created above.
+    - The *Environmental* field is optional and will be used in the future to extract data from the surrounding environment and provide poses (ground location, etc.)
 
 Then start Play mode. The hierarchy under *HIK Effectors* will be filled with objects that represent the end effectors.
 
@@ -106,6 +108,8 @@ The *HIK Effectors* component has options that can change the behavior of the so
 - **Self-parenting**: Allows parenting the hands to the body or legs. See [the section about self-parenting](#parenting-the-hand-effectors-to-the-avatar-using-self-parenting) below.
 - **Improve Spine Buckling**: Helps overcoming the spine curvature when the body is upright while the hips-to-neck distance is shorter than default. See [the section about spine buckling](#improving-spine-buckling) below.
 - (EXPERIMENTAL) **Use Fake Double Jointed Knees**: This attempts to prevent the upper leg from clipping into the lower leg by moving the position of the lower leg. See [the fake knee joints](#fake-knee-joints) below.
+- **Use Direct Drive**: For scripting only. When true, none of the effector transforms will be used, and you will need to supply the world position and rotation to hidden fields
+  located within the *HIKEffectors* component, only visible through scripting. Enabling this option before the *HIKEffectors* component is enabled will not generate any of the effector transforms.
 
 *Not recommended:*
 - **Do Not Preserve Hips To Neck Curvature Limit** (defaults to false):
