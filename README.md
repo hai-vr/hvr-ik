@@ -74,7 +74,10 @@ This class is **not ready** for use, as in it won't work at all; this part is un
 
 ## Options
 
-The *HIK Effectors* component has options that can change the behavior of the solver:
+The *HIK Effectors* component has options that can change the behavior of the solver.
+
+#### Spine-related
+
 - **Hip Position Matters More** (defaults to false):
   - When true, ensures that the hip position is always reached. The head may no longer be aligned with the HMD when it is too far from it.
   - When false, ensures that the head position is always reached, even if it means moving the hips away from its effector.
@@ -83,33 +86,69 @@ The *HIK Effectors* component has options that can change the behavior of the so
   - When true, removes the minimum distance limit between the head and the hips.
   - When false, there is a minimum distance between the head and the hips, which depends on the head angle.
     This is designed to avoid odd-looking poses where the spine chain is crunched on itself.
+- **Do Not Preserve Hips To Neck Curvature Limit** (defaults to false): See [Not Recommended](#not-recommended) below.
+- **Improve Spine Buckling**: Helps overcoming the spine curvature when the body is upright while the hips-to-neck distance is shorter than default. See [the section about spine buckling](#improving-spine-buckling) below.
+
+#### Automatic Chest
+
 - **Chest Rotation Uses Head** (defaults to 0):
   - When closest to 1, the chest rotation uses the Head roll. This has no effect when *Use Chest* is closest to 1.
   - When closest to 0, the chest rotation uses the Hip roll. This has no effect when *Use Chest* is closest to 1.
+
+#### Chest effector
+
+- **Use Chest**:
+    - When closest to 1, the chest position and rotation will be influenced by the chest effector.
+    - When closest to 0, the chest position and rotation will be chosen by default as if there was no chest effector.
+- **Also Use Chest to Move Neck**:
+    - When this is closest to 1 *and Use Chest* is also closest to 1, the chest position and rotation will influence the position of the neck, which may tilt the upper body.
+    - Otherwise, the neck position will be solved by default as if there was no chest effector.
+
+#### Arm bend
+
+- **Use L/R Lower Arm**:
+    - When closest to 1, the arm will bend towards the lower arm effector.
+    - When closest to 0, the arm will bend using the default arm bend direction heuristics.
+
+#### Struggle
+
+- **Struggle**: Improves how fast the arm angle opens when the maximum arm length is being reached. See [Struggle section](#struggle) below.
+
+#### Shoulder
+
+- **Use Shoulder** (defaults to 0):
+    - When closest to 1, the shoulder rotation may move based on the direction and how far the hand is away from the upper arm root bone position at rest.
+    - When closest to 0, the shoulder willl be at its rest position.
+- **Shoulder Forward Angle Multiplier**: When the hand is trying to reach in the forward direction of the chest, multiply the default maximum shoulder angle by this value.
+- **Shoulder Upward Angle Multiplier**: When the hand is trying to reach in the upward direction of the chest, multiply the default maximum shoulder angle by this value.
+
+#### Straddling
+    
 - **Use Straddling Left/Right Leg** (defaults to false):
   - When true, the upper leg will always point towards the lower leg effector, and the lower leg will point towards the foot effector; the foot position will no longer match.
     This is designed to enable poses where grounding the knees matters more than accurately positioning the feet.
   - When false, the lower leg effector only suggests the direction of the bend, and the foot position will match.
-- **Use Chest**:
-  - When closest to 1, the chest position and rotation will be influenced by the chest effector.
-  - When closest to 0, the chest position and rotation will be chosen by default as if there was no chest effector.
-- **Also Use Chest to Move Neck**:
-  - When this is closest to 1 *and Use Chest* is also closest to 1, the chest position and rotation will influence the position of the neck, which may tilt the upper body.
-  - Otherwise, the neck position will be solved by default as if there was no chest effector.
-- **Use L/R Lower Arm**:
-  - When closest to 1, the arm will bend towards the lower arm effector.
-  - When closest to 0, the arm will bend using the default arm bend direction heuristics.
-- **Use Shoulder** (defaults to 0):
-  - When closest to 1, the shoulder rotation may move based on the direction and how far the hand is away from the upper arm root bone position at rest.
-  - When closest to 0, the shoulder willl be at its rest position.
-  - **Shoulder Forward Angle Multiplier**: When the hand is trying to reach in the forward direction of the chest, multiply the default maximum shoulder angle by this value.
-  - **Shoulder Upward Angle Multiplier**: When the hand is trying to reach in the upward direction of the chest, multiply the default maximum shoulder angle by this value.
-- **Struggle**: Improves how fast the arm angle opens when the maximum arm length is being reached. See [Struggle section](#struggle) below.
+
+#### Self-parenting
+
 - **Self-parenting**: Allows parenting the hands to the body or legs. See [the section about self-parenting](#parenting-the-hand-effectors-to-the-avatar-using-self-parenting) below.
-- **Improve Spine Buckling**: Helps overcoming the spine curvature when the body is upright while the hips-to-neck distance is shorter than default. See [the section about spine buckling](#improving-spine-buckling) below.
+
+#### Environmental
+
+- **Use Hips from Environmental**:
+  - When closest to 1, the hips position and rotation will be sampled from the *HIKEnvironmental* component, which gets data from environmental factors such as gravity and colliders.
+  - When closest to 0, the hips position and rotation will use the Hips effector.
+
+#### Experimental
+
 - (EXPERIMENTAL) **Use Fake Double Jointed Knees**: This attempts to prevent the upper leg from clipping into the lower leg by moving the position of the lower leg. See [the fake knee joints](#fake-knee-joints) below.
+
+#### Direct drive
+
 - **Use Direct Drive**: For scripting only. When true, none of the effector transforms will be used, and you will need to supply the world position and rotation to hidden fields
   located within the *HIKEffectors* component, only visible through scripting. Enabling this option before the *HIKEffectors* component is enabled will not generate any of the effector transforms.
+
+#### Not recommended
 
 *Not recommended:*
 - **Do Not Preserve Hips To Neck Curvature Limit** (defaults to false):
