@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
@@ -26,6 +27,85 @@ using static UnityEngine.HumanBodyBones;
 namespace HVR.IK.FullTiger
 {
     public class HIKFullTiger : MonoBehaviour
+    {
+        public Animator animator;
+        public HIKEffectors effectors;
+        public HIKEnvironmental environmental;
+        public bool updateInLateUpdate = false;
+        public bool useJobSystem = false;
+        public bool updateEveryFrame = true;
+        public bool overrideDefaultFabrikIterationCount = false;
+        public int fabrikIterations = HIKSpineSolver.Iterations;
+        public bool useLookupTables = true;
+        public bool debugDrawFinalChains = true;
+        public bool debugDrawSolver = true;
+        public HIKDebugDrawFlags debugDrawFlags = (HIKDebugDrawFlags)int.MaxValue;
+        
+        private HIKFullTigerHandler _handler;
+
+        private void Awake()
+        {
+            _handler = new HIKFullTigerHandler
+            {
+                effectors = effectors,
+                environmental = environmental,
+                overrideDefaultFabrikIterationCount = overrideDefaultFabrikIterationCount,
+                fabrikIterations = fabrikIterations,
+                useLookupTables = useLookupTables,
+                debugDrawFinalChains = debugDrawFinalChains,
+                debugDrawSolver = debugDrawSolver,
+                debugDrawFlags = debugDrawFlags,
+            };
+            _handler.SolveDefinitionAndBones(animator);
+        }
+
+        private void Update()
+        {
+            if (!updateEveryFrame) return;
+            
+            // TODO: Detect changes?
+            _handler.effectors = effectors;
+            _handler.environmental = environmental;
+            _handler.overrideDefaultFabrikIterationCount = overrideDefaultFabrikIterationCount;
+            _handler.fabrikIterations = fabrikIterations;
+            _handler.useLookupTables = useLookupTables;
+            _handler.debugDrawFinalChains = debugDrawFinalChains;
+            _handler.debugDrawSolver = debugDrawSolver;
+            _handler.debugDrawFlags = debugDrawFlags;
+            
+            if (useJobSystem)
+            {
+                _handler.PerformRegularSolveInJobSystem();
+            }
+            else
+            {
+                if (!updateInLateUpdate)
+                {
+                    _handler.ExecuteSolver();
+                }
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (!updateEveryFrame) return;
+            
+            if (useJobSystem)
+            {
+                _handler.CompleteJob();
+                _handler.ApplySnapshot();
+            }
+            else
+            {
+                if (updateInLateUpdate)
+                {
+                    _handler.ExecuteSolver();
+                }
+            }
+        }
+    }
+    
+    public class HIKFullTigerHandler
     {
         // private static readonly HumanBodyBones[] ShoulderAndArms = { LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand, RightShoulder, RightUpperArm, RightLowerArm, RightHand };
         // private static readonly HumanBodyBones[] HipsToHead = { Hips, Spine, Chest, UpperChest, Neck, Head };
@@ -73,7 +153,6 @@ namespace HVR.IK.FullTiger
         private static readonly HumanBodyBones[] LeftArmChain = { LeftShoulder, LeftUpperArm, LeftLowerArm, LeftHand };
         private static readonly HumanBodyBones[] RightArmChain = { RightShoulder, RightUpperArm, RightLowerArm, RightHand };
         
-        public Animator animator;
         public HIKEffectors effectors;
         public HIKEnvironmental environmental;
         
@@ -82,12 +161,9 @@ namespace HVR.IK.FullTiger
         
         private readonly Transform[] _bones = new Transform[(int)LastBone];
 
-        [Header("Solver Settings")]
-        public bool updateInLateUpdate = false;
-        public bool useJobSystem = false;
-        public bool updateEveryFrame = true;
         private HIKSnapshot _ikSnapshot = new();
 
+        [Header("Solver Settings")]
         public bool overrideDefaultFabrikIterationCount = false;
         public int fabrikIterations = HIKSpineSolver.Iterations;
         public bool useLookupTables = true;
@@ -107,14 +183,6 @@ namespace HVR.IK.FullTiger
         private JobHandle _jobHandle;
         private NativeArray<HIKSnapshot> _result;
 
-        private void Awake()
-        {
-            definition = SolveDefinition(animator, definition, _bones);
-            
-            // Order matters: This must be instantiated AFTER definition is initialized
-            _ikSolver = new HIKSolver(definition, new HIKLookupTables(ParseLookup()));
-        }
-
         internal static List<float3> ParseLookup()
         {
             // FIXME: The asset may not be available in a built app because it's not referenced
@@ -129,15 +197,40 @@ namespace HVR.IK.FullTiger
             return vectors;
         }
 
-        internal static HIKAvatarDefinition SolveDefinition(Animator animator, HIKAvatarDefinition definition, Transform[] bones)
+        internal void SolveDefinitionAndBones(Animator animator)
         {
+            definition = SolveDefinition(animator, definition, _bones);
+            
+            // Order matters: This must be instantiated AFTER definition is initialized
+            _ikSolver = new HIKSolver(definition, new HIKLookupTables(ParseLookup()));
+        }
+
+        internal void ProvideDefinitionAndBones(HIKAvatarDefinition inputDefinition, Transform[] inputBones)
+        {
+            definition = inputDefinition;
+            Array.Copy(inputBones, _bones, inputBones.Length);
+            
+            // Order matters: This must be instantiated AFTER definition is initialized
+            _ikSolver = new HIKSolver(definition, new HIKLookupTables(ParseLookup()));
+        }
+
+        internal static HIKAvatarDefinition SolveDefinition(Animator animator, HIKAvatarDefinition _, Transform[] bones)
+        {
+            var result = SolveDefinitionFromAnimator(animator);
+            SolveBonesFromAnimator(animator, bones);
+            return result;
+        }
+
+        internal static HIKAvatarDefinition SolveDefinitionFromAnimator(Animator animator)
+        {
+            var definition = new HIKAvatarDefinition();
+            
             // TODO: We should T-Pose the avatar before sampling the hiplative positions
             var hips = animator.GetBoneTransform(Hips);
             foreach (var boneId in AcceptableBodyBones)
             {
                 var i = (int)boneId;
                 var boneNullable = animator.GetBoneTransform(boneId);
-                bones[i] = boneNullable;
                 if (boneNullable != null)
                 {
                     var bone = boneNullable;
@@ -211,42 +304,19 @@ namespace HVR.IK.FullTiger
                 definition.refPoseSpineVecForHeadRotation = new float2(math.dot(math.mul(headRef, math.right()), spineToHeadNormalized), math.dot(math.mul(headRef, math.down()), spineToHeadNormalized));
             }
             
-            definition.capturedWithLossyScale = bones[(int)Hips].lossyScale;
+            definition.capturedWithLossyScale = hips.lossyScale;
             definition.isInitialized = true;
 
             return definition;
         }
 
-        private void Update()
+        internal static void SolveBonesFromAnimator(Animator animator, Transform[] bones)
         {
-            if (useJobSystem)
+            foreach (var boneId in AcceptableBodyBones)
             {
-                PerformRegularSolveInJobSystem();
-            }
-            else
-            {
-                if (!updateInLateUpdate)
-                {
-                    ExecuteSolver();
-                }
-            }
-        }
-
-        private void LateUpdate()
-        {
-            if (useJobSystem)
-            {
-                _jobHandle.Complete();
-                _ikSnapshot = _result[0];
-                _result.Dispose();
-                ApplySnapshot();
-            }
-            else
-            {
-                if (updateInLateUpdate)
-                {
-                    ExecuteSolver();
-                }
+                var i = (int)boneId;
+                var boneNullable = animator.GetBoneTransform(boneId);
+                bones[i] = boneNullable;
             }
         }
 
@@ -265,11 +335,10 @@ namespace HVR.IK.FullTiger
             }
         }
 
-        private void ExecuteSolver() 
+        public void ExecuteSolver() 
         {
             if (!effectors.isActiveAndEnabled) return;
             if (!effectors.IsInitialized()) return;
-            if (!updateEveryFrame) return;
 
             Profiler.BeginSample("HIK Perform Regular Solve");
             PerformRegularSolve();
@@ -295,7 +364,7 @@ namespace HVR.IK.FullTiger
             _ikSnapshot = _ikSolver.Solve(objective, _ikSnapshot, debugDrawSolver, debugDrawFlags);
         }
 
-        private void PerformRegularSolveInJobSystem()
+        public void PerformRegularSolveInJobSystem()
         {
             var objective = CreateObjective();
             
@@ -307,6 +376,13 @@ namespace HVR.IK.FullTiger
                 definition = definition
             };
             _jobHandle = job.Schedule();
+        }
+
+        public void CompleteJob()
+        {
+            _jobHandle.Complete();
+            _ikSnapshot = _result[0];
+            _result.Dispose();
         }
 
         private HIKObjective CreateObjective()

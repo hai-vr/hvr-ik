@@ -214,7 +214,7 @@ namespace HVR.IK.FullTiger.AnimationRigging
             var definition = new HIKAvatarDefinition();
 
             var unboundBones = new Transform[(int)LastBone];
-            definition = HIKFullTiger.SolveDefinition(animator, definition, unboundBones);
+            definition = HIKFullTigerHandler.SolveDefinition(animator, definition, unboundBones);
             var boundBones = unboundBones.Select(t => t != null ? ReadWriteTransformHandle.Bind(animator, t) : default).ToArray();
             
             var solver = new HIKSolver(definition);
