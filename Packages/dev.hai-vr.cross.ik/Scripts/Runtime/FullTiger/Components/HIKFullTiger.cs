@@ -19,10 +19,12 @@ using System.Linq;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Profiling;
 using static UnityEngine.HumanBodyBones;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace HVR.IK.FullTiger
 {
@@ -185,7 +187,8 @@ namespace HVR.IK.FullTiger
 
         internal static List<float3> ParseLookup()
         {
-            // FIXME: The asset may not be available in a built app because it's not referenced
+            // FIXME: The asset may not be available in a built app because it's not referenced. This methodology of using a lookup table is flawed anyway
+#if UNITY_EDITOR
             var lookupTable = AssetDatabase.LoadAssetByGUID<TextAsset>(new GUID("dad70e4f1a7437a43b2cd4b25a877c67")); // This guid is arm_bend_lookup_table.txt
             var vectors = lookupTable.text.Split(';')
                 .Select(s =>
@@ -195,6 +198,9 @@ namespace HVR.IK.FullTiger
                 })
                 .ToList();
             return vectors;
+#else
+            return new List<float3>();
+#endif
         }
 
         internal void SolveDefinitionAndBones(Animator animator)
