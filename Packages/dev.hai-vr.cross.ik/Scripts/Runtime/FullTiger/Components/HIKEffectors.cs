@@ -68,7 +68,7 @@ namespace HVR.IK.FullTiger
         
         [Header("Shoulder")]
         [Range(0, 1)]
-        public float useShoulder = 0f;
+        public float useShoulder = 1f;
         [Range(0, 1)]
         public float shoulderForwardAngleMultiplier = 1f;
         [Range(0, 1)]

@@ -116,7 +116,7 @@ The *HIK Effectors* component has options that can change the behavior of the so
 
 #### Shoulder
 
-- **Use Shoulder** (defaults to 0):
+- **Use Shoulder** (defaults to 1):
     - When closest to 1, the shoulder rotation may move based on the direction and how far the hand is away from the upper arm root bone position at rest.
     - When closest to 0, the shoulder willl be at its rest position.
 - **Shoulder Forward Angle Multiplier**: When the hand is trying to reach in the forward direction of the chest, multiply the default maximum shoulder angle by this value.
