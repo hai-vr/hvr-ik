@@ -78,9 +78,9 @@ The *HIK Effectors* component has options that can change the behavior of the so
 
 #### Spine-related
 
-- **Hip Position Matters More** (defaults to false):
-  - When true, ensures that the hip position is always reached. The head may no longer be aligned with the HMD when it is too far from it.
-  - When false, ensures that the head position is always reached, even if it means moving the hips away from its effector.
+- **Hip Position Matters More** (defaults to 0):
+  - When closest to 1, ensures that the hip position is always reached. The head may no longer be aligned with the HMD when it is too far from it.
+  - When closest to 0, ensures that the head position is always reached, even if it means moving the hips away from its effector.
     This is designed to make sure that the head is always attached to the HMD.
 - **Contortionist** (defaults to false):
   - When true, removes the minimum distance limit between the head and the hips.
