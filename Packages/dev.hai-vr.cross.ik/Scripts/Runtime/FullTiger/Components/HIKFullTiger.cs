@@ -105,6 +105,12 @@ namespace HVR.IK.FullTiger
                 }
             }
         }
+
+        /// This applies a TPose, but the spine curvature defined by the artist will not be present in the pose, so it will look weird.
+        public void ApplyTPoseWithoutRespectingArtistCurvature()
+        {
+            _handler.ApplyTPoseWithoutRespectingArtistCurvature();
+        }
     }
     
     public class HIKFullTigerHandler
@@ -659,6 +665,13 @@ namespace HVR.IK.FullTiger
                 }
             }
 #endif
+        }
+
+        /// This applies a TPose, but the spine curvature defined by the artist will not be present in the pose.
+        public void ApplyTPoseWithoutRespectingArtistCurvature()
+        {
+            _ikSnapshot.MakeTPoseWithoutRespectingArtistCurvature();
+            ApplySnapshot();
         }
     }
 }

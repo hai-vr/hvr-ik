@@ -100,5 +100,42 @@ namespace HVR.IK.FullTiger
                 definition.dataPostRot[ourIndex]
             );
         }
+
+        public void MakeTPoseWithoutRespectingArtistCurvature()
+        {
+            var body = quaternion.LookRotation(math.left(), math.back());
+            absoluteRot.eltHips = body;
+            absoluteRot.eltSpine = body;
+            absoluteRot.eltChest = body;
+            absoluteRot.eltUpperChest = body;
+            absoluteRot.eltNeck = body;
+            absoluteRot.eltHead = body;
+            
+            var legs = quaternion.LookRotation(math.right(), math.back());
+            absoluteRot.eltLeftUpperLeg = legs;
+            absoluteRot.eltLeftLowerLeg = legs;
+            absoluteRot.eltLeftFoot = legs;
+            absoluteRot.eltLeftToes = legs;
+            absoluteRot.eltRightUpperLeg = legs;
+            absoluteRot.eltRightLowerLeg = legs;
+            absoluteRot.eltRightFoot = legs;
+            absoluteRot.eltRightToes = legs;
+
+            var leftSide = quaternion.LookRotation(math.forward(), math.down());
+            // FIXME: Wait, something's weird about this. If we apply leftSide to the lower arm, this twists the arm, so this doesn't seem correct.
+            // We're creating a new quaternion called "SideTwist" to address this, but there may be deeper issue here???
+            var leftSideTwist = quaternion.LookRotation(math.up(), math.forward());
+            absoluteRot.eltLeftShoulder = leftSide;
+            absoluteRot.eltLeftUpperArm = leftSide;
+            absoluteRot.eltLeftLowerArm = leftSideTwist; // ???
+            absoluteRot.eltLeftHand = leftSide;
+            
+            var rightSide = quaternion.LookRotation(math.forward(), math.up()); // Same as identity in Unity
+            var rightSideTwist = quaternion.LookRotation(math.up(), math.back());
+            absoluteRot.eltRightShoulder = rightSide;
+            absoluteRot.eltRightUpperArm = rightSide;
+            absoluteRot.eltRightLowerArm = rightSideTwist; // ???
+            absoluteRot.eltRightHand = rightSide;
+        }
     }
 }
