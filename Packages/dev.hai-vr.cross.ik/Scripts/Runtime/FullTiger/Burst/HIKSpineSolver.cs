@@ -103,15 +103,23 @@ namespace HVR.IK.FullTiger
             void ApplyLimiter(ref float3 in_hipTargetPos, ref float3 in_headTargetPos) {
                 if (math.distance(in_hipTargetPos, in_headTargetPos) > maximumLength)
                 {
-                    if (objective.headAlignmentMattersMore)
+                    if (objective.headAlignmentMattersMore >= 1f)
                     {
                         var toHip = math.normalize(in_hipTargetPos - in_headTargetPos);
                         in_hipTargetPos = in_headTargetPos + toHip * maximumLength;
                     }
-                    else
+                    else if (objective.headAlignmentMattersMore <= 0f)
                     {
                         var toHead = math.normalize(in_headTargetPos - in_hipTargetPos);
                         in_headTargetPos = in_hipTargetPos + toHead * maximumLength;
+                    }
+                    else
+                    {
+                        var direction = math.normalize(in_headTargetPos - in_hipTargetPos);
+                        var center = math.lerp(in_hipTargetPos, in_headTargetPos, objective.headAlignmentMattersMore);
+                        
+                        in_hipTargetPos = center - direction * (maximumLength * objective.headAlignmentMattersMore);
+                        in_headTargetPos = center + direction * (maximumLength * (1f - objective.headAlignmentMattersMore));
                     }
                 }
             }
@@ -237,7 +245,7 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(Head, definition, scale);
             
             // Realign the head, if applicable.
-            if (objective.headAlignmentMattersMore)
+            if (objective.headAlignmentMattersMore > 0f)
             {
                 var headMismatch2 = headTargetPos - ikSnapshot.absolutePos[(int)Head];
                 ikSnapshot.absolutePos[(int)Hips] += headMismatch2;

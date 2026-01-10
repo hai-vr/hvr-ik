@@ -161,7 +161,7 @@ namespace HVR.IK.FullTiger
         internal float3 leftElbowPlaneWorldPosition; // TODO: Not implemented
         internal float3 leftElbowPlaneWorldNormal; // TODO: Not implemented
         
-        internal bool headAlignmentMattersMore;
+        internal float headAlignmentMattersMore;
         internal bool allowContortionist;
         internal bool doNotPreserveHipsToNeckCurvatureLimit;
         

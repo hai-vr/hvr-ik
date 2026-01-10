@@ -551,7 +551,7 @@ namespace HVR.IK.FullTiger
                 rightLowerArmWorldPosition = rightLowerArmWorldPosition,
                 rightLowerArmWorldRotation = rightLowerArmWorldRotation,
                 
-                headAlignmentMattersMore = !effectors.hipPositionMattersMore,
+                headAlignmentMattersMore = 1 - effectors.hipPositionMattersMore,
                 allowContortionist = effectors.contortionist,
                 doNotPreserveHipsToNeckCurvatureLimit = effectors.doNotPreserveHipsToNeckCurvatureLimit,
                 

@@ -35,7 +35,8 @@ namespace HVR.IK.FullTiger
         public Transform rightFootTarget;
         
         [Header("Spine")]
-        public bool hipPositionMattersMore;
+        [Range(0, 1)]
+        public float hipPositionMattersMore;
         public bool contortionist;
         public bool doNotPreserveHipsToNeckCurvatureLimit;
         [Range(0, 1)]
