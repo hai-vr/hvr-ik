@@ -208,12 +208,24 @@ namespace HVR.IK.FullTiger
 
             float3 upperTwist;
             if (UpperTwistIsBasedOnEffectiveArmBend) {
+                // Implementation A)
                 // The upper twist uses the effective arm bend (not the heuristic), so that it's orthogonal to the upper arm--lower arm pivot axis;
                 // However, when the upper arm--lower arm tends to be straight, we fall back to the twistiness based on the chest reference.
                 var nCross = math.cross(math.normalize(objectivePos - bendPointPos), math.normalize(rootPos - bendPointPos));
                 upperTwist = math.lerp(math.mul(chestReference, _twistiness), nCross, math.unlerp(0f, 0.5f, math.length(nCross)));
             }
+            else if (true)
+            {
+                // Implementation C)
+                // Same as B), but it's rotated 90 degrees. It seems to get rid of the shoulder--upper arm twisting weirdly?
+                upperTwist = math.normalize(
+                    // TODO: NOT TESTED ON GODOT
+                    math.cross(math.cross(bendDirection, objectivePos - rootPos), objectivePos - rootPos)
+                ); // TODO: GODOT NOT EVALUATED TWIST, SUSPICIOUS_LEFT_HAND_RULE
+                if (side == ArmSide.Right) upperTwist = -upperTwist;
+            }
             else {
+                // Implementation B)
                 // The upper twist uses the arm bend heuristic, so that it's orthogonal to the upper arm--lower arm pivot axis.
                 upperTwist = math.normalize(math.cross(bendDirection, objectivePos - rootPos)); // TODO: GODOT NOT EVALUATED TWIST, SUSPICIOUS_LEFT_HAND_RULE
             }
