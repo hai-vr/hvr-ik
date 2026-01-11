@@ -215,6 +215,29 @@ namespace HVR.IK.FullTiger
         {
             return MbusUtil.NewTransform(targetName, runtimeTargets, bone.position, bone.rotation * postRotation);
         }
+
+        public void ResetEffectorsBackToBones()
+        {
+            if (null != hipTarget) ResetEffectorBackToBone(hipTarget, HumanBodyBones.Hips);
+            if (null != headTarget) ResetEffectorBackToBone(headTarget, HumanBodyBones.Head);
+            if (null != leftHandTarget) ResetEffectorBackToBone(leftHandTarget, HumanBodyBones.LeftHand);
+            if (null != rightHandTarget) ResetEffectorBackToBone(rightHandTarget, HumanBodyBones.RightHand);
+            if (null != leftFootTarget) ResetEffectorBackToBone(leftFootTarget, HumanBodyBones.LeftFoot);
+            if (null != rightFootTarget) ResetEffectorBackToBone(rightFootTarget, HumanBodyBones.RightFoot);
+            if (null != groundedStraddlingLeftLeg) ResetEffectorBackToBone(groundedStraddlingLeftLeg, HumanBodyBones.LeftLowerLeg);
+            if (null != groundedStraddlingRightLeg) ResetEffectorBackToBone(groundedStraddlingRightLeg, HumanBodyBones.RightLowerLeg);
+            
+            if (null != chestTarget) ResetEffectorBackToBone(chestTarget, HumanBodyBones.Chest);
+            if (null != leftLowerArmTarget) ResetEffectorBackToBone(leftLowerArmTarget, HumanBodyBones.Chest);
+            if (null != rightLowerArmTarget) ResetEffectorBackToBone(rightLowerArmTarget, HumanBodyBones.Chest);
+        }
+
+        public void ResetEffectorBackToBone(Transform effectorToMove, HumanBodyBones which)
+        {
+            var bone = animator.GetBoneTransform(which);
+            effectorToMove.position = bone.position;
+            effectorToMove.rotation = bone.rotation * MbusAnimatorUtil.ReflectiveGetPostRotation(animator.avatar, which);
+        }
     }
 }
 #endif
