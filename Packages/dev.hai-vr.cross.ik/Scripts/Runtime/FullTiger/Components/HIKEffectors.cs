@@ -149,8 +149,8 @@ namespace HVR.IK.FullTiger
                 if (null == groundedStraddlingRightLeg) groundedStraddlingRightLeg = CreateTarget(HumanBodyBones.RightLowerLeg, "GroundedStraddlingRightLeg");
             
                 if (null == chestTarget) chestTarget = CreateTarget(HumanBodyBones.Chest, "ChestTarget");
-                if (null == leftLowerArmTarget) leftLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "LeftLowerArmTarget");
-                if (null == rightLowerArmTarget) rightLowerArmTarget = CreateTarget(HumanBodyBones.Chest, "RightLowerArmTarget");
+                if (null == leftLowerArmTarget) leftLowerArmTarget = CreateTarget(HumanBodyBones.LeftLowerArm, "LeftLowerArmTarget");
+                if (null == rightLowerArmTarget) rightLowerArmTarget = CreateTarget(HumanBodyBones.RightLowerArm, "RightLowerArmTarget");
 
                 _tPosePos = AllTargetsStartingWithHead().Select(t => t.position).ToArray();
                 _tPoseRot = AllTargetsStartingWithHead().Select(t => t.rotation).ToArray();
@@ -228,8 +228,8 @@ namespace HVR.IK.FullTiger
             if (null != groundedStraddlingRightLeg) ResetEffectorBackToBone(groundedStraddlingRightLeg, HumanBodyBones.RightLowerLeg);
             
             if (null != chestTarget) ResetEffectorBackToBone(chestTarget, HumanBodyBones.Chest);
-            if (null != leftLowerArmTarget) ResetEffectorBackToBone(leftLowerArmTarget, HumanBodyBones.Chest);
-            if (null != rightLowerArmTarget) ResetEffectorBackToBone(rightLowerArmTarget, HumanBodyBones.Chest);
+            if (null != leftLowerArmTarget) ResetEffectorBackToBone(leftLowerArmTarget, HumanBodyBones.LeftLowerArm);
+            if (null != rightLowerArmTarget) ResetEffectorBackToBone(rightLowerArmTarget, HumanBodyBones.RightLowerArm);
         }
 
         public void ResetEffectorBackToBone(Transform effectorToMove, HumanBodyBones which)
