@@ -105,6 +105,10 @@ namespace HVR.IK.FullTiger
                 }
             }
         }
+
+        public void ExecuteSolver() => _handler.ExecuteSolver();
+        public void PerformRegularSolve() => _handler.PerformRegularSolve();
+        public void ApplySnapshot() => _handler.ApplySnapshot();
     }
     
     public class HIKFullTigerHandler
