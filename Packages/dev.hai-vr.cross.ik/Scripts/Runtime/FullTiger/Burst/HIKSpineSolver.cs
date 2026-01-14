@@ -134,11 +134,11 @@ namespace HVR.IK.FullTiger
             if (objective.improveSpineBuckling > 0f)
             {
                 var effectiveDistanceAfterCorrections = math.distance(hipTargetPos, headTargetPos);
-                var proportionAwayFromMaximalLength = 1 - effectiveDistanceAfterCorrections / maximumLength;
+                var amountAwayFromMaximallyStraightenedLength = maximumLength - effectiveDistanceAfterCorrections;
                 var tensionDirection = math.normalize(hipTargetPos - headTargetPos);
                 var tensionVectorIsSimilarToSpineVector = math.smoothstep(0f, 1f, math.clamp(math.unlerp(0.96f, 1f, math.dot(math.normalize(-hipsSpineVecUpwards), tensionDirection)), 0f, 1f));
 
-                var totalTension = proportionAwayFromMaximalLength * tensionVectorIsSimilarToSpineVector * objective.improveSpineBuckling * scale;
+                var totalTension = amountAwayFromMaximallyStraightenedLength * tensionVectorIsSimilarToSpineVector * objective.improveSpineBuckling * scale;
                 if (totalTension > 0f)
                 {
                     var tensionVector = tensionDirection * totalTension;
