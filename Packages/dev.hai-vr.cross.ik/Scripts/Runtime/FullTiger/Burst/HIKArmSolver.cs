@@ -207,6 +207,10 @@ namespace HVR.IK.FullTiger
             (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, TODO_STRADDLING_IS_FALSE, TODO_NO_STRADDLING_POSITION, distanceType, bendDirection, debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowArm) != 0);
 
             float3 upperTwist;
+            
+            // We're disabling unreached code detected because I'm still not set on how to handle the arm twist.
+            // Once I'm set then we can delete the unnecessary branches.
+#pragma warning disable CS0162 // Unreachable code detected
             if (UpperTwistIsBasedOnEffectiveArmBend) {
                 // Implementation A)
                 // The upper twist uses the effective arm bend (not the heuristic), so that it's orthogonal to the upper arm--lower arm pivot axis;
@@ -229,6 +233,7 @@ namespace HVR.IK.FullTiger
                 // The upper twist uses the arm bend heuristic, so that it's orthogonal to the upper arm--lower arm pivot axis.
                 upperTwist = math.normalize(math.cross(bendDirection, objectivePos - rootPos)); // TODO: GODOT NOT EVALUATED TWIST, SUSPICIOUS_LEFT_HAND_RULE
             }
+#pragma warning restore CS0162 // Unreachable code detected
 
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
                 hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, upperTwist),
