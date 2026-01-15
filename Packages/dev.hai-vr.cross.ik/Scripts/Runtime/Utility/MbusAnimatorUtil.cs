@@ -27,7 +27,7 @@ using math = hvr_godot_math;
 namespace HVR.IK.FullTiger
 {
     /// Please only call this from the main thread.
-    internal static class MbusAnimatorUtil
+    public static class MbusAnimatorUtil
     {
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
         private static readonly MethodInfo ReflectiveGetPostRotationFn = AvatarPrivateInstanceMethod("GetPostRotation");
