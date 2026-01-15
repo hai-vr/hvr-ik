@@ -110,6 +110,13 @@ The *HIK Effectors* component has options that can change the behavior of the so
     - When closest to 1, the arm will bend towards the lower arm effector.
     - When closest to 0, the arm will bend using the default arm bend direction heuristics.
 
+#### Leg bend
+
+- **Use L/R Lower Leg**:
+  - When closest to 1, the leg will bend towards the lower leg effector.
+  - When closest to 0, the leg will bend using the default leg bend direction heuristics.
+  - *This function has no effect if the [Straddling](#straddling) feature is enabled.*
+
 #### Struggle
 
 - **Struggle**: Improves how fast the arm angle opens when the maximum arm length is being reached. See [Struggle section](#struggle) below.
