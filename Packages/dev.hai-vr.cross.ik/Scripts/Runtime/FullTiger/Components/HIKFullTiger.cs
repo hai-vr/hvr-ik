@@ -431,6 +431,10 @@ namespace HVR.IK.FullTiger
             quaternion leftLowerArmWorldRotation;
             float3 rightLowerArmWorldPosition;
             quaternion rightLowerArmWorldRotation;
+            float3 leftLowerLegWorldPosition;
+            quaternion leftLowerLegWorldRotation;
+            float3 rightLowerLegWorldPosition;
+            quaternion rightLowerLegWorldRotation;
             float3 groundedStraddlingLeftLegWorldPosition;
             quaternion groundedStraddlingLeftLegWorldRotation;
             float3 groundedStraddlingRightLegWorldPosition;
@@ -453,6 +457,10 @@ namespace HVR.IK.FullTiger
                 leftLowerArmWorldRotation = effectors.leftLowerArmWorldRotation;
                 rightLowerArmWorldPosition = effectors.rightLowerArmWorldPosition;
                 rightLowerArmWorldRotation = effectors.rightLowerArmWorldRotation;
+                leftLowerLegWorldPosition = effectors.leftLowerLegWorldPosition;
+                leftLowerLegWorldRotation = effectors.leftLowerLegWorldRotation;
+                rightLowerLegWorldPosition = effectors.rightLowerLegWorldPosition;
+                rightLowerLegWorldRotation = effectors.rightLowerLegWorldRotation;
                 groundedStraddlingLeftLegWorldPosition = effectors.groundedStraddlingLeftLegWorldPosition;
                 groundedStraddlingLeftLegWorldRotation = effectors.groundedStraddlingLeftLegWorldRotation;
                 groundedStraddlingRightLegWorldPosition = effectors.groundedStraddlingRightLegWorldPosition;
@@ -476,6 +484,10 @@ namespace HVR.IK.FullTiger
                 leftLowerArmWorldRotation = effectors.useLeftLowerArm > 0f ? effectors.leftLowerArmTarget.rotation : quaternion.identity;
                 rightLowerArmWorldPosition = effectors.useRightLowerArm > 0f ? effectors.rightLowerArmTarget.position : float3.zero;
                 rightLowerArmWorldRotation = effectors.useRightLowerArm > 0f ? effectors.rightLowerArmTarget.rotation : quaternion.identity;
+                leftLowerLegWorldPosition = effectors.useLeftLowerLeg > 0f ? effectors.leftLowerLegTarget.position : float3.zero;
+                leftLowerLegWorldRotation = effectors.useLeftLowerLeg > 0f ? effectors.leftLowerLegTarget.rotation : quaternion.identity;
+                rightLowerLegWorldPosition = effectors.useRightLowerLeg > 0f ? effectors.rightLowerLegTarget.position : float3.zero;
+                rightLowerLegWorldRotation = effectors.useRightLowerLeg > 0f ? effectors.rightLowerLegTarget.rotation : quaternion.identity;
                 groundedStraddlingLeftLegWorldPosition = effectors.useStraddlingLeftLeg ? effectors.groundedStraddlingLeftLeg.position : float3.zero;
                 groundedStraddlingLeftLegWorldRotation = effectors.useStraddlingLeftLeg ? effectors.groundedStraddlingLeftLeg.rotation : quaternion.identity;
                 groundedStraddlingRightLegWorldPosition = effectors.useStraddlingRightLeg ? effectors.groundedStraddlingRightLeg.position : float3.zero;
@@ -554,6 +566,13 @@ namespace HVR.IK.FullTiger
                 useRightLowerArm = effectors.useRightLowerArm,
                 rightLowerArmWorldPosition = rightLowerArmWorldPosition,
                 rightLowerArmWorldRotation = rightLowerArmWorldRotation,
+                
+                useLeftLowerLeg = effectors.useLeftLowerLeg,
+                leftLowerLegWorldPosition = leftLowerLegWorldPosition,
+                leftLowerLegWorldRotation = leftLowerLegWorldRotation,
+                useRightLowerLeg = effectors.useRightLowerLeg,
+                rightLowerLegWorldPosition = rightLowerLegWorldPosition,
+                rightLowerLegWorldRotation = rightLowerLegWorldRotation,
                 
                 headAlignmentMattersMore = 1 - effectors.hipPositionMattersMore,
                 allowContortionist = effectors.contortionist,

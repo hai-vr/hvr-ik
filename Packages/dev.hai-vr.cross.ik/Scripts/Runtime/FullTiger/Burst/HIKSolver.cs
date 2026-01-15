@@ -156,6 +156,13 @@ namespace HVR.IK.FullTiger
         internal float useRightLowerArm;
         internal float3 rightLowerArmWorldPosition;
         internal quaternion rightLowerArmWorldRotation; // TODO: We may have to play with the rotation to solve the "straight arm twist" problem.
+        
+        internal float useLeftLowerLeg;
+        internal float3 leftLowerLegWorldPosition;
+        internal quaternion leftLowerLegWorldRotation; // Unlike the arm, this probably won't be needed.
+        internal float useRightLowerLeg;
+        internal float3 rightLowerLegWorldPosition;
+        internal quaternion rightLowerLegWorldRotation; // Unlike the arm, this probably won't be needed.
 
         internal float useLeftElbowPlaneCollider; // TODO: Not implemented
         internal float3 leftElbowPlaneWorldPosition; // TODO: Not implemented

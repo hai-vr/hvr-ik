@@ -61,6 +61,14 @@ namespace HVR.IK.FullTiger
         public float useRightLowerArm;
         public Transform rightLowerArmTarget;
         
+        [Header("Leg bend")]
+        [Range(0, 1)]
+        public float useLeftLowerLeg;
+        public Transform leftLowerLegTarget;
+        [Range(0, 1)]
+        public float useRightLowerLeg;
+        public Transform rightLowerLegTarget;
+        
         [Header("Struggle")]
         public float legStruggleStart = HIKObjective.StruggleStart;
         public float legStruggleEnd = HIKObjective.StruggleEnd;
@@ -123,6 +131,10 @@ namespace HVR.IK.FullTiger
         [HideInInspector] public quaternion leftLowerArmWorldRotation;
         [HideInInspector] public float3 rightLowerArmWorldPosition;
         [HideInInspector] public quaternion rightLowerArmWorldRotation;
+        [HideInInspector] public float3 leftLowerLegWorldPosition;
+        [HideInInspector] public quaternion leftLowerLegWorldRotation;
+        [HideInInspector] public float3 rightLowerLegWorldPosition;
+        [HideInInspector] public quaternion rightLowerLegWorldRotation;
         [HideInInspector] public float3 groundedStraddlingLeftLegWorldPosition;
         [HideInInspector] public quaternion groundedStraddlingLeftLegWorldRotation;
         [HideInInspector] public float3 groundedStraddlingRightLegWorldPosition;
@@ -151,6 +163,8 @@ namespace HVR.IK.FullTiger
                 if (null == chestTarget) chestTarget = CreateTarget(HumanBodyBones.Chest, "ChestTarget");
                 if (null == leftLowerArmTarget) leftLowerArmTarget = CreateTarget(HumanBodyBones.LeftLowerArm, "LeftLowerArmTarget");
                 if (null == rightLowerArmTarget) rightLowerArmTarget = CreateTarget(HumanBodyBones.RightLowerArm, "RightLowerArmTarget");
+                if (null == leftLowerLegTarget) leftLowerLegTarget = CreateTarget(HumanBodyBones.LeftLowerLeg, "LeftLowerLegTarget");
+                if (null == rightLowerLegTarget) rightLowerLegTarget = CreateTarget(HumanBodyBones.RightLowerLeg, "RightLowerLegTarget");
 
                 _tPosePos = AllTargetsStartingWithHead().Select(t => t.position).ToArray();
                 _tPoseRot = AllTargetsStartingWithHead().Select(t => t.rotation).ToArray();
@@ -230,6 +244,8 @@ namespace HVR.IK.FullTiger
             if (null != chestTarget) ResetEffectorBackToBone(chestTarget, HumanBodyBones.Chest);
             if (null != leftLowerArmTarget) ResetEffectorBackToBone(leftLowerArmTarget, HumanBodyBones.LeftLowerArm);
             if (null != rightLowerArmTarget) ResetEffectorBackToBone(rightLowerArmTarget, HumanBodyBones.RightLowerArm);
+            if (null != leftLowerLegTarget) ResetEffectorBackToBone(leftLowerLegTarget, HumanBodyBones.LeftLowerLeg);
+            if (null != rightLowerLegTarget) ResetEffectorBackToBone(rightLowerLegTarget, HumanBodyBones.RightLowerLeg);
         }
 
         public void ResetEffectorBackToBone(Transform effectorToMove, HumanBodyBones which)

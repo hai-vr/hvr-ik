@@ -68,7 +68,16 @@ namespace HVR.IK.FullTiger
 
             float3 LegBendHeuristics()
             {
-                return math.normalize(math.mul(originalObjectiveRot, math.down() + math.left()));
+                var useBend = side == LegSide.Right ? objective.useRightLowerLeg : objective.useLeftLowerLeg;
+                var midPoint = (objectivePos + rootPos) * 0.5f;
+                var directedBend = math.normalize(MbusGeofunctions.Straighten((side == LegSide.Right ? objective.rightLowerLegWorldPosition : objective.leftLowerLegWorldPosition) - midPoint, objectivePos - rootPos));
+                if (useBend >= 1f)
+                {
+                    return directedBend;
+                }
+
+                var regular = math.normalize(math.mul(originalObjectiveRot, math.down() + math.left()));
+                return useBend <= 0 ? regular : math.lerp(regular, directedBend, useBend);
             }
 
             // Solve
