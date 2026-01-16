@@ -2,7 +2,7 @@
     "name": "dev.hai-vr.cross.ik",
     "displayName": "HVR IK",
     "version": "0.0.1",
-    "description": "",
+    "description": "Yet another IK solver",
     "unity": "6000.0",
     "author": "Haï~",
     "vpmDependencies": {

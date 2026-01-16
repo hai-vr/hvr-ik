@@ -37,6 +37,12 @@ which is achieved by aliasing the Unity.Mathematics library with Godot Engine's 
 > - A hip target is currently mandatory, but it will not be required in the future.
 > - Does not yet support armatures that have an upper chest bone.
 
+### HVR
+
+This project is currently being used as part of an internal project by Haï~ which is not public at this time of writing.
+
+Some commits and code may happen to be specific to that internal project.
+
 ## Adding to the scene
 
 > [!NOTE]  
