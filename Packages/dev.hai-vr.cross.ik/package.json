@@ -3,10 +3,7 @@
     "displayName": "HVR IK",
     "version": "0.0.1",
     "description": "Yet another IK solver",
-    "unity": "6000.0",
     "author": "Haï~",
-    "vpmDependencies": {
-    },
     "url": "https://docs.hai-vr.dev/docs/hvr/ik",
     "documentationUrl": "https://docs.hai-vr.dev/docs/hvr/ik",
     "changelogUrl": "https://docs.hai-vr.dev/docs/hvr/ik",

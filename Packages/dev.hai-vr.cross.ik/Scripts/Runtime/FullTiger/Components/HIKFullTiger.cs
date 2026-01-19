@@ -193,7 +193,9 @@ namespace HVR.IK.FullTiger
         {
             // FIXME: The asset may not be available in a built app because it's not referenced. This methodology of using a lookup table is flawed anyway
 #if UNITY_EDITOR
-            var lookupTable = AssetDatabase.LoadAssetByGUID<TextAsset>(new GUID("dad70e4f1a7437a43b2cd4b25a877c67")); // This guid is arm_bend_lookup_table.txt
+            // LoadAssetByGUID is not available in Unity 2022
+            var assetPath = AssetDatabase.GUIDToAssetPath(new GUID("dad70e4f1a7437a43b2cd4b25a877c67"));
+            var lookupTable = AssetDatabase.LoadAssetAtPath<TextAsset>(assetPath); // This guid is arm_bend_lookup_table.txt
             var vectors = lookupTable.text.Split(';')
                 .Select(s =>
                 {
