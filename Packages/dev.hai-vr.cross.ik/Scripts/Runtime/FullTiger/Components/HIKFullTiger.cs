@@ -65,16 +65,8 @@ namespace HVR.IK.FullTiger
         {
             if (!updateEveryFrame) return;
             
-            // TODO: Detect changes?
-            _handler.effectors = effectors;
-            _handler.environmental = environmental;
-            _handler.overrideDefaultFabrikIterationCount = overrideDefaultFabrikIterationCount;
-            _handler.fabrikIterations = fabrikIterations;
-            _handler.useLookupTables = useLookupTables;
-            _handler.debugDrawFinalChains = debugDrawFinalChains;
-            _handler.debugDrawSolver = debugDrawSolver;
-            _handler.debugDrawFlags = debugDrawFlags;
-            
+            UpdateHandlerRefs();
+
             if (useJobSystem)
             {
                 _handler.PerformRegularSolveInJobSystem();
@@ -86,6 +78,19 @@ namespace HVR.IK.FullTiger
                     _handler.ExecuteSolver();
                 }
             }
+        }
+
+        public void UpdateHandlerRefs()
+        {
+            // TODO: Detect changes?
+            _handler.effectors = effectors;
+            _handler.environmental = environmental;
+            _handler.overrideDefaultFabrikIterationCount = overrideDefaultFabrikIterationCount;
+            _handler.fabrikIterations = fabrikIterations;
+            _handler.useLookupTables = useLookupTables;
+            _handler.debugDrawFinalChains = debugDrawFinalChains;
+            _handler.debugDrawSolver = debugDrawSolver;
+            _handler.debugDrawFlags = debugDrawFlags;
         }
 
         private void LateUpdate()
