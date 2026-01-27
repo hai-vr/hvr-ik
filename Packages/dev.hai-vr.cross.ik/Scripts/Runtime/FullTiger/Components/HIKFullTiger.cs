@@ -114,6 +114,7 @@ namespace HVR.IK.FullTiger
         public void ExecuteSolver() => _handler.ExecuteSolver();
         public void PerformRegularSolve() => _handler.PerformRegularSolve();
         public void ApplySnapshot() => _handler.ApplySnapshot();
+        public void ApplySnapshotToOtherBoneStructure(HIKFullTiger other) => _handler.ApplySnapshotToOtherBoneStructure(other._handler);
     }
     
     public class HIKFullTigerHandler
@@ -626,44 +627,54 @@ namespace HVR.IK.FullTiger
 
         public void ApplySnapshot()
         {
-            _bones[(int)Hips].position = _ikSnapshot.absolutePos[(int)Hips];
-            _bones[(int)Hips].rotation = ConvertSnapshotRotationToBoneRotation(_ikSnapshot, definition, Hips);
-            if (_solveSpine) Apply(CopyOrderSpineAndShoulders);
+            ApplySnapshotToBoneStructure(_bones);
+        }
+
+        public void ApplySnapshotToOtherBoneStructure(HIKFullTigerHandler otherHandler)
+        {
+            ApplySnapshotToBoneStructure(otherHandler._bones);
+        }
+
+        private void ApplySnapshotToBoneStructure(Transform[] boneStructure)
+        {
+            boneStructure[(int)Hips].position = _ikSnapshot.absolutePos[(int)Hips];
+            boneStructure[(int)Hips].rotation = ConvertSnapshotRotationToBoneRotation(_ikSnapshot, definition, Hips);
+            if (_solveSpine) Apply(boneStructure, CopyOrderSpineAndShoulders);
             if (!_useFakeDoubleJointedKneesWasEverEnabled && effectors.useFakeDoubleJointedKnees <= 0f)
             {
-                if (_solveLeftLeg) Apply(CopyOrderLeftLeg);
-                if (_solveRightLeg) Apply(CopyOrderRightLeg);
+                if (_solveLeftLeg) Apply(boneStructure, CopyOrderLeftLeg);
+                if (_solveRightLeg) Apply(boneStructure, CopyOrderRightLeg);
             }
             else
             {
                 _useFakeDoubleJointedKneesWasEverEnabled = true;
                 if (_solveLeftLeg)
                 {
-                    Apply(LeftUpperLeg);
-                    _bones[(int)LeftLowerLeg].position = _ikSnapshot.absolutePos[(int)LeftLowerLeg];
-                    Apply(LeftLowerLeg, LeftFoot);
-                    _bones[(int)LeftFoot].position = _ikSnapshot.absolutePos[(int)LeftFoot];
+                    Apply(boneStructure, LeftUpperLeg);
+                    boneStructure[(int)LeftLowerLeg].position = _ikSnapshot.absolutePos[(int)LeftLowerLeg];
+                    Apply(boneStructure, LeftLowerLeg, LeftFoot);
+                    boneStructure[(int)LeftFoot].position = _ikSnapshot.absolutePos[(int)LeftFoot];
                 };
                 if (_solveRightLeg)
                 {
-                    Apply(RightUpperLeg);
-                    _bones[(int)RightLowerLeg].position = _ikSnapshot.absolutePos[(int)RightLowerLeg];
-                    Apply(RightLowerLeg, RightFoot);
-                    _bones[(int)RightFoot].position = _ikSnapshot.absolutePos[(int)RightFoot];
+                    Apply(boneStructure, RightUpperLeg);
+                    boneStructure[(int)RightLowerLeg].position = _ikSnapshot.absolutePos[(int)RightLowerLeg];
+                    Apply(boneStructure, RightLowerLeg, RightFoot);
+                    boneStructure[(int)RightFoot].position = _ikSnapshot.absolutePos[(int)RightFoot];
                 }
             }
-            if (_solveLeftArm) Apply(CopyOrderLeftArm);
-            if (_solveRightArm) Apply(CopyOrderRightArm);
+            if (_solveLeftArm) Apply(boneStructure, CopyOrderLeftArm);
+            if (_solveRightArm) Apply(boneStructure, CopyOrderRightArm);
         }
 
-        private void Apply(params HumanBodyBones[] bones)
+        private void Apply(Transform[] boneStructure, params HumanBodyBones[] bones)
         {
             foreach (var boneId in bones)
             {
                 var index = (int)boneId;
                 if (definition.dataHasBone[index])
                 {
-                    _bones[index].rotation = ConvertSnapshotRotationToBoneRotation(_ikSnapshot, definition, boneId);
+                    boneStructure[index].rotation = ConvertSnapshotRotationToBoneRotation(_ikSnapshot, definition, boneId);
                 }
             }
         }
