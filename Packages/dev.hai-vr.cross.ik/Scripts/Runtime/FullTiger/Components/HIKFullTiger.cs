@@ -321,6 +321,13 @@ namespace HVR.IK.FullTiger
                 definition.refPoseSpineVecForHipsRotation = new float2(math.dot(math.mul(hipsRef, math.right()), spineToHeadNormalized), math.dot(math.mul(hipsRef, math.down()), spineToHeadNormalized));
                 definition.refPoseSpineVecForHeadRotation = new float2(math.dot(math.mul(headRef, math.right()), spineToHeadNormalized), math.dot(math.mul(headRef, math.down()), spineToHeadNormalized));
             }
+
+            {
+                // Just in case for feet have different height, take the average.
+                var diffA = definition.refPoseHiplativePos[(int)LeftFoot].y;
+                var diffB = definition.refPoseHiplativePos[(int)RightFoot].y;
+                definition.refHipsToFootHeight = math.abs((diffA + diffB) / 2f);
+            }
             
             definition.capturedWithLossyScale = hips.lossyScale;
             definition.isInitialized = true;
@@ -409,18 +416,49 @@ namespace HVR.IK.FullTiger
             float3 headTargetWorldPosition = effectors.useDirectDrive ? effectors.headWorldPosition : effectors.headTarget.position;
             quaternion headTargetWorldRotation = effectors.useDirectDrive ? effectors.headWorldRotation : effectors.headTarget.rotation;
             
-            var needsEnvironmental = environmental != null && effectors.useHipsFromEnvironmental > 0;
+            var needsEnvironmentalHips = environmental != null && effectors.useHipsFromEnvironmental > 0;
+            var needsEnvironmentalLeftFoot = environmental != null && effectors.useLeftFootFromEnvironmental > 0;
+            var needsEnvironmentalRightFoot = environmental != null && effectors.useRightFootFromEnvironmental > 0;
 
-            float3 environmentalPos;
-            quaternion environmentalRot;
-            if (needsEnvironmental)
+            if (needsEnvironmentalHips || needsEnvironmentalLeftFoot || needsEnvironmentalRightFoot)
             {
-                environmental.SampleHips(definition, headTargetWorldPosition, headTargetWorldRotation, out environmentalPos, out environmentalRot);
+                environmental.PerformRaycast(headTargetWorldPosition, headTargetWorldRotation);
+            }
+
+            float3 environmentalHipsPos;
+            quaternion environmentalHipsRot;
+            if (needsEnvironmentalHips)
+            {
+                environmental.SampleHips(definition, headTargetWorldPosition, headTargetWorldRotation, out environmentalHipsPos, out environmentalHipsRot);
             }
             else
             {
-                environmentalPos = float3.zero;
-                environmentalRot = quaternion.identity;
+                environmentalHipsPos = float3.zero;
+                environmentalHipsRot = quaternion.identity;
+            }
+            
+            float3 environmentalLeftFootPos;
+            quaternion environmentalLeftFootRot;
+            if (needsEnvironmentalLeftFoot)
+            {
+                environmental.SampleLeftFoot(definition, headTargetWorldPosition, headTargetWorldRotation, out environmentalLeftFootPos, out environmentalLeftFootRot);
+            }
+            else
+            {
+                environmentalLeftFootPos = float3.zero;
+                environmentalLeftFootRot = quaternion.identity;
+            }
+            
+            float3 environmentalRightFootPos;
+            quaternion environmentalRightFootRot;
+            if (needsEnvironmentalRightFoot)
+            {
+                environmental.SampleRightFoot(definition, headTargetWorldPosition, headTargetWorldRotation, out environmentalRightFootPos, out environmentalRightFootRot);
+            }
+            else
+            {
+                environmentalRightFootPos = float3.zero;
+                environmentalRightFootRot = quaternion.identity;
             }
 
             float3 hipTargetWorldPosition;
@@ -502,10 +540,20 @@ namespace HVR.IK.FullTiger
                 groundedStraddlingRightLegWorldRotation = effectors.useStraddlingRightLeg ? effectors.groundedStraddlingRightLeg.rotation : quaternion.identity;
             }
 
-            if (needsEnvironmental)
+            if (needsEnvironmentalHips)
             {
-                hipTargetWorldPosition = math.lerp(hipTargetWorldPosition, environmentalPos, effectors.useHipsFromEnvironmental);
-                hipTargetWorldRotation = math.slerp(hipTargetWorldRotation, environmentalRot, effectors.useHipsFromEnvironmental);
+                hipTargetWorldPosition = math.lerp(hipTargetWorldPosition, environmentalHipsPos, effectors.useHipsFromEnvironmental);
+                hipTargetWorldRotation = math.slerp(hipTargetWorldRotation, environmentalHipsRot, effectors.useHipsFromEnvironmental);
+            }
+            if (needsEnvironmentalLeftFoot)
+            {
+                leftFootTargetWorldPosition = math.lerp(leftFootTargetWorldPosition, environmentalLeftFootPos, effectors.useLeftFootFromEnvironmental);
+                leftFootTargetWorldRotation = math.slerp(leftFootTargetWorldRotation, environmentalLeftFootRot, effectors.useLeftFootFromEnvironmental);
+            }
+            if (needsEnvironmentalRightFoot)
+            {
+                rightFootTargetWorldPosition = math.lerp(rightFootTargetWorldPosition, environmentalRightFootPos, effectors.useRightFootFromEnvironmental);
+                rightFootTargetWorldRotation = math.slerp(rightFootTargetWorldRotation, environmentalRightFootRot, effectors.useRightFootFromEnvironmental);
             }
             
             var providedLossyScale = _bones[(int)Hips].lossyScale;

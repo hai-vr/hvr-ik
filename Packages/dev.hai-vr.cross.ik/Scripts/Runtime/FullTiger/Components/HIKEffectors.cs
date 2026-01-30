@@ -106,6 +106,8 @@ namespace HVR.IK.FullTiger
         [Header("Environmental")]
         [Range(0, 1)]
         public float useHipsFromEnvironmental = 0f;
+        public float useLeftFootFromEnvironmental = 0f;
+        public float useRightFootFromEnvironmental = 0f;
         
         [Header("Experimental (CHANGES POSITION)")]
         [Range(0, 1)]
