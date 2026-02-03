@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #if UNITY_2020_1_OR_NEWER //__NOT_GODOT
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
 using UnityEngine;
@@ -26,7 +28,7 @@ namespace HVR.IK.FullTiger
         public Animator animator;
 
         [Header("Classic effectors")]
-        public Transform runtimeTargets;
+        [Obsolete] [HideInInspector] public Transform runtimeTargets;
         public Transform hipTarget;
         public Transform headTarget;
         public Transform leftHandTarget;
@@ -141,6 +143,8 @@ namespace HVR.IK.FullTiger
         [HideInInspector] public quaternion groundedStraddlingLeftLegWorldRotation;
         [HideInInspector] public float3 groundedStraddlingRightLegWorldPosition;
         [HideInInspector] public quaternion groundedStraddlingRightLegWorldRotation;
+        
+        private readonly List<GameObject> _createdRuntimeTargets = new();
 
         private Vector3[] _tPosePos;
         private Quaternion[] _tPoseRot;
@@ -152,7 +156,6 @@ namespace HVR.IK.FullTiger
         {
             if (!useDirectDrive)
             {
-                if (null == runtimeTargets) runtimeTargets = MbusUtil.NewTransform("RuntimeTargets", transform);
                 if (null == hipTarget) hipTarget = CreateTarget(HumanBodyBones.Hips, "HipTarget");
                 if (null == headTarget) headTarget = CreateTarget(HumanBodyBones.Head, "HeadTarget");
                 if (null == leftHandTarget) leftHandTarget = CreateTarget(HumanBodyBones.LeftHand, "LeftHandTarget");
@@ -186,8 +189,11 @@ namespace HVR.IK.FullTiger
             groundedStraddlingLeftLeg = null;
             groundedStraddlingRightLeg = null;
 
-            if (null != runtimeTargets) Destroy(runtimeTargets.gameObject);
-            runtimeTargets = null;
+            foreach (var createdRuntimeTarget in _createdRuntimeTargets)
+            {
+                Destroy(createdRuntimeTarget.gameObject);
+            }
+            _createdRuntimeTargets.Clear();
         }
 
         public void ApplyTPoseAndRepositionHeadToMatch(Vector3 pos, Quaternion rot)
@@ -224,12 +230,14 @@ namespace HVR.IK.FullTiger
 
         private Transform CreateTarget(HumanBodyBones which, string targetName)
         {
-            return CreateTarget(MbusAnimatorUtil.ReflectiveGetPostRotation(animator.avatar, which), animator.GetBoneTransform(which), targetName);
+            var newTarget = DoCreateTarget(MbusAnimatorUtil.ReflectiveGetPostRotation(animator.avatar, which), animator.GetBoneTransform(which), targetName);
+            _createdRuntimeTargets.Add(newTarget.gameObject);
+            return newTarget;
         }
 
-        private Transform CreateTarget(Quaternion postRotation, Transform bone, string targetName)
+        private Transform DoCreateTarget(Quaternion postRotation, Transform bone, string targetName)
         {
-            return MbusUtil.NewTransform(targetName, runtimeTargets, bone.position, bone.rotation * postRotation);
+            return MbusUtil.NewTransform(targetName, transform, bone.position, bone.rotation * postRotation);
         }
 
         public void ResetEffectorsBackToBones()
