@@ -42,9 +42,17 @@ namespace HVR.IK.FullTiger
                     _raycastHitPos = hit.point;
                 }
             }
-            
-            _planarLookDirection = math.mul(headTargetWorldRotation, math.down());
-            _planarLookDirection.y = 0f;
+
+            var lookDirection = math.mul(headTargetWorldRotation, math.down());
+            var lookDirectionY = lookDirection.y;
+            lookDirection.y = 0f;
+            if (math.lengthsq(lookDirection) < 0.05f)
+            {
+                // This fixes "Look rotation viewing vector is zero" logs
+                lookDirection = math.mul(headTargetWorldRotation, lookDirectionY < 0 ? math.right() : math.left());
+                lookDirection.y = 0f;
+            }
+            _planarLookDirection = lookDirection;
 
             _raycastLen = math.length(_raycastHitPos - headTargetWorldPosition);
         }
