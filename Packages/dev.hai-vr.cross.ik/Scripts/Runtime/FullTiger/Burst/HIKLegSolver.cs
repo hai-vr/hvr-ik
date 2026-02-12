@@ -85,13 +85,15 @@ namespace HVR.IK.FullTiger
             (objectivePos, bendPointPos) = HIKTwoBoneAlgorithms.SolveBendPoint(rootPos, objectivePos, originalObjectiveRot, upperLength, lowerLength, useStraddlingLeg, groundedStraddlingLegWorldPosition, distanceType, bendDirection, debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0);
 
             var lowerLegTwistBasedOnFoot = MbusGeofunctions.ReprojectTwistToArm(objectivePos - bendPointPos, math.mul(originalObjectiveRot, math.right()), math.mul(originalObjectiveRot, math.down()));
-            var upperLegTwistBasedOnLowerLeg = MbusGeofunctions.ReprojectTwistToArm(bendPointPos - rootPos, objectivePos - bendPointPos, lowerLegTwistBasedOnFoot);
+            // var upperLegTwistBasedOnLowerLeg = MbusGeofunctions.ReprojectTwistToArm(bendPointPos - rootPos, objectivePos - bendPointPos, lowerLegTwistBasedOnFoot);
+            var upperLegTwistBasedOnBend = math.normalize(math.cross(objectivePos - rootPos, math.cross(bendDirection, objectivePos - rootPos)));
+            var lowerLegTwistHalfway = math.lerp(upperLegTwistBasedOnBend, lowerLegTwistBasedOnFoot, 0.5f);
             ikSnapshot.absoluteRot[(int)rootBone] = math.mul(
-                hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, upperLegTwistBasedOnLowerLeg),
+                hvr_godot_helper_quaternion.LookRotationSafe(bendPointPos - rootPos, upperLegTwistBasedOnBend),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)midBone] = math.mul(
-                hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - bendPointPos, lowerLegTwistBasedOnFoot),
+                hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - bendPointPos, lowerLegTwistHalfway),
                 _reorienter
             );
             ikSnapshot.absoluteRot[(int)tipBone] = originalObjectiveRot;
