@@ -1,5 +1,5 @@
 ﻿#if UNITY_2020_1_OR_NEWER //__NOT_GODOT
-#if HVR_IK_HAS_ANIMATION_RIGGING
+#if HVR_IK_HAS_ANIMATION_RIGGING // (AUDIT) Requires the Animation Rigging package, which isn't necessarily present. For example, we don't use Animation Rigging in HVR.Core, but the Basis Framework does.
 // Copyright 2025 Haï~ (@vr_hai github.com/hai-vr)
 // 
 // Licensed under the Apache License, Version 2.0 (the "License");

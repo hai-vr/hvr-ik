@@ -76,7 +76,7 @@ namespace HVR.IK.FullTiger
                 environmentalRot = math.mul(Quaternion.LookRotation(_planarLookDirection), _lookReorienting);
             }
             
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw environmental raycast results of the hips.
             if (debugDraw)
             {
                 MbusUtil.DrawArrow(headTargetWorldPosition, environmentalPos, Color.white, 0f, false, math.mul(environmentalRot, math.forward()));

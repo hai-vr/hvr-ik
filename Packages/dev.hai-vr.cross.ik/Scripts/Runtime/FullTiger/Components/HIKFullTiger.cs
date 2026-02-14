@@ -22,9 +22,6 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Profiling;
 using static UnityEngine.HumanBodyBones;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace HVR.IK.FullTiger
 {
@@ -366,7 +363,7 @@ namespace HVR.IK.FullTiger
             ApplySnapshot();
             Profiler.EndSample();
 
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the final chains.
             if (debugDrawFinalChains)
             {
                 DrawArmChain(SpineChain);
@@ -727,7 +724,7 @@ namespace HVR.IK.FullTiger
 
         private void DrawArmChain(HumanBodyBones[] array)
         {
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to arm chains; however, this is superfluous as the callers of this function are themselves conditionally compiled.
             float3 prevPos = _bones[(int)array[0]].position + Vector3.up * 0.001f;
             for (var i = 1; i < array.Length; i++)
             {

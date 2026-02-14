@@ -74,7 +74,7 @@ namespace HVR.IK.FullTiger
 
         public static void DrawArrow(float3 start, float3 end, Color color, float duration, bool depthTest, float3 planeNormal, float size = 0.01f)
         {
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables utility function code which is used to draw an arrow.
             var arrowLength = math.distance(end, start);
             var actualSize = arrowLength / 2 > size ? size : arrowLength / 2;
             
@@ -90,7 +90,7 @@ namespace HVR.IK.FullTiger
 
         public static void DrawDirectionArrow(float3 start, float3 end, Color color, float duration, bool depthTest, float3 planeNormal, float size = 0.01f)
         {
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables utility function code which is used to draw a directional arrow.
             var arrowLength = math.distance(end, start);
             var actualSize = arrowLength / 2 > size ? size : arrowLength / 2;
             

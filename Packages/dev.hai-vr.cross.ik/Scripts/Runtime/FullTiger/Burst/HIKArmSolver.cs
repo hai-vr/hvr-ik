@@ -144,7 +144,7 @@ namespace HVR.IK.FullTiger
                     var prevRootPos = rootPos;
                     rootPos = ikSnapshot.absolutePos[(int)rootBone];
 
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the shoulder extension.
                     if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowArm) != 0)
                     {
                         MbusUtil.DrawArrow(prevRootPos, rootPos, Color.magenta, 0f, false, chestUpwards);
@@ -175,7 +175,7 @@ namespace HVR.IK.FullTiger
                     ? math.normalize(MbusGeofunctions.Straighten(_lookupTableNullable.GetBendPositionInWorldSpace__UsingLookupTable(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength) - midPoint, objectivePos - rootPos))
                     : HIKArmBendDefaultHeuristics.GetBendDirectionInWorldSpace(side, chestReference, rootPos, objectivePos, originalObjectiveRot, totalArmLength);
                 
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the arm bend direction.
                 var isSpecialDebugComparisonMode = false;
                 if ((debugDrawSolver && isUsingLookupTable || isSpecialDebugComparisonMode) && (debugDrawFlags & HIKDebugDrawFlags.ShowArm) != 0)
                 {
@@ -248,7 +248,7 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(midBone, definition, scale);
             ikSnapshot.ReevaluatePosition(tipBone, definition, scale);
             
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the twist of the arm.
             if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowArm) != 0 && (debugDrawFlags & HIKDebugDrawFlags.ShowTwist) != 0)
             {
                 var midPos = ikSnapshot.absolutePos[(int)midBone];

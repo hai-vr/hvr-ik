@@ -38,7 +38,7 @@ namespace HVR.IK.FullTiger
         private HIKSpineData<float> _spineDistances;
         private readonly float _hipsToSpineToChestToNeckToHeadLength;
 
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code that references colors normally used to draw debug lines. 
         private static readonly Color lawnGreen = new Color(0.4862745f, 0.9882354f, 0.0f, 1f);
         private static readonly Color lawnGreenTransparent = new Color(0.4862745f, 0.9882354f, 0.0f, 0.3f);
         private static readonly Color coral = new Color(1f, 0.4980392f, 0.3137255f, 1f);
@@ -80,14 +80,14 @@ namespace HVR.IK.FullTiger
                 if (math.distance(originalHipTargetPos, headTargetPos) < definition.refPoseHipToHeadLength * ff) // TODO: Allow this to be closer if the head and hip are not in the same direction
                 {
                     hipTargetPos = headTargetPos - math.normalize(headTargetPos - originalHipTargetPos) * definition.refPoseHipToHeadLength * ff;
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the spine compression limit being overloaded.
                     if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0) Debug.DrawLine(headTargetPos, hipTargetPos, Color.red, 0f, false);
 #endif
                 }
                 else
                 {
                     var kk = math.normalize(headTargetPos - hipTargetPos) * definition.refPoseHipToHeadLength * ff;
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the spine compression limit.
                     if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0) Debug.DrawLine(hipTargetPos, hipTargetPos + kk, Color.yellow, 0f, false);
 #endif
                 }
@@ -146,7 +146,7 @@ namespace HVR.IK.FullTiger
                     hipTargetPos += tensionVector;
                     ApplyLimiter(ref hipTargetPos, ref headTargetPos);
                 
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the spine buckling correction.
                     if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0)
                     {
                         MbusUtil.DrawArrow(headTargetPos, headTargetPos + tensionVector, Color.cyan, 0f, false, math.mul(objective.headTargetWorldRotation, math.forward()));
@@ -193,7 +193,7 @@ namespace HVR.IK.FullTiger
             for (var i = 0; i < objective.fabrikIterations; i++)
             {
                 MbusMathSolver.Iterate(ref _spineChain, headTargetPos, _spineDistances, spinePos, ref operationCounter, Int32.MaxValue, scale);
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the spine FABRIK iterations.
                 if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0)
                 {
                     Debug.DrawLine(_spineChain[0], _spineChain[1], lawnGreenTransparent, 0f, false);
@@ -203,7 +203,7 @@ namespace HVR.IK.FullTiger
 #endif
             }
 
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the spine.
             if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0)
             {
                 var arrowCross = math.normalize(hipsSide);
@@ -267,7 +267,7 @@ namespace HVR.IK.FullTiger
             ikSnapshot.ReevaluatePosition(LeftUpperLeg, definition, scale);
             ikSnapshot.ReevaluatePosition(RightUpperLeg, definition, scale);
             
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the spine structure.
             if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowSpine) != 0)
             {
                 Debug.DrawLine(ikSnapshot.absolutePos[(int)Hips], hipTargetPos, Color.magenta, 0f, false);

@@ -112,7 +112,7 @@ namespace HVR.IK.FullTiger
                     hvr_godot_helper_quaternion.LookRotationSafe(objectivePos - fakeMidPointPos, math.normalize(hvr_godot_helper.left_hand_cross(math.mul(originalObjectiveRot, math.back()), objectivePos - fakeMidPointPos))),
                     _reorienter
                 );
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the double jointing of the leg.
                 if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0 && acuteness > 0f)
                 {
                     MbusUtil.DrawArrow(bendPointPos, fakeMidPointPos, Color.magenta, 0f, false, math.mul(ikSnapshot.absoluteRot[(int)midBone], math.forward()));
@@ -121,7 +121,7 @@ namespace HVR.IK.FullTiger
 #endif
             }
             
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the twist of the leg.
             if (debugDrawSolver && (debugDrawFlags & HIKDebugDrawFlags.ShowLeg) != 0 && (debugDrawFlags & HIKDebugDrawFlags.ShowTwist) != 0)
             {
                 HIKTwoBoneAlgorithms.DrawTwist(ikSnapshot, rootBone, midBone, math.down());

@@ -58,7 +58,7 @@ namespace HVR.IK.FullTiger
                     finalLength = totalLength;
                 }
                 objectivePos = rootPos + math.normalize(objectivePos - rootPos) * finalLength;
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw a two-bone system struggling.
                 if (debugDrawSolver) Debug.DrawLine(objectivePos, originalObjectivePos, Color.magenta, 0f, false);
 #endif
                 distanceType = finalLength >= totalLength ? HIKTwoBoneDistanceType.MaximumDistance : HIKTwoBoneDistanceType.Regular;
@@ -69,7 +69,7 @@ namespace HVR.IK.FullTiger
                 if (!useStraddlingLeg && distance < minimumDistance)
                 {
                     objectivePos = rootPos + math.normalize(objectivePos - rootPos) * minimumDistance;
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw indicators of a change in the objective position.
                     if (debugDrawSolver)
                     {
                         Debug.DrawLine(originalObjectivePos, originalObjectivePos + math.up() * 0.1f, Color.magenta, 0f, false);
@@ -107,7 +107,7 @@ namespace HVR.IK.FullTiger
                 var prevObjectivePos = objectivePos;
                 objectivePos = bendPointPos + math.normalize(objectivePos - bendPointPos) * lowerLength;
 
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the bend point.
                 if (debugDrawSolver)
                 {
                     Debug.DrawLine(bendPointPos, straddlingWorldPosition, Color.magenta, 0f, false);
@@ -163,7 +163,7 @@ namespace HVR.IK.FullTiger
                 }
             }
 
-#if UNITY_EDITOR && true
+#if UNITY_EDITOR && true // (AUDIT) Disables code which is used to draw the result of the two-bone solve.
             if (debugDrawSolver)
             {
                 Debug.DrawLine(rootPos, objectivePos, Color.cyan, 0f, false);
